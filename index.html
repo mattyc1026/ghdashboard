@@ -586,7 +586,7 @@ var TOOLS = [
   {id:'termites',    name:'Termites',      hot:[23,16], mode:'click'},
   {id:'washer',      name:'Washing',       hot:[3,15],  mode:'drag', rate:16}
 ];
-var tool = TOOLS[0];
+var tool = null;   // nothing armed until the toolbox is opened
 
 function applyCursor(t){
   var url = "url(\"data:image/svg+xml," + encodeURIComponent(svgOf(t.id, 32)) + "\") " +
@@ -1280,6 +1280,7 @@ function guarded(el){
 }
 
 function fire(x, y, first){
+  if (!tool) return;
   switch (tool.id){
     case 'hammer':       fxHammer(x,y); break;
     case 'chainsaw':     fxSaw(x,y,lastX,lastY); break;
@@ -1297,15 +1298,16 @@ function fire(x, y, first){
 
 window.addEventListener('pointerdown', function(e){
   if (guarded(e.target)) return;
-  down = true; lastX = null; lastY = null; lastT = 0;
   S.unlock();
+  if (!tool) return;
+  down = true; lastX = null; lastY = null; lastT = 0;
   if (tool.id === 'phaser') S.zap();
   if (LOOPED[tool.id]) S.startLoop(tool.id);
   fire(e.clientX, e.clientY, true);
 }, {passive:true});
 
 window.addEventListener('pointermove', function(e){
-  if (!down || tool.mode !== 'drag') return;
+  if (!down || !tool || tool.mode !== 'drag') return;
   var now = performance.now();
   if (now - lastT < (tool.rate || 30)) return;
   lastT = now;
@@ -1387,10 +1389,12 @@ var tbName  = document.getElementById('tbName');
 var SPRITE  = 44, SC = SPRITE/32;
 
 function moveSprite(x, y){
+  if (!tool) return;
   sprite.style.left = (x - tool.hot[0]*SC) + 'px';
   sprite.style.top  = (y - tool.hot[1]*SC) + 'px';
 }
 function paintSprite(){
+  if (!tool) return;
   sprite.innerHTML = svgOf(tool.id, SPRITE);
   tbIcon.innerHTML = svgOf(tool.id, 22);
   tbName.textContent = tool.name.toUpperCase();
@@ -1414,8 +1418,6 @@ document.addEventListener('touchmove', function(e){
 }, {passive:false});
 
 function placeToolbox(){}
-
-selectTool(TOOLS[0], true);
 })();
 
 </script>
