@@ -37,23 +37,29 @@
   .wrap{max-width:640px; margin:0 auto;}
 
   header{
+    position:relative;
     display:flex;
     justify-content:center;
     align-items:center;
+    min-height: clamp(56px, 18vw, 96px);
     border-bottom: 2px dashed rgba(237,234,225,0.35);
     padding-bottom:18px;
     margin-bottom: 28px;
   }
 
   .brand-mark{
-    display:flex;
-    align-items:center;
-    gap:14px;
+    display:block;
+    text-align:left;
   }
 
   .brand-mark .icon{
-    width:96px; height:96px;
-    flex-shrink:0;
+    position:absolute;
+    left:0;
+    top:50%;
+    transform:translateY(-50%);
+    margin-top:-9px;
+    width: clamp(56px, 18vw, 96px);
+    height: clamp(56px, 18vw, 96px);
   }
   .brand-mark .icon img{
     width:100%; height:100%;
@@ -171,8 +177,20 @@
   #liveCanvas{ z-index:9001; }
 
   /* ---- toolbox tile ---- */
-  #toolbox{
+  #toolboxSlot{
     position:absolute;
+    right:0;
+    top:50%;
+    margin-top:-9px;
+    transform:translateY(-50%);
+    width:28px;
+    height:28px;
+    z-index:9500;
+  }
+
+  #toolbox{
+    position:relative;
+    display:block;
     width:28px; height:28px;
     padding:0;
     border:0;
@@ -196,6 +214,9 @@
 
   #toolLabel{
     position:absolute;
+    top:34px;
+    right:0;
+    text-align:right;
     z-index:9500;
     font-family:'Space Mono', monospace;
     font-size:10px;
@@ -325,6 +346,11 @@
         <div class="subtitle">Field &amp; Office Toolboard</div>
       </div>
     </div>
+
+    <div id="toolboxSlot">
+      <button id="toolbox" type="button" title="Open the arsenal" aria-label="Open the arsenal"></button>
+      <div id="toolLabel"></div>
+    </div>
   </header>
 
   <div class="grid">
@@ -385,9 +411,6 @@
 
 <canvas id="dmgCanvas" class="fx-canvas"></canvas>
 <canvas id="liveCanvas" class="fx-canvas"></canvas>
-
-<button id="toolbox" type="button" title="Open the arsenal" aria-label="Open the arsenal"></button>
-<div id="toolLabel"></div>
 
 <div id="arsenalWrap" role="dialog" aria-modal="true" aria-label="Arsenal">
   <div id="arsenal">
@@ -1028,27 +1051,7 @@ wrap.addEventListener('click', function(e){ if (e.target === wrap) closeArsenal(
 document.getElementById('arsenalClose').addEventListener('click', closeArsenal);
 window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeArsenal(); });
 
-/* toolbox sits on the tile under the Y of GOOD & HANDY, just past TOOLBOARD */
-function placeToolbox(){
-  var h1  = document.querySelector('h1');
-  var sub = document.querySelector('.subtitle');
-  if (!h1 || !sub) return;
-  var r  = h1.getBoundingClientRect();
-  var rs = sub.getBoundingClientRect();
-  var x = r.right - 12 + window.scrollX;
-  var y = rs.bottom + 8 + window.scrollY;
-  x = Math.round(x / TILE) * TILE;
-  y = Math.round(y / TILE) * TILE;
-  x = Math.max(TILE, Math.min(x, window.innerWidth - TILE*2));
-  box.style.left = x + 'px';
-  box.style.top  = y + 'px';
-  label.style.left = Math.max(6, x - 40) + 'px';
-  label.style.top  = (y + 32) + 'px';
-}
-placeToolbox();
-window.addEventListener('load', placeToolbox);
-if (document.fonts && document.fonts.ready) document.fonts.ready.then(placeToolbox);
-setTimeout(placeToolbox, 600);
+function placeToolbox(){}
 
 selectTool(TOOLS[0]);
 })();
