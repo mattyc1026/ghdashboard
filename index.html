@@ -203,6 +203,27 @@
     animation: tb-pulse 2.4s ease-in-out infinite;
   }
   #toolbox svg{ width:100%; height:100%; display:block; }
+
+  #sndTile{
+    position:absolute;
+    right:36px;
+    top:0;
+    width:28px; height:28px;
+    padding:0;
+    border:0;
+    background:transparent;
+    z-index:9500;
+    cursor: var(--tool-cursor, auto);
+  }
+  #sndTile svg{ width:100%; height:100%; display:block; }
+  #sndTile::after{
+    content:'';
+    position:absolute;
+    inset:-3px;
+    border:1px dashed rgba(175,199,216,0.5);
+    border-radius:3px;
+  }
+  #sndTile.off{ opacity:0.45; }
   #toolbox::after{
     content:'';
     position:absolute;
@@ -424,6 +445,7 @@
     </div>
 
     <div id="toolboxSlot">
+      <button id="sndTile" type="button" title="Sound on/off" aria-label="Sound on/off"></button>
       <button id="toolbox" type="button" title="Open the arsenal" aria-label="Open the arsenal"></button>
       <div id="toolLabel"></div>
     </div>
@@ -492,7 +514,7 @@
 <div id="touchBar">
   <div class="cur"><span id="tbIcon"></span><span id="tbName">HAMMER</span></div>
   <button type="button" id="tbSwap">SWAP</button>
-  <button type="button" id="tbSnd">SND</button>
+  <button type="button" id="tbSnd">SOUND</button>
   <button type="button" class="exit" id="tbExit">DONE</button>
 </div>
 
@@ -1279,7 +1301,7 @@ var down = false, lastX = null, lastY = null, lastT = 0;
 var LOOPED = {chainsaw:1, flamethrower:1, washer:1, phaser:1};
 
 function guarded(el){
-  return el && el.closest && el.closest('a.card, #toolbox, #arsenalWrap, #touchBar');
+  return el && el.closest && el.closest('a.card, #toolbox, #sndTile, #arsenalWrap, #touchBar');
 }
 
 function fire(x, y, first){
@@ -1362,13 +1384,22 @@ box.addEventListener('click', function(e){ e.stopPropagation(); S.unlock(); S.ui
 wrap.addEventListener('click', function(e){ if (e.target === wrap) closeArsenal(); });
 document.getElementById('arsenalClose').addEventListener('click', closeArsenal);
 
-var sndBtn = document.getElementById('sndBtn');
-var tbSnd  = document.getElementById('tbSnd');
+var sndBtn  = document.getElementById('sndBtn');
+var tbSnd   = document.getElementById('tbSnd');
+var sndTile = document.getElementById('sndTile');
+
+var SPK_BODY = "<path d='M4 12h5l7-6v20l-7-6H4z' fill='#AFC7D8' stroke='#0A1B27' stroke-width='1.6' stroke-linejoin='round'/>";
+var SPK_ON   = "<path d='M20 11a7 7 0 0 1 0 10M23.5 7.5a12 12 0 0 1 0 17' fill='none' stroke='#F4611E' stroke-width='2' stroke-linecap='round'/>";
+var SPK_OFF  = "<path d='M20 12l8 8M28 12l-8 8' fill='none' stroke='#F4611E' stroke-width='2.2' stroke-linecap='round'/>";
+
 function paintSound(){
   var m = S.muted();
   sndBtn.textContent = 'SOUND: ' + (m ? 'OFF' : 'ON');
   sndBtn.classList.toggle('off', m);
   tbSnd.classList.toggle('off', m);
+  sndTile.classList.toggle('off', m);
+  sndTile.innerHTML = "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32' width='28' height='28'>" +
+                      SPK_BODY + (m ? SPK_OFF : SPK_ON) + "</svg>";
 }
 function toggleSound(e){
   e.stopPropagation();
@@ -1379,6 +1410,12 @@ function toggleSound(e){
 }
 sndBtn.addEventListener('click', toggleSound);
 tbSnd.addEventListener('click', toggleSound);
+sndTile.addEventListener('click', toggleSound);
+
+/* browsers block audio until a gesture; catch every kind */
+['pointerdown','mousedown','keydown','touchstart'].forEach(function(ev){
+  window.addEventListener(ev, function(){ S.unlock(); }, {once:false, passive:true});
+});
 paintSound();
 window.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeArsenal(); });
 
