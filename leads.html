@@ -220,16 +220,20 @@
     margin-right:3px;
   }
   .addr{font-size:12px; color:#5a5a5a; margin-top:3px; word-break:break-word;}
-  .del{
+  .rowActs{display:flex; gap:2px; flex-shrink:0;}
+  .iconBtn{
     border:0;
     background:transparent;
     color:#9a9a9a;
-    font-size:17px;
+    font-size:15px;
     line-height:1;
-    padding:4px 6px;
+    padding:5px 6px;
     letter-spacing:0;
   }
-  .del:hover{color:#B3261E;}
+  .iconBtn.del{font-size:17px;}
+  .iconBtn:hover{color:var(--blueprint);}
+  .iconBtn.del:hover{color:#B3261E;}
+  .row.editing{background:rgba(244,97,30,0.10);}
   .empty{font-size:13.5px; color:#5a5a5a; padding:16px 2px;}
 
   .alpha{
@@ -296,6 +300,7 @@
         <button type="button" id="cancelBtn">Cancel</button>
         <button type="button" class="primary" id="saveBtn">Save</button>
       </div>
+      <input type="hidden" id="fKey" value="">
     </div>
 
     <div class="cfg" id="cfg">
@@ -318,20 +323,26 @@
    Contacts pulled from the portal's Job History. A job only counts once it
    carries a SURVEY note, the same condition the portal uses to move a work
    order out of Surveys and into Job History. Hand-entered leads sit in the
-   same list and ride along in the same Firestore project, so the list is
-   identical on every device the portal is on.
+   same list, and every lead can be edited or removed here.
+
+   Job History is the portal's record, so this page never writes back to it.
+   Edits to a lead that came from a work order are kept as an overlay, and
+   removals as a hidden list, both stored beside the manual leads. The work
+   order itself is left exactly as the portal has it.
 ========================================================================= */
 (function(){
 'use strict';
 
 var PORTAL_DB_KEY = 'gh_portal_db_v1';
 var SYNC_CFG_KEY  = 'gh_portal_sync_cfg';
-var MANUAL_KEY    = 'gh_dash_manual_leads_v1';
+var LEADS_KEY     = 'gh_dash_leads_v1';
+var LEGACY_KEY    = 'gh_dash_manual_leads_v1';
 
 var portalDB = {workOrders:[]};
-var manual   = [];
+var store    = {manual:[], overrides:{}, hidden:[]};
 var sortBy   = 'last';
 var query    = '';
+var editing  = '';
 var db       = null;
 
 /* ---------------------------------------------------------------- utils -- */
@@ -360,6 +371,16 @@ function formatPhone(s){
   if(d.length === 11 && d.charAt(0) === '1') d = d.slice(1);
   if(d.length === 10) return '(' + d.slice(0,3) + ') ' + d.slice(3,6) + '-' + d.slice(6);
   return String(s || '').trim();
+}
+function normalizeStore(raw){
+  /* An older build saved a bare array of manual leads. */
+  if(Array.isArray(raw)) return {manual:raw, overrides:{}, hidden:[]};
+  if(!raw || typeof raw !== 'object') return {manual:[], overrides:{}, hidden:[]};
+  return {
+    manual:    Array.isArray(raw.manual) ? raw.manual : [],
+    overrides: (raw.overrides && typeof raw.overrides === 'object') ? raw.overrides : {},
+    hidden:    Array.isArray(raw.hidden) ? raw.hidden : []
+  };
 }
 
 /* -------------------------------------------------------------- sources -- */
@@ -392,7 +413,7 @@ function jobLeads(){
   return out;
 }
 function manualLeads(){
-  return (manual || []).map(function(m){
+  return (store.manual || []).map(function(m){
     return {
       key:m.id,
       name:(m.name || '').trim(),
@@ -404,15 +425,35 @@ function manualLeads(){
     };
   });
 }
+function applyOverride(r){
+  var o = store.overrides[r.key];
+  if(!o) return r;
+  return {
+    key:r.key,
+    name:     o.name     != null ? o.name     : r.name,
+    phone:    o.phone    != null ? o.phone    : r.phone,
+    altPhone: o.altPhone != null ? o.altPhone : r.altPhone,
+    email:    o.email    != null ? o.email    : r.email,
+    address:  o.address  != null ? o.address  : r.address,
+    manual:   r.manual,
+    edited:   true
+  };
+}
 /* A customer in Job History more than once, or one also entered by hand,
    should still read as a single line. Match on phone digits, then email,
    then name, and let the fuller record fill the other's gaps. */
 function allLeads(){
-  var rows = manualLeads().concat(jobLeads());
+  var hidden = {};
+  for(var h = 0; h < store.hidden.length; h++) hidden[store.hidden[h]] = true;
+
+  var rows = manualLeads().concat(jobLeads())
+    .filter(function(r){ return !hidden[r.key]; })
+    .map(applyOverride);
+
   var seen = {}, out = [];
   for(var i = 0; i < rows.length; i++){
     var r = rows[i];
-    var id = digits(r.phone) || r.email.toLowerCase() || r.name.toLowerCase();
+    var id = digits(r.phone) || (r.email || '').toLowerCase() || (r.name || '').toLowerCase();
     if(!id){ out.push(r); continue; }
     if(seen[id]){
       var prev = seen[id];
@@ -426,6 +467,11 @@ function allLeads(){
     out.push(r);
   }
   return out;
+}
+function findLead(key){
+  var all = allLeads();
+  for(var i = 0; i < all.length; i++) if(all[i].key === key) return all[i];
+  return null;
 }
 function matches(r){
   if(!query) return true;
@@ -453,7 +499,8 @@ function render(){
   });
 
   document.getElementById('count').textContent =
-    query ? (list.length + ' / ' + everything.length) : (everything.length + (everything.length === 1 ? ' LEAD' : ' LEADS'));
+    query ? (list.length + ' / ' + everything.length)
+          : (everything.length + (everything.length === 1 ? ' LEAD' : ' LEADS'));
 
   var host = document.getElementById('list');
   if(!list.length){
@@ -480,37 +527,44 @@ function render(){
     if(r.email){
       meta += '<span><span class="lbl">E</span><a href="mailto:' + esc(r.email) + '">' + esc(r.email) + '</a></span>';
     }
-    html += '<div class="row' + (r.manual ? ' manual' : '') + '">' +
+    html += '<div class="row' + (r.manual ? ' manual' : '') + (editing === r.key ? ' editing' : '') + '">' +
               '<div class="initial">' + esc(first) + '</div>' +
               '<div class="body">' +
                 '<div class="nm">' + (esc(r.name) || '(No name)') + '</div>' +
                 (meta ? '<div class="meta">' + meta + '</div>' : '') +
                 (r.address ? '<div class="addr">' + esc(r.address) + '</div>' : '') +
               '</div>' +
-              (r.manual ? '<button type="button" class="del" data-del="' + esc(r.key) + '" aria-label="Remove lead">&times;</button>' : '') +
+              '<div class="rowActs">' +
+                '<button type="button" class="iconBtn" data-edit="' + esc(r.key) + '" aria-label="Edit lead">&#9998;</button>' +
+                '<button type="button" class="iconBtn del" data-del="' + esc(r.key) + '" aria-label="Remove lead">&times;</button>' +
+              '</div>' +
             '</div>';
   }
   host.innerHTML = html;
 
+  var eds = host.querySelectorAll('[data-edit]');
+  for(var j = 0; j < eds.length; j++){
+    eds[j].addEventListener('click', function(){ openEdit(this.getAttribute('data-edit')); });
+  }
   var dels = host.querySelectorAll('[data-del]');
-  for(var j = 0; j < dels.length; j++){
-    dels[j].addEventListener('click', function(){
-      removeManual(this.getAttribute('data-del'));
-    });
+  for(var k = 0; k < dels.length; k++){
+    dels[k].addEventListener('click', function(){ removeLead(this.getAttribute('data-del')); });
   }
 }
 
-/* --------------------------------------------------------------- manual -- */
-function saveManual(){
-  try{ localStorage.setItem(MANUAL_KEY, JSON.stringify(manual)); }catch(e){}
+/* ------------------------------------------------------------- persist --- */
+function save(){
+  try{ localStorage.setItem(LEADS_KEY, JSON.stringify(store)); }catch(e){}
   if(db){
     db.collection('gh_portal').doc('leads')
-      .set({leads: JSON.stringify(manual), updatedAt: Date.now()})
+      .set({leads: JSON.stringify(store), updatedAt: Date.now()})
       .catch(function(e){ console.error('Lead sync failed', e); });
   }
   render();
 }
-function addManual(){
+
+/* ----------------------------------------------------- add / edit / del -- */
+function submitForm(){
   var name    = document.getElementById('fName').value.trim();
   var phone   = document.getElementById('fPhone').value.trim();
   var email   = document.getElementById('fEmail').value.trim();
@@ -521,28 +575,81 @@ function addManual(){
   if(!phone && !email){ err.textContent = 'Enter a phone number or an email.'; err.classList.add('on'); return; }
   err.classList.remove('on');
 
-  manual.push({
-    id:'m-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
-    name:name, phone:phone, email:email, address:address,
-    createdAt:Date.now()
-  });
+  if(editing){
+    var idx = -1;
+    for(var i = 0; i < store.manual.length; i++){
+      if(store.manual[i].id === editing){ idx = i; break; }
+    }
+    if(idx > -1){
+      store.manual[idx].name    = name;
+      store.manual[idx].phone   = phone;
+      store.manual[idx].email   = email;
+      store.manual[idx].address = address;
+    }else{
+      /* A work order lead: keep the change as an overlay, leave the portal's
+         own record untouched. */
+      var prev = store.overrides[editing] || {};
+      prev.name = name; prev.phone = phone; prev.email = email; prev.address = address;
+      store.overrides[editing] = prev;
+    }
+  }else{
+    store.manual.push({
+      id:'m-' + Date.now() + '-' + Math.random().toString(36).slice(2, 7),
+      name:name, phone:phone, email:email, address:address,
+      createdAt:Date.now()
+    });
+  }
   closeForm();
-  saveManual();
+  save();
 }
-function removeManual(id){
-  manual = manual.filter(function(m){ return m.id !== id; });
-  saveManual();
+function removeLead(key){
+  var r = findLead(key);
+  var label = (r && r.name) ? r.name : 'this lead';
+  if(!window.confirm('Remove ' + label + ' from the leads list?')) return;
+
+  var before = store.manual.length;
+  store.manual = store.manual.filter(function(m){ return m.id !== key; });
+  if(store.manual.length === before && store.hidden.indexOf(key) === -1){
+    /* From Job History: hide it here, leave the work order alone. */
+    store.hidden.push(key);
+  }
+  if(store.overrides[key]) delete store.overrides[key];
+  if(editing === key) closeForm();
+  save();
+}
+function openEdit(key){
+  var r = findLead(key);
+  if(!r) return;
+  editing = key;
+  document.getElementById('fKey').value = key;
+  document.getElementById('fName').value    = r.name || '';
+  document.getElementById('fPhone').value   = r.phone || '';
+  document.getElementById('fEmail').value   = r.email || '';
+  document.getElementById('fAddress').value = r.address || '';
+  document.getElementById('formErr').classList.remove('on');
+  document.getElementById('saveBtn').textContent = 'Update';
+  document.getElementById('form').classList.add('open');
+  document.getElementById('fName').focus();
+  window.scrollTo({top:0, behavior:'smooth'});
+  render();
 }
 function openForm(){
+  editing = '';
+  document.getElementById('fKey').value = '';
+  document.getElementById('saveBtn').textContent = 'Save';
   document.getElementById('form').classList.add('open');
   document.getElementById('fName').focus();
 }
 function closeForm(){
+  editing = '';
+  document.getElementById('fKey').value = '';
   document.getElementById('form').classList.remove('open');
   document.getElementById('formErr').classList.remove('on');
+  document.getElementById('saveBtn').textContent = 'Save';
   ['fName','fPhone','fEmail','fAddress'].forEach(function(id){
     document.getElementById(id).value = '';
   });
+  render();
 }
 
 /* ----------------------------------------------------------------- sync -- */
@@ -555,8 +662,10 @@ function getCfg(){ return readJSON(SYNC_CFG_KEY, null); }
 function loadLocal(){
   portalDB = readJSON(PORTAL_DB_KEY, {workOrders:[]}) || {workOrders:[]};
   if(!portalDB.workOrders) portalDB.workOrders = [];
-  manual = readJSON(MANUAL_KEY, []) || [];
-  if(!Array.isArray(manual)) manual = [];
+
+  var saved = readJSON(LEADS_KEY, null);
+  if(saved == null) saved = readJSON(LEGACY_KEY, null);
+  store = normalizeStore(saved);
 }
 
 function initSync(){
@@ -587,12 +696,9 @@ function initSync(){
       var raw = snap.data() && snap.data().leads;
       if(!raw) return;
       try{
-        var remote = JSON.parse(raw);
-        if(Array.isArray(remote)){
-          manual = remote;
-          try{ localStorage.setItem(MANUAL_KEY, JSON.stringify(manual)); }catch(e2){}
-          render();
-        }
+        store = normalizeStore(JSON.parse(raw));
+        try{ localStorage.setItem(LEADS_KEY, JSON.stringify(store)); }catch(e2){}
+        render();
       }catch(e){ console.error('Bad leads payload', e); }
     }, function(e){ console.error('Leads sync error', e); });
   }catch(e){
@@ -629,14 +735,15 @@ function saveCfg(){
 function wire(){
   document.getElementById('addBtn').addEventListener('click', function(){
     var f = document.getElementById('form');
-    if(f.classList.contains('open')) closeForm(); else openForm();
+    if(f.classList.contains('open') && !editing) closeForm(); else openForm();
   });
-  document.getElementById('saveBtn').addEventListener('click', addManual);
+  document.getElementById('saveBtn').addEventListener('click', submitForm);
   document.getElementById('cancelBtn').addEventListener('click', closeForm);
 
   ['fName','fPhone','fEmail','fAddress'].forEach(function(id){
     document.getElementById(id).addEventListener('keydown', function(e){
-      if(e.key === 'Enter') addManual();
+      if(e.key === 'Enter') submitForm();
+      if(e.key === 'Escape') closeForm();
     });
   });
 
@@ -675,7 +782,7 @@ function wire(){
 
   /* Another tab on this origin, the portal included, writing to storage. */
   window.addEventListener('storage', function(e){
-    if(e.key === PORTAL_DB_KEY || e.key === MANUAL_KEY){
+    if(e.key === PORTAL_DB_KEY || e.key === LEADS_KEY){
       loadLocal();
       render();
     }
