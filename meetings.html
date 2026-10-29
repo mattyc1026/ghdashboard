@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
 <script>
 /* Display settings are shared with the portal on this device. */
 (function(){
@@ -26,34 +26,48 @@
 })();
 </script>
 <style>
+/* ---- Colour ----
+   Navy and orange come from the logo. Each of the four tools then has a
+   colour of its own, used for its tab, its panels, its buttons and its
+   check marks, so you can tell at a glance which one you are in:
+   agenda orange, whiteboard blue, action items green, practice red. */
 :root{
-  --navy:#0f2647; --navy2:#1b3f73; --orange:#e8791a;
+  --navy:#0f2647; --navy-2:#1b3f73; --orange:#e8791a;
   --cream:#e9edf3; --paper:#ffffff; --ink:#141f33; --muted:#5f6e87;
   --line:#dbe2ec; --line-soft:#eaeef4; --grid-line:rgba(15,38,71,.045);
-  --red:#ffd9d9; --redb:#c0392b; --green:#d2f2df; --greenb:#1f8a55;
-  --hl:#fff4e6;
+  --red:#c0392b; --green:#1f8a55; --blue:#2f6fd6;
+  --c-agenda:#e8791a; --c-board:#2f6fd6; --c-actions:#1f8a55; --c-practice:#c0392b;
+  --on-c:#ffffff;
+  --board:#fbfcfe; --board-dot:rgba(47,111,214,.16);
   --f-display:'DM Serif Display',Georgia,serif;
   --f-body:'DM Sans',system-ui,-apple-system,sans-serif;
-  --f-data:'DM Mono',ui-monospace,monospace;
-  --radius:12px; --radius-sm:8px;
-  --sh-1:0 1px 2px rgba(15,38,71,.06),0 1px 3px rgba(15,38,71,.08);
-  --sh-2:0 6px 18px rgba(15,38,71,.12);
-  --board:#ffffff;
+  --radius:14px; --radius-sm:9px;
+  --sh-1:0 1px 2px rgba(15,38,71,.06),0 2px 6px rgba(15,38,71,.06);
+  --sh-2:0 10px 28px rgba(15,38,71,.16);
+  --ease:cubic-bezier(.2,.8,.2,1); --ease-out:cubic-bezier(.16,1,.3,1);
+  --tc:var(--c-agenda);
 }
 html.dark{
   color-scheme:dark;
-  --navy:#dbe5f5; --navy2:#16233a; --orange:#ff9a45;
+  --navy:#dbe5f5; --navy-2:#16233a; --orange:#ff9a45;
   --cream:#0e1522; --paper:#161f30; --ink:#e7edf7; --muted:#94a3bb;
   --line:#2b3a54; --line-soft:#1f2c42; --grid-line:rgba(219,229,245,.04);
-  --red:#38202a; --redb:#ff8f7d; --green:#12301f; --greenb:#4fd48a;
-  --hl:#2b2418;
-  --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 6px 18px rgba(0,0,0,.5);
-  --board:#1b2438;
+  --red:#ff8f7d; --green:#4fd48a; --blue:#7aa8ff;
+  --c-agenda:#ff9a45; --c-board:#7aa8ff; --c-actions:#4fd48a; --c-practice:#ff8f7d;
+  --on-c:#0e1522;
+  --board:#121b2b; --board-dot:rgba(122,168,255,.16);
+  --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 12px 30px rgba(0,0,0,.55);
 }
 html.hc{ --line:#0f2647; --muted:#2b3a54; --ink:#000; }
 html.dark.hc{ --line:#dbe5f5; --muted:#c9d4e6; --ink:#fff; }
+body[data-tab=agenda]{--tc:var(--c-agenda);}
+body[data-tab=board]{--tc:var(--c-board);}
+body[data-tab=actions]{--tc:var(--c-actions);}
+body[data-tab=practice]{--tc:var(--c-practice);}
+.tint{background:color-mix(in srgb, var(--tc) 9%, var(--paper));}
+
 *{box-sizing:border-box;}
-html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-tap-highlight-color:transparent;}
 body{margin:0;font-family:var(--f-body);color:var(--ink);font-size:var(--dScale,16px);line-height:1.5;
   background-color:var(--cream);
   background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
@@ -62,190 +76,267 @@ body{margin:0;font-family:var(--f-body);color:var(--ink);font-size:var(--dScale,
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
 @media (max-width:900px){ input,select,textarea{font-size:max(16px,1em);} }
 .hidden{display:none !important;}
+:focus-visible{outline:2.5px solid var(--tc);outline-offset:2px;}
 
-/* ---- top bar ---- */
+/* ---- top bar, with the four tool colours as a stripe under it ---- */
 header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
   padding:10px 18px;padding-top:max(10px,env(safe-area-inset-top));
-  background:var(--navy);color:#fff;box-shadow:var(--sh-2);}
-html.dark header.top{background:#0b1220;color:var(--ink);border-bottom:1px solid var(--line);}
-header.top a.back{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.9em;opacity:.9;}
-header.top .ttl{font-family:var(--f-display);font-size:1.35em;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-header.top .who{font-size:.85em;opacity:.85;white-space:nowrap;}
-main{max-width:1280px;margin:0 auto;padding:18px;}
-@media (max-width:900px){ main{padding:12px;} header.top{padding-left:12px;padding-right:12px;} }
+  background:var(--navy);color:#fff;}
+header.top::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;
+  background:linear-gradient(90deg,var(--c-agenda) 0 25%,var(--c-board) 25% 50%,var(--c-actions) 50% 75%,var(--c-practice) 75% 100%);}
+html.dark header.top{background:#0b1220;color:var(--ink);}
+header.top a.back{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.9em;opacity:.92;
+  padding:4px 8px 4px 2px;border-radius:8px;transition:background .15s;}
+header.top a.back:hover{background:rgba(255,255,255,.1);}
+header.top .ttl{flex:1 1 auto;}
+header.top .who{font-size:.85em;opacity:.9;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
+main{max-width:1280px;margin:0 auto;padding:22px 18px 18px;}
+@media (max-width:900px){ main{padding:16px 12px 12px;} header.top{padding-left:12px;padding-right:12px;} }
 
 /* ---- buttons, fields ---- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1.5px solid var(--navy);background:var(--navy);color:#fff;
-  font-weight:700;border-radius:var(--radius-sm);padding:9px 16px;min-height:40px;cursor:pointer;box-shadow:var(--sh-1);white-space:nowrap;}
+  font-weight:700;border-radius:var(--radius-sm);padding:9px 16px;min-height:40px;cursor:pointer;white-space:nowrap;
+  transition:transform .12s var(--ease),filter .15s,background-color .15s,border-color .15s,box-shadow .15s;box-shadow:var(--sh-1);}
+.btn:hover{filter:brightness(1.08);}
+.btn:active{transform:scale(.96);}
 html.dark .btn{color:var(--paper);}
-html.dark .btn.secondary{color:var(--navy);}
-html.dark .btn.danger{color:var(--redb);}
-html.dark .btn.orange{color:#1a0d00;}
+.btn.tc{background:var(--tc);border-color:var(--tc);color:var(--on-c);}
 .btn.secondary{background:var(--paper);color:var(--navy);border-color:var(--line);}
-.btn.secondary:hover{border-color:var(--navy);}
-.btn.danger{background:var(--red);color:var(--redb);border-color:var(--redb);}
+.btn.secondary:hover{border-color:var(--tc);filter:none;}
+html.dark .btn.secondary{color:var(--navy);}
+.btn.danger{background:color-mix(in srgb, var(--red) 12%, var(--paper));color:var(--red);border-color:var(--red);}
+html.dark .btn.danger{color:var(--red);}
 .btn.orange{background:var(--orange);border-color:var(--orange);color:#fff;}
+html.dark .btn.orange{color:#1a0d00;}
 .btn.sm{padding:6px 11px;min-height:34px;font-size:.85em;}
 .btn[disabled]{opacity:.5;cursor:not-allowed;}
 .btn .ic,.iconBtn .ic{width:1.05em;height:1.05em;flex:0 0 auto;}
 .iconBtn{display:inline-flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;border-radius:var(--radius-sm);
-  border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:0 0 auto;}
-.iconBtn:hover{border-color:var(--line);color:var(--navy);}
+  border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:0 0 auto;transition:background-color .15s,color .15s,transform .12s var(--ease);}
+.iconBtn:hover{background:color-mix(in srgb, var(--tc) 12%, transparent);color:var(--tc);}
+.iconBtn:active{transform:scale(.9);}
+.iconBtn[disabled]{opacity:.3;pointer-events:none;}
 input[type=text],input[type=date],select,textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
-  padding:9px 11px;min-height:42px;outline:none;}
-input:focus,select:focus,textarea:focus{border-color:var(--orange);}
+  padding:9px 11px;min-height:42px;outline:none;transition:border-color .15s,box-shadow .15s;}
+input:focus,select:focus,textarea:focus{border-color:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb, var(--tc) 20%, transparent);}
 textarea{resize:vertical;min-height:70px;line-height:1.45;}
-.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);padding:16px;}
-.panelTitle{font-size:.74em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);margin:0 0 10px;
-  display:flex;align-items:center;gap:8px;}
-.panelTitle .count{background:var(--navy);color:#fff;border-radius:999px;padding:1px 8px;font-family:var(--f-data);font-weight:500;letter-spacing:0;}
-html.dark .panelTitle .count{color:var(--paper);}
+/* Check boxes: a rounded square in the tool's colour that fills with a check. */
+input.chk{appearance:none;-webkit-appearance:none;width:1.3em;height:1.3em;margin:.12em 0 0;border:2px solid color-mix(in srgb, var(--tc) 55%, var(--line));
+  border-radius:.4em;background:var(--paper);cursor:pointer;flex:0 0 auto;display:grid;place-items:center;
+  transition:background-color .18s,border-color .18s,transform .18s var(--ease);}
+input.chk::after{content:"";width:.62em;height:.34em;border:solid var(--on-c);border-width:0 0 .16em .16em;transform:translateY(-.06em) rotate(-45deg) scale(0);transition:transform .22s var(--ease-out);}
+input.chk:checked{background:var(--tc);border-color:var(--tc);animation:pop .28s var(--ease-out);}
+input.chk:checked::after{transform:translateY(-.06em) rotate(-45deg) scale(1);}
+input.chk:disabled{cursor:default;opacity:.7;}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+/* Text crossed out with a line drawn across it, not switched instantly. */
+.strike{background:linear-gradient(currentColor,currentColor) 0 58%/0 1.5px no-repeat;transition:background-size .3s var(--ease),color .3s;
+  -webkit-box-decoration-break:clone;box-decoration-break:clone;}
+.done .strike{background-size:100% 1.5px;color:var(--muted);}
+
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);padding:16px 18px 18px;
+  border-top:4px solid var(--tc);}
+.panelTitle{font-size:1.02em;font-weight:700;color:var(--tc);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+.count{background:color-mix(in srgb, var(--tc) 14%, var(--paper));color:var(--tc);border-radius:999px;padding:0 9px;font-weight:700;font-size:.8em;min-width:1.8em;text-align:center;
+  font-variant-numeric:tabular-nums;}
 .small{font-size:.82em;color:var(--muted);}
 .row{display:flex;gap:8px;align-items:center;}
 .grow{flex:1 1 auto;min-width:0;}
+.emptyMsg{color:var(--muted);font-size:.9em;padding:6px 2px;}
 
 /* ---- meeting list ---- */
-.listHead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px;}
-.listHead h1{font-family:var(--f-display);font-weight:400;font-size:2em;margin:0;color:var(--navy);}
-.mtgRow{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--line);
-  border-radius:var(--radius);padding:13px 16px;margin-bottom:10px;cursor:pointer;box-shadow:var(--sh-1);transition:transform .12s,box-shadow .12s;}
+.listHead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 18px;}
+.listHead h1{font-family:var(--f-display);font-weight:400;font-size:2.1em;margin:0;color:var(--navy);line-height:1.1;}
+.mtgRow{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-left:6px solid var(--line);
+  border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;box-shadow:var(--sh-1);
+  transition:transform .18s var(--ease),box-shadow .18s,border-color .18s;}
 .mtgRow:hover{transform:translateY(-2px);box-shadow:var(--sh-2);}
-.mtgRow.live{border-left-color:var(--orange);}
-.mtgRow .name{font-family:var(--f-display);font-size:1.2em;color:var(--navy);line-height:1.25;}
+.mtgRow:active{transform:scale(.99);}
+.mtgRow.live{border-left-color:var(--orange);background:linear-gradient(90deg,color-mix(in srgb, var(--orange) 10%, var(--paper)),var(--paper) 60%);}
+.mtgRow .name{font-family:var(--f-display);font-size:1.25em;color:var(--navy);line-height:1.25;}
 .mtgRow .meta{font-size:.82em;color:var(--muted);}
-.liveTag{background:var(--orange);color:#fff;font-size:.66em;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
-.endedTag{background:var(--line-soft);color:var(--muted);font-size:.66em;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
-.sectionLabel{font-size:.76em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);
-  border-bottom:1px solid var(--line);padding-bottom:8px;margin:24px 2px 12px;}
+.liveTag{display:inline-flex;align-items:center;gap:6px;background:var(--orange);color:#fff;font-size:.72em;font-weight:700;padding:3px 10px 3px 8px;border-radius:20px;}
+html.dark .liveTag{color:#1a0d00;}
+.liveTag::before{content:"";width:.5em;height:.5em;border-radius:50%;background:currentColor;animation:breathe 2.4s ease-in-out infinite;}
+@keyframes breathe{0%,100%{opacity:1}50%{opacity:.35}}
+.endedTag{background:var(--line-soft);color:var(--muted);font-size:.72em;font-weight:700;padding:3px 10px;border-radius:20px;}
+.sectionLabel{font-size:1em;font-weight:700;color:var(--navy);margin:26px 2px 10px;display:flex;align-items:center;gap:8px;}
+.sectionLabel .count{--tc:var(--orange);}
 .empty{border:1.5px dashed var(--line);border-radius:var(--radius);padding:22px;text-align:center;color:var(--muted);}
 
 /* ---- meeting screen ---- */
-.mtgHead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px;}
-.mtgHead h1{font-family:var(--f-display);font-weight:400;font-size:1.8em;margin:0;color:var(--navy);line-height:1.2;cursor:text;}
+.mtgHead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:14px;}
+.mtgHead h1{font-family:var(--f-display);font-weight:400;font-size:1.9em;margin:0;color:var(--navy);line-height:1.15;cursor:text;}
 .mtgHead .when{font-size:.85em;color:var(--muted);}
 .mtgHead .spacer{flex:1 1 auto;}
 .people{display:flex;flex-wrap:wrap;gap:6px;}
-.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:3px 10px 3px 4px;font-size:.8em;font-weight:600;color:var(--navy);}
-.chip .dot{width:1.6em;height:1.6em;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.8em;font-weight:700;text-transform:uppercase;}
-.chip.me{border-color:var(--orange);}
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid color-mix(in srgb, var(--pc) 45%, var(--line));
+  background:color-mix(in srgb, var(--pc) 10%, var(--paper));border-radius:999px;padding:3px 11px 3px 4px;font-size:.8em;font-weight:700;color:var(--navy);
+  animation:chipIn .3s var(--ease-out);}
+.chip .dot{width:1.7em;height:1.7em;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.78em;font-weight:700;
+  text-transform:uppercase;background:var(--pc);position:relative;}
+.chip .dot::after{content:"";position:absolute;right:-1px;bottom:-1px;width:.55em;height:.55em;border-radius:50%;background:#3bd16f;border:2px solid var(--paper);}
+@keyframes chipIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+
+/* tool tabs */
+.tabs{position:relative;display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;padding:2px;}
 .tabs::-webkit-scrollbar{display:none;}
-.tabs button{border:0;background:transparent;padding:10px 14px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
-  border-bottom:3px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:7px;}
-.tabs button.on{color:var(--navy);border-bottom-color:var(--orange);}
-.tabs button .ic{width:1.1em;height:1.1em;}
+.tabs button{--c:var(--tc);border:1.5px solid var(--line);background:var(--paper);padding:9px 16px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
+  border-radius:999px;display:inline-flex;align-items:center;gap:8px;position:relative;
+  transition:background-color .22s var(--ease),color .22s,border-color .22s,transform .12s var(--ease),box-shadow .22s;}
+.tabs button .ic{width:1.15em;height:1.15em;color:var(--c);transition:color .22s;}
+.tabs button:hover{border-color:var(--c);color:var(--navy);}
+.tabs button:active{transform:scale(.96);}
+.tabs button.on{background:var(--c);border-color:var(--c);color:var(--on-c);box-shadow:0 4px 14px color-mix(in srgb, var(--c) 35%, transparent);}
+.tabs button.on .ic{color:var(--on-c);}
+.tabs .liveDot{width:.55em;height:.55em;border-radius:50%;background:var(--c-practice);display:inline-block;animation:breathe 1.6s ease-in-out infinite;}
+.tabs button.on .liveDot{background:var(--on-c);}
 @media (max-width:900px){
-  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-bottom:0;overflow:visible;}
-  .tabs button{border:1.5px solid var(--line);border-radius:var(--radius-sm);background:var(--paper);margin:0;padding:9px 8px;justify-content:center;font-size:.85em;white-space:normal;text-align:center;line-height:1.2;}
-  .tabs button.on{border-color:var(--orange);background:var(--hl);}
+  .tabs{display:grid;grid-template-columns:1fr 1fr;overflow:visible;}
+  .tabs button{border-radius:var(--radius-sm);padding:9px 8px;justify-content:center;font-size:.85em;white-space:normal;text-align:center;line-height:1.2;}
 }
-.tabs .liveDot{width:.55em;height:.55em;border-radius:50%;background:var(--orange);display:inline-block;}
+.pane{animation:paneIn .26s var(--ease-out);}
+@keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* agenda + notes */
 .anGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;align-items:start;}
 @media (max-width:900px){ .anGrid{grid-template-columns:minmax(0,1fr);} }
-.agItem{display:flex;align-items:flex-start;gap:8px;padding:9px 8px;border-radius:var(--radius-sm);border:1px solid transparent;}
-.agItem + .agItem{margin-top:2px;}
-.agItem.current{background:var(--hl);border-color:var(--orange);}
-.agItem .txt{flex:1 1 auto;min-width:0;cursor:pointer;overflow-wrap:anywhere;padding-top:2px;}
-.agItem.done .txt{text-decoration:line-through;color:var(--muted);}
-.agItem input[type=checkbox]{width:1.15em;height:1.15em;margin-top:.25em;accent-color:var(--orange);flex:0 0 auto;cursor:pointer;}
-.agItem .tools{display:flex;gap:0;opacity:.0;transition:opacity .12s;}
-.agItem:hover .tools,.agItem.current .tools{opacity:1;}
-@media (hover:none){ .agItem .tools{opacity:1;} }
-/* On a phone the item text keeps the full width; the move, edit and delete
-   buttons show on their own row under the current item only. */
-@media (max-width:900px){
+.agList{display:flex;flex-direction:column;gap:3px;}
+.agItem{--ib:var(--paper);position:relative;display:flex;align-items:flex-start;gap:10px;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid transparent;
+  background:var(--ib);transition:background-color .25s var(--ease),border-color .25s var(--ease);}
+.agItem:hover{--ib:color-mix(in srgb, var(--tc) 6%, var(--paper));}
+.agItem.current{--ib:color-mix(in srgb, var(--tc) 13%, var(--paper));border-color:var(--tc);}
+.agItem .txt{flex:1 1 auto;min-width:0;cursor:pointer;overflow-wrap:anywhere;padding-top:1px;}
+.agItem .tools{display:flex;opacity:0;transition:opacity .18s;position:absolute;right:4px;top:50%;transform:translateY(-50%);
+  padding-left:26px;background:linear-gradient(90deg,transparent,var(--ib) 22px);border-radius:var(--radius-sm);}
+.agItem .tools{pointer-events:none;}
+.agItem:hover .tools,.agItem:focus-within .tools{opacity:1;pointer-events:auto;}
+@media (max-width:900px), (hover:none){ .agItem .tools{pointer-events:auto;} }
+/* On a phone or tablet the item text keeps the full width; the move, edit
+   and delete buttons show on their own row under the current item only. */
+@media (max-width:900px), (hover:none){
   .agItem{flex-wrap:wrap;}
   .agItem .txt{flex:1 1 0;}
-  .agItem .tools{display:none;flex:0 0 100%;justify-content:flex-end;opacity:1;}
+  .agItem .tools{display:none;flex:0 0 100%;justify-content:flex-end;opacity:1;position:static;transform:none;padding:0;background:none;}
   .agItem.current .tools{display:flex;}
 }
-.addRow{display:flex;gap:8px;margin-top:10px;}
-.noteGroup + .noteGroup{margin-top:16px;}
-.noteGroup h3{font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700;}
-.note{border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;background:var(--paper);}
-.note + .note{margin-top:8px;}
-.note .by{font-size:.76em;color:var(--muted);display:flex;align-items:center;gap:6px;}
-.note .by b{color:var(--navy);}
+.addRow{display:flex;gap:8px;margin-top:12px;}
+.noteGroup + .noteGroup{margin-top:18px;}
+.noteGroup h3{font-size:.86em;color:var(--tc);margin:0 0 8px;font-weight:700;display:flex;align-items:center;gap:8px;}
+.noteGroup h3::before{content:"";width:.5em;height:.5em;border-radius:2px;background:var(--tc);}
+.notes{display:flex;flex-direction:column;gap:8px;}
+.note{border:1px solid var(--line);border-left:4px solid var(--pc);border-radius:var(--radius-sm);padding:9px 11px;background:var(--paper);}
+.note .by{font-size:.78em;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.note .by b{color:var(--pc);}
 .note .body{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px;}
 .composer{margin-top:14px;}
-.composer .addTo{font-size:.78em;color:var(--muted);margin-bottom:6px;}
-.composer .addTo b{color:var(--navy);}
+.composer .addTo{display:inline-flex;align-items:center;gap:7px;font-size:.8em;color:var(--tc);font-weight:700;margin-bottom:8px;
+  background:color-mix(in srgb, var(--tc) 12%, var(--paper));border-radius:999px;padding:3px 11px 3px 9px;max-width:100%;}
+.composer .addTo::before{content:"";width:.5em;height:.5em;border-radius:2px;background:var(--tc);flex:0 0 auto;}
+.composer .addTo:empty{display:none;}
 
 /* whiteboard */
-.wbBar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;}
-.wbBar .sep{width:1px;height:1.8em;background:var(--line);margin:0 4px;}
-.tool{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:2.4em;height:2.4em;padding:0 10px;border-radius:var(--radius-sm);
-  border:1.5px solid var(--line);background:var(--paper);color:var(--navy);cursor:pointer;font-weight:700;font-size:.85em;}
-.tool.on{border-color:var(--orange);background:var(--hl);}
-.tool .ic{width:1.2em;height:1.2em;}
-.swatch{width:2em;height:2em;border-radius:50%;border:2px solid var(--paper);box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0;}
-.swatch.on{box-shadow:0 0 0 2.5px var(--orange);}
-.sizeDot{border-radius:50%;background:var(--navy);display:inline-block;}
-.boardWrap{position:relative;width:100%;}
-.board{position:relative;width:100%;aspect-ratio:16/10;background:var(--board);border:1px solid var(--line);border-radius:var(--radius);
-  box-shadow:var(--sh-1);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;}
+.wbBar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;background:var(--paper);border:1px solid var(--line);
+  border-radius:999px;padding:6px 8px;box-shadow:var(--sh-1);width:max-content;max-width:100%;}
+@media (max-width:900px){ .wbBar{border-radius:var(--radius);width:auto;} }
+.wbBar .sep{width:1px;height:1.8em;background:var(--line);margin:0 3px;}
+.tool{display:inline-flex;align-items:center;justify-content:center;min-width:2.4em;height:2.4em;padding:0 9px;border-radius:999px;
+  border:1.5px solid transparent;background:transparent;color:var(--navy);cursor:pointer;font-weight:700;font-size:.85em;
+  transition:background-color .18s,border-color .18s,transform .12s var(--ease),color .18s;}
+.tool:hover{background:color-mix(in srgb, var(--c-board) 10%, transparent);}
+.tool:active{transform:scale(.9);}
+.tool.on{background:var(--c-board);color:var(--on-c);}
+.tool .ic{width:1.25em;height:1.25em;}
+.swatch{width:1.9em;height:1.9em;border-radius:50%;border:2.5px solid var(--paper);box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0;
+  transition:transform .18s var(--ease),box-shadow .18s;}
+.swatch:hover{transform:scale(1.1);}
+.swatch.on{box-shadow:0 0 0 2.5px var(--navy);transform:scale(1.12);}
+.sizeDot{border-radius:50%;background:currentColor;display:inline-block;}
+.board{position:relative;width:100%;aspect-ratio:16/10;background-color:var(--board);
+  background-image:radial-gradient(var(--board-dot) 1.2px, transparent 1.4px);background-size:22px 22px;
+  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;}
 .board canvas{position:absolute;inset:0;width:100%;height:100%;}
-.board.pen{cursor:crosshair;} .board.eraser{cursor:cell;} .board.sticky{cursor:copy;}
+.board.pen,.board.marker{cursor:crosshair;} .board.eraser{cursor:none;} .board.sticky{cursor:copy;}
 .stickyLayer{position:absolute;inset:0;pointer-events:none;}
-.stk{position:absolute;width:15%;min-width:120px;pointer-events:auto;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.18);
-  display:flex;flex-direction:column;color:#1d1a00;}
-.stk .grip{height:1.6em;cursor:grab;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 8px;font-size:.7em;
-  color:rgba(0,0,0,.55);touch-action:none;}
-.stk .grip button{border:0;background:transparent;color:rgba(0,0,0,.55);cursor:pointer;font-size:1.4em;line-height:1;padding:0 4px;}
-.stk textarea{border:0;background:transparent;resize:none;min-height:5.5em;padding:2px 8px 8px;font-size:.85em;line-height:1.35;color:#1d1a00;border-radius:0 0 6px 6px;}
-.stk textarea:focus{outline:none;}
+.stk{--dx:0px;--dy:0px;--rot:0deg;--sc:1;position:absolute;width:15%;min-width:120px;pointer-events:auto;border-radius:4px 4px 10px 4px;
+  box-shadow:0 2px 3px rgba(0,0,0,.12),0 8px 18px rgba(0,0,0,.14);display:flex;flex-direction:column;color:#1d1a00;
+  transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(var(--sc));
+  transition:left .32s var(--ease),top .32s var(--ease),transform .2s var(--ease),box-shadow .2s,background-color .2s;
+  animation:stkIn .34s var(--ease-out);}
+.stk.dragging{transition:transform .12s var(--ease),box-shadow .2s;--sc:1.04;box-shadow:0 6px 10px rgba(0,0,0,.14),0 22px 40px rgba(0,0,0,.24);z-index:5;}
+.stk.leaving{animation:stkOut .22s var(--ease) forwards;pointer-events:none;}
+@keyframes stkIn{from{opacity:0;transform:translate(0,8px) rotate(var(--rot)) scale(.6)}to{opacity:1}}
+@keyframes stkOut{to{opacity:0;transform:rotate(var(--rot)) scale(.6)}}
+.stk .grip{height:1.7em;cursor:grab;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 9px;font-size:.7em;font-weight:700;
+  color:rgba(0,0,0,.5);touch-action:none;}
+.stk.dragging .grip{cursor:grabbing;}
+.stk .grip button{border:0;background:transparent;color:rgba(0,0,0,.5);cursor:pointer;font-size:1.5em;line-height:1;padding:0 4px;border-radius:6px;}
+.stk .grip button:hover{background:rgba(0,0,0,.08);}
+.stk textarea{border:0;background:transparent;resize:none;min-height:5.5em;padding:2px 9px 9px;font-size:.88em;line-height:1.35;color:#1d1a00;box-shadow:none;}
+.stk textarea:focus{outline:none;box-shadow:none;}
 .board.readonly .stk .grip{cursor:default;}
 
 /* action items */
 .aiForm{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr) minmax(0,.9fr) auto;gap:8px;align-items:center;}
 @media (max-width:900px){ .aiForm{grid-template-columns:minmax(0,1fr);} }
-.ai{display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line-soft);}
+.aiList{display:flex;flex-direction:column;}
+.ai{display:flex;align-items:flex-start;gap:12px;padding:11px 6px;border-bottom:1px solid var(--line-soft);transition:background-color .2s;border-radius:var(--radius-sm);}
+.ai:hover{background:color-mix(in srgb, var(--tc) 5%, transparent);}
 .ai:last-child{border-bottom:0;}
-.ai input[type=checkbox]{width:1.25em;height:1.25em;margin-top:.2em;accent-color:var(--greenb);flex:0 0 auto;cursor:pointer;}
 .ai .txt{overflow-wrap:anywhere;cursor:text;}
-.ai.done .txt{text-decoration:line-through;color:var(--muted);}
-.ai .sub{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:3px;font-size:.78em;color:var(--muted);}
-.ai .who{font-weight:700;color:var(--navy);}
-.ai .due.late{color:var(--redb);font-weight:700;}
+.ai .sub{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:5px;font-size:.78em;color:var(--muted);align-items:center;}
+.ai .who{font-weight:700;color:var(--pc);background:color-mix(in srgb, var(--pc) 12%, var(--paper));border-radius:999px;padding:1px 9px;}
+.ai .due{border-radius:999px;padding:1px 9px;background:var(--line-soft);}
+.ai .due.soon{background:color-mix(in srgb, var(--orange) 16%, var(--paper));color:var(--orange);font-weight:700;}
+.ai .due.late{background:color-mix(in srgb, var(--red) 14%, var(--paper));color:var(--red);font-weight:700;}
+.ai.done .due{background:var(--line-soft);color:var(--muted);font-weight:400;}
 
 /* practice portal */
 .ppBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
-.ppBar .status{font-size:.85em;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:8px;}
-.ppFrameWrap{position:relative;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh-1);background:var(--paper);
+.ppBar .status{font-size:.88em;font-weight:700;color:var(--tc);display:inline-flex;align-items:center;gap:8px;}
+.ppBar .status .ic{width:1.15em;height:1.15em;}
+.ppFrameWrap{position:relative;border:1px solid var(--line);border-top:4px solid var(--tc);border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh-1);background:var(--paper);
   height:520px;min-height:360px;overscroll-behavior:contain;}
 .ppFrameWrap iframe{width:100%;height:100%;border:0;display:block;}
-.ppExitBtn{display:none;}
+.ppExitBtn{display:none !important;}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:700;color:var(--navy);}
 /* Full screen: the practice copy takes the whole screen under a slim bar,
    and the meeting page behind it cannot scroll. Phones always use it. */
 body.ppFull{overflow:hidden;}
 body.ppFull .ppStage{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--cream);
-  padding:max(6px,env(safe-area-inset-top)) 8px 0 8px;}
+  padding:max(6px,env(safe-area-inset-top)) 8px 0 8px;animation:paneIn .26s var(--ease-out);}
 body.ppFull .ppBar{margin:0;padding:4px 2px 6px;flex:0 0 auto;}
 body.ppFull .ppFrameWrap{flex:1 1 auto;height:auto !important;min-height:0;border-radius:var(--radius) var(--radius) 0 0;border-bottom:0;}
-body.ppFull .ppExitBtn{display:inline-flex;}
+body.ppFull .ppExitBtn{display:inline-flex !important;}
 body.ppFull .ppFullBtn{display:none;}
 body.ppTab:not(.ppFull){overscroll-behavior:none;}
 @media (max-width:900px){ body.ppFull .ppLbl{display:none;} body.ppFull .ppBar{font-size:.85em;flex-wrap:nowrap;overflow-x:auto;} }
-.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:600;color:var(--navy);}
-.switch input{width:1.15em;height:1.15em;accent-color:var(--orange);}
 
-/* modal */
-.overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;}
-.modal{background:var(--paper);border-radius:var(--radius);box-shadow:var(--sh-2);width:100%;max-width:440px;padding:18px;}
-.modal h2{font-family:var(--f-display);font-weight:400;margin:0 0 12px;color:var(--navy);font-size:1.4em;}
+/* modal + toast */
+.overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;
+  animation:fadeIn .18s ease-out;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
+.modal{background:var(--paper);border-radius:var(--radius);box-shadow:var(--sh-2);width:100%;max-width:440px;padding:20px;border-top:5px solid var(--tc);
+  animation:modalIn .28s var(--ease-out);}
+.modal h2{font-family:var(--f-display);font-weight:400;margin:0 0 12px;color:var(--navy);font-size:1.45em;}
 .modal .msg{margin:0 0 14px;white-space:pre-wrap;}
-.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
 .toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--navy);color:#fff;
-  padding:10px 16px;border-radius:var(--radius-sm);box-shadow:var(--sh-2);z-index:90;font-weight:600;font-size:.9em;max-width:calc(100vw - 32px);}
+  padding:11px 18px;border-radius:999px;box-shadow:var(--sh-2);z-index:90;font-weight:600;font-size:.9em;max-width:calc(100vw - 32px);
+  animation:toastIn .3s var(--ease-out);border-left:5px solid var(--tc);}
+.toast.out{transition:opacity .25s,transform .25s;opacity:0;transform:translate(-50%,8px);}
 html.dark .toast{color:var(--paper);}
+@keyframes toastIn{from{opacity:0;transform:translate(-50%,12px)}to{opacity:1;transform:translate(-50%,0)}}
 .gate{max-width:460px;margin:60px auto;text-align:center;}
 .gate h1{font-family:var(--f-display);font-weight:400;color:var(--navy);}
-.gate .err{font-family:var(--f-data);font-size:.8em;color:var(--redb);margin-top:10px;overflow-wrap:anywhere;}
+.gate .err{font-size:.8em;color:var(--red);margin-top:10px;overflow-wrap:anywhere;}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001ms !important;animation-iteration-count:1 !important;transition-duration:.001ms !important;}
+}
 </style>
 </head>
-<body>
+<body data-tab="agenda">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
@@ -258,9 +349,9 @@ html.dark .toast{color:var(--paper);}
   <symbol id="i-sticky" viewBox="0 0 24 24"><path d="M4 4h16v10l-6 6H4V4zM14 20v-6h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
-  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 21l4-4 4 4M7 13l3-3 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-portal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3 9h18M8 4v5" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
   <symbol id="i-cast" viewBox="0 0 24 24"><path d="M3 8V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2h-6M3 12a8 8 0 018 8M3 16a4 4 0 014 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="3.5" cy="20" r="1" fill="currentColor"/></symbol>
   <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -304,9 +395,12 @@ const CFG_KEY='gh_portal_sync_cfg';
 const PORTAL_DB_KEY='gh_portal_db_v1';
 const SUBS=['agenda','notes','actions','strokes','stickies','presence'];
 const COLORS=['#0f2647','#e8791a','#c0392b','#1f8a55','#2f6fd6','#7b4bc4'];
-const STICKY_COLORS=['#fff27a','#ffd0c2','#d2f2df','#d6e4ff','#f1dcff'];
+const PEOPLE=['#e8791a','#2f6fd6','#1f8a55','#c0392b','#7b4bc4','#0e8f9a','#b8860b'];
+const STICKY_COLORS=['#fff27a','#ffc9a8','#bdf0cf','#c9dcff','#ead3ff'];
 const SIZES=[2.5,5,10];
 const PRESENCE_MS=20000, ALIVE_MS=65000;
+const RM=window.matchMedia('(prefers-reduced-motion: reduce)');
+const EASE='cubic-bezier(.2,.8,.2,1)';
 
 let db=null, ME=null, USERS={};
 let MEETINGS=[], LIST_UNSUB=null;
@@ -323,27 +417,44 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function fmtDate(ms){ return new Date(ms).toLocaleDateString([], {weekday:'short', month:'short', day:'numeric', year:'numeric'}); }
 function fmtTime(ms){ return new Date(ms).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
 function fmtShortDate(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString([], {month:'short', day:'numeric'}); }
-function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function colorFor(name){ let h=0; for(const c of String(name)) h=(h*31+c.charCodeAt(0))>>>0; return COLORS[h%COLORS.length]; }
+function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayISO(){ return isoOf(new Date()); }
+function colorFor(name){
+  const team=Object.values(USERS||{}).map(u=>u.username).filter(Boolean).sort();
+  const i=team.indexOf(name);
+  if(i>=0) return PEOPLE[i%PEOPLE.length];
+  let h=0; for(const c of String(name||'')) h=(h*31+c.charCodeAt(0))>>>0; return PEOPLE[h%PEOPLE.length];
+}
+function nameOfUid(u){ const r=Object.values(USERS||{}).find(x=>x.uid===u); return r ? r.username : ''; }
 function toast(msg){
   const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t);
-  setTimeout(()=>t.remove(), 2600);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(), 300); }, 2600);
+}
+function closeModalAnimated(cb){
+  const ov=document.querySelector('#modalRoot .overlay');
+  if(!ov || RM.matches){ $('modalRoot').innerHTML=''; cb&&cb(); return; }
+  ov.style.pointerEvents='none';
+  ov.animate([{opacity:1},{opacity:0}], {duration:140, easing:'ease-in'}).onfinish=()=>{ $('modalRoot').innerHTML=''; cb&&cb(); };
 }
 function askYesNo(title, msg, yesLabel, danger){
   return new Promise(res=>{
     $('modalRoot').innerHTML=`<div class="overlay"><div class="modal"><h2>${esc(title)}</h2>${msg?`<p class="msg">${esc(msg)}</p>`:''}
-      <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn ${danger?'danger':''}" id="mYes">${esc(yesLabel||'OK')}</button></div></div></div>`;
-    const done=v=>{ $('modalRoot').innerHTML=''; res(v); };
+      <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn ${danger?'danger':'tc'}" id="mYes">${esc(yesLabel||'OK')}</button></div></div></div>`;
+    let settled=false;
+    const done=v=>{ if(settled) return; settled=true; res(v); closeModalAnimated(); };
     $('mNo').onclick=()=>done(false); $('mYes').onclick=()=>done(true);
+    $('mYes').focus();
+    document.querySelector('#modalRoot .overlay').onclick=e=>{ if(e.target.classList.contains('overlay')) done(false); };
   });
 }
 function askText(title, value, yesLabel){
   return new Promise(res=>{
     $('modalRoot').innerHTML=`<div class="overlay"><div class="modal"><h2>${esc(title)}</h2>
-      <input type="text" id="mText" value="${esc(value||'')}" maxlength="120">
-      <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn" id="mYes">${esc(yesLabel||'Save')}</button></div></div></div>`;
+      <input type="text" id="mText" value="${esc(value||'')}" maxlength="200">
+      <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn tc" id="mYes">${esc(yesLabel||'Save')}</button></div></div></div>`;
     const inp=$('mText'); setTimeout(()=>{ inp.focus(); inp.select(); }, 30);
-    const done=v=>{ $('modalRoot').innerHTML=''; res(v); };
+    let settled=false;
+    const done=v=>{ if(settled) return; settled=true; res(v); closeModalAnimated(); };
     $('mNo').onclick=()=>done(null);
     $('mYes').onclick=()=>done(inp.value.trim());
     inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); done(inp.value.trim()); } if(e.key==='Escape') done(null); };
@@ -351,7 +462,7 @@ function askText(title, value, yesLabel){
 }
 function gate(title, detail){
   $('main').innerHTML=`<div class="gate panel"><h1>${esc(title)}</h1>
-    <a class="btn" href="${PORTAL_URL}">Open the Portal</a>${detail?`<div class="err">${esc(detail)}</div>`:''}</div>`;
+    <a class="btn orange" href="${PORTAL_URL}">Open the Portal</a>${detail?`<div class="err">${esc(detail)}</div>`:''}</div>`;
 }
 function fail(e){
   console.error(e);
@@ -361,6 +472,58 @@ const ROOT=()=>db.collection('gh_portal').doc('meetings').collection('items');
 const MREF=()=>ROOT().doc(MTG_ID);
 const SUB=n=>MREF().collection(n);
 const readOnly=()=>!MTG || MTG.status==='ended';
+
+/* ---------- lists that move smoothly ----------
+   Lists are updated item by item instead of being redrawn. Items that move
+   glide to their new place, new ones fade in, and removed ones fold away, so
+   a change made on another device is easy to follow rather than a jump. */
+function keyed(container, items, key, make, patch){
+  if(!container) return;
+  const animate=!RM.matches && container._ready;
+  const old=new Map();
+  [...container.children].forEach(el=>{ if(el.dataset.k && !el._leaving) old.set(el.dataset.k, el); else if(!el._leaving) el.remove(); });
+  const first=new Map();
+  if(animate) old.forEach((el,k)=>first.set(k, el.getBoundingClientRect()));
+  const seen=new Set(), added=[];
+  let prev=null;
+  items.forEach((it,i)=>{
+    const k=String(key(it)); seen.add(k);
+    let el=old.get(k);
+    if(!el){
+      const t=document.createElement('template'); t.innerHTML=make(it,i).trim();
+      el=t.content.firstElementChild; el.dataset.k=k; added.push(el);
+    }
+    if(patch) patch(el, it, i, items.length);
+    const want=prev ? prev.nextSibling : container.firstChild;
+    if(want!==el) container.insertBefore(el, want);
+    prev=el;
+  });
+  old.forEach((el,k)=>{ if(!seen.has(k)) leave(el, animate); });
+  container._ready=true;
+  if(!animate) return;
+  old.forEach((el,k)=>{
+    if(!seen.has(k)) return;
+    const a=first.get(k), b=el.getBoundingClientRect();
+    const dx=a.left-b.left, dy=a.top-b.top;
+    if(Math.abs(dx)>.5 || Math.abs(dy)>.5) el.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}], {duration:320, easing:EASE});
+  });
+  added.forEach(el=>el.animate([{opacity:0, transform:'translateY(8px) scale(.98)'},{opacity:1, transform:'none'}], {duration:280, easing:EASE}));
+}
+function leave(el, animate){
+  if(!animate){ el.remove(); return; }
+  el._leaving=true;
+  const h=el.offsetHeight, cs=getComputedStyle(el);
+  el.style.overflow='hidden';
+  el.animate([{opacity:1, height:h+'px', paddingTop:cs.paddingTop, paddingBottom:cs.paddingBottom},
+              {opacity:0, height:'0px', paddingTop:'0px', paddingBottom:'0px', marginTop:'0px', marginBottom:'0px'}],
+             {duration:240, easing:EASE}).onfinish=()=>el.remove();
+}
+function emptyState(container, show, text){
+  if(!container) return;
+  let e=container.parentNode.querySelector(`[data-empty-for="${container.id}"]`);
+  if(show && !e){ e=document.createElement('div'); e.className='emptyMsg'; e.dataset.emptyFor=container.id; e.textContent=text; container.after(e); }
+  if(!show && e) e.remove();
+}
 
 /* ---------- start-up: same Firebase project and sign-in as the portal ---------- */
 function boot(){
@@ -377,20 +540,21 @@ function boot(){
     if(!user){ ME=null; stopAll(); gate('Sign in to the portal on this device first.'); return; }
     const rec=Object.values(USERS).find(u=>u.uid===user.uid);
     ME={uid:user.uid, name:rec ? rec.username : (user.email||'').split('@')[0], isAdmin:!!(rec && rec.isAdmin)};
-    $('whoami').textContent=ME.name;
+    showMe();
     // The portal's user list, for names and action item assignees.
     db.collection('gh_portal').doc('main').get().then(s=>{
       const raw=s.exists && s.data().meta;
       if(!raw) return;
       try{
         const u=JSON.parse(raw).users||{};
-        if(Object.keys(u).length){ USERS=u; const r=Object.values(u).find(x=>x.uid===ME.uid); if(r){ ME.name=r.username; ME.isAdmin=!!r.isAdmin; $('whoami').textContent=ME.name; } if(MTG) render(); }
+        if(Object.keys(u).length){ USERS=u; const r=Object.values(u).find(x=>x.uid===ME.uid); if(r){ ME.name=r.username; ME.isAdmin=!!r.isAdmin; showMe(); } if(MTG) render(); }
       }catch(e){}
     }).catch(()=>{});
     route();
   });
   window.addEventListener('hashchange', route);
 }
+function showMe(){ $('whoami').textContent=ME.name; }
 function stopAll(){ leaveMeeting(); if(LIST_UNSUB){ LIST_UNSUB(); LIST_UNSUB=null; } }
 function route(){
   if(!ME) return;
@@ -402,7 +566,11 @@ function route(){
 function showList(){
   $('backLink').href='index.html'; $('backText').textContent='Dashboard';
   $('backLink').onclick=null;
+  document.body.dataset.tab='agenda';
   document.title='Good & Handy Meetings';
+  $('main').innerHTML=`<div class="listHead"><h1>Meetings</h1><button class="btn orange" onclick="newMeeting()">${icon('plus')}New Meeting</button></div>
+    <div id="liveWrap"><div class="sectionLabel">Live <span class="count" id="liveCount">0</span></div><div id="liveList"></div></div>
+    <div class="sectionLabel">Past Meetings <span class="count" id="pastCount">0</span></div><div id="pastList"></div>`;
   renderList();
   if(LIST_UNSUB) return;
   LIST_UNSUB=ROOT().onSnapshot(snap=>{
@@ -411,16 +579,20 @@ function showList(){
   }, e=>{ console.error(e); if(!MTG_ID) gate('Meetings could not connect.', e && (e.code||e.message)); });
 }
 function renderList(){
+  if(!$('liveList')) return;
   const live=MEETINGS.filter(m=>m.status!=='ended'), past=MEETINGS.filter(m=>m.status==='ended');
-  const row=m=>`<div class="mtgRow ${m.status!=='ended'?'live':''}" onclick="location.hash='m=${m.id}'">
-      <div class="grow"><div class="name">${esc(m.title||'Meeting')}</div>
-      <div class="meta">${fmtDate(m.createdAt||Date.now())}, ${fmtTime(m.createdAt||Date.now())}${m.createdByName?', '+esc(m.createdByName):''}</div></div>
-      ${m.status!=='ended'?'<span class="liveTag">Live</span>':'<span class="endedTag">Ended</span>'}
-    </div>`;
-  $('main').innerHTML=`<div class="listHead"><h1>Meetings</h1><button class="btn orange" onclick="newMeeting()">${icon('plus')}New Meeting</button></div>
-    ${live.length?`<div class="sectionLabel">Live</div>${live.map(row).join('')}`:''}
-    <div class="sectionLabel">Past Meetings</div>
-    ${past.length?past.map(row).join(''):'<div class="empty">No past meetings.</div>'}`;
+  const make=m=>`<div class="mtgRow" onclick="location.hash='m=${m.id}'"><div class="grow"><div class="name"></div><div class="meta"></div></div><span class="tag"></span></div>`;
+  const patch=(el,m)=>{
+    el.classList.toggle('live', m.status!=='ended');
+    el.querySelector('.name').textContent=m.title||'Meeting';
+    el.querySelector('.meta').textContent=fmtDate(m.createdAt||Date.now())+', '+fmtTime(m.createdAt||Date.now())+(m.createdByName?', '+m.createdByName:'');
+    const t=el.querySelector('.tag'); t.className='tag '+(m.status!=='ended'?'liveTag':'endedTag'); t.textContent=m.status!=='ended'?'Live':'Ended';
+  };
+  $('liveWrap').classList.toggle('hidden', !live.length);
+  $('liveCount').textContent=live.length; $('pastCount').textContent=past.length;
+  keyed($('liveList'), live, m=>m.id, make, patch);
+  keyed($('pastList'), past, m=>m.id, make, patch);
+  emptyState($('pastList'), !past.length, 'No past meetings.');
 }
 async function newMeeting(){
   const d=new Date();
@@ -441,7 +613,6 @@ function openMeeting(id){
   DATA={agenda:[], notes:[], actions:[], strokes:[], stickies:[], presence:[]};
   try{ TAB=sessionStorage.getItem('gh_mtg_tab_'+id)||'agenda'; }catch(e){ TAB='agenda'; }
   $('backLink').href='#'; $('backText').textContent='Meetings';
-  $('topTitle').textContent='';
   $('backLink').onclick=e=>{ e.preventDefault(); location.hash=''; };
   $('main').innerHTML='<div class="small" style="padding:20px">Loading…</div>';
   MTG_UNSUBS.push(MREF().onSnapshot(s=>{
@@ -464,6 +635,7 @@ function leaveMeeting(){
   stopPresence();
   if(MTG_ID && db && ME){ try{ SUB('presence').doc(ME.uid).delete().catch(()=>{}); }catch(e){} }
   ppTeardown();
+  INK.remote.clear(); INK.fading=[]; DRAW=null;
   MTG=null; MTG_ID=null;
   document.body.classList.remove('ppFull','ppTab');
 }
@@ -496,24 +668,33 @@ function render(){
           :`<button class="btn secondary sm" onclick="endMeeting()">End Meeting</button>`}
       ${(ME.isAdmin || MTG.createdBy===ME.uid)?`<button class="iconBtn" title="Delete meeting" aria-label="Delete meeting" onclick="deleteMeeting()">${icon('trash')}</button>`:''}
     </div>
-    <div class="tabs" id="tabs"></div>
+    <div class="tabs" id="tabs">${TABS.map(([k,ic,l])=>`<button data-k="${k}" style="--c:var(--c-${k})" onclick="showTab('${k}')">${icon(ic)}${l}<span class="liveDot hidden"></span></button>`).join('')}</div>
     <section id="pane-agenda" class="pane"></section>
     <section id="pane-board" class="pane"></section>
     <section id="pane-actions" class="pane"></section>
     <section id="pane-practice" class="pane"></section>`;
   $('mtgTitle').onclick=renameMeeting;
-  renderPeople(); renderTabs();
+  renderPeople();
   renderAgendaPane(); renderBoardPane(); renderActionsPane(); renderPracticePane();
-  showTab(TAB);
+  showTab(TAB, true);
 }
 function renderTabs(){
-  const presenting=presenterLive();
-  $('tabs').innerHTML=TABS.map(([k,ic,l])=>`<button class="${k===TAB?'on':''}" onclick="showTab('${k}')">${icon(ic)}${l}${k==='practice'&&presenting?'<span class="liveDot"></span>':''}</button>`).join('');
+  const presenting=!!presenterLive();
+  document.querySelectorAll('#tabs button').forEach(b=>{
+    b.classList.toggle('on', b.dataset.k===TAB);
+    const d=b.querySelector('.liveDot'); if(d) d.classList.toggle('hidden', !(b.dataset.k==='practice' && presenting));
+  });
 }
-function showTab(k){
+function showTab(k, initial){
+  const changed=k!==TAB;
   TAB=k;
   try{ sessionStorage.setItem('gh_mtg_tab_'+MTG_ID, k); }catch(e){}
-  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('hidden', p.id!=='pane-'+k));
+  document.body.dataset.tab=k;
+  document.querySelectorAll('.pane').forEach(p=>{
+    const show=p.id==='pane-'+k;
+    if(show && (changed || initial)){ p.classList.remove('hidden'); p.style.animation='none'; void p.offsetWidth; p.style.animation=''; }
+    else p.classList.toggle('hidden', !show);
+  });
   renderTabs();
   if(k==='board') requestAnimationFrame(sizeBoard);
   document.body.classList.toggle('ppTab', k==='practice');
@@ -528,7 +709,9 @@ function showTab(k){
 }
 function renderPeople(){
   const el=$('people'); if(!el) return;
-  el.innerHTML=livePeople().map(p=>`<span class="chip ${p.id===ME.uid?'me':''}"><span class="dot" style="background:${colorFor(p.name)}">${esc(String(p.name||'?').slice(0,1))}</span>${esc(p.name)}</span>`).join('');
+  keyed(el, livePeople(), p=>p.id,
+    p=>`<span class="chip" style="--pc:${colorFor(p.name)}"><span class="dot"></span><span class="nm"></span></span>`,
+    (c,p)=>{ c.classList.toggle('me', p.id===ME.uid); c.querySelector('.dot').textContent=String(p.name||'?').slice(0,1); c.querySelector('.nm').textContent=p.name; });
 }
 function onMeetingChange(prev){
   if(prev.status!==MTG.status){ render(); return; }
@@ -541,9 +724,9 @@ function onDataChange(n){
   if(n==='agenda'){ renderAgendaList(); renderNotes(); }
   else if(n==='notes') renderNotes();
   else if(n==='actions') renderActions();
-  else if(n==='strokes'){ drawBoard(); }
+  else if(n==='strokes') onStrokes();
   else if(n==='stickies') renderStickies();
-  else if(n==='presence'){ renderPeople(); drawLive(); ppRenderBar(); renderTabs(); }
+  else if(n==='presence'){ renderPeople(); onPresenceInk(); ppRenderBar(); renderTabs(); }
 }
 async function renameMeeting(){
   const t=await askText('Rename Meeting', MTG.title||'', 'Save');
@@ -559,7 +742,7 @@ function setStatus(st){
 }
 async function deleteMeeting(){
   if(!await askYesNo('Delete this meeting?', 'Its agenda, notes, whiteboard and action items are deleted for everyone.', 'Delete', true)) return;
-  const id=MTG_ID, ref=MREF();
+  const ref=MREF();
   location.hash='';
   try{
     for(const n of SUBS){
@@ -579,14 +762,14 @@ function renderAgendaPane(){
   const ro=readOnly();
   $('pane-agenda').innerHTML=`<div class="anGrid">
     <div class="panel"><div class="panelTitle">Agenda <span class="count" id="agCount">0</span></div>
-      <div id="agList"></div>
-      ${ro?'':`<div class="addRow"><input type="text" id="agNew" maxlength="200" aria-label="New agenda item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda();}"><button class="btn" onclick="addAgenda()" aria-label="Add agenda item">${icon('plus')}Add</button></div>`}
+      <div class="agList" id="agList"></div>
+      ${ro?'':`<div class="addRow"><input type="text" id="agNew" maxlength="200" aria-label="New agenda item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda();}"><button class="btn tc" onclick="addAgenda()" aria-label="Add agenda item">${icon('plus')}Add</button></div>`}
     </div>
     <div class="panel"><div class="panelTitle">Notes <span class="count" id="noteCount">0</span></div>
       <div id="noteList"></div>
       ${ro?'':`<div class="composer"><div class="addTo" id="addTo"></div>
         <textarea id="noteNew" aria-label="New note" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();addNote();}"></textarea>
-        <div class="row" style="justify-content:flex-end;margin-top:8px;"><button class="btn" onclick="addNote()">${icon('plus')}Add Note</button></div></div>`}
+        <div class="row" style="justify-content:flex-end;margin-top:8px;"><button class="btn tc" onclick="addNote()">${icon('plus')}Add Note</button></div></div>`}
     </div></div>`;
   renderAgendaList(); renderNotes();
 }
@@ -595,19 +778,27 @@ function renderAgendaList(){
   const el=$('agList'); if(!el) return;
   const ro=readOnly(), list=agSorted();
   $('agCount').textContent=list.length;
-  el.innerHTML=list.length ? list.map((a,i)=>`<div class="agItem ${a.done?'done':''} ${MTG.currentAgenda===a.id?'current':''}">
-      <input type="checkbox" ${a.done?'checked':''} ${ro?'disabled':''} aria-label="Done" onchange="SUB('agenda').doc('${a.id}').update({done:this.checked}).catch(fail)">
-      <div class="txt" onclick="${ro?'':`setCurrentAgenda('${a.id}')`}">${esc(a.text)}</div>
+  keyed(el, list, a=>a.id, a=>`<div class="agItem">
+      <input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="SUB('agenda').doc('${a.id}').update({done:this.checked}).catch(fail)">
+      <div class="txt" onclick="${ro?'':`setCurrentAgenda('${a.id}')`}"><span class="strike"></span></div>
       ${ro?'':`<div class="tools">
-        <button class="iconBtn" aria-label="Move up" ${i===0?'disabled':''} onclick="moveAgenda('${a.id}',-1)">${icon('up')}</button>
-        <button class="iconBtn" aria-label="Move down" ${i===list.length-1?'disabled':''} onclick="moveAgenda('${a.id}',1)">${icon('down')}</button>
+        <button class="iconBtn up" aria-label="Move up" onclick="moveAgenda('${a.id}',-1)">${icon('up')}</button>
+        <button class="iconBtn down" aria-label="Move down" onclick="moveAgenda('${a.id}',1)">${icon('down')}</button>
         <button class="iconBtn" aria-label="Edit" onclick="editAgenda('${a.id}')">${icon('pen')}</button>
         <button class="iconBtn" aria-label="Delete" onclick="deleteAgenda('${a.id}')">${icon('x')}</button></div>`}
-    </div>`).join('') : '<div class="small">No agenda items.</div>';
+    </div>`, (n,a,i,len)=>{
+      n.classList.toggle('done', !!a.done);
+      n.classList.toggle('current', MTG.currentAgenda===a.id);
+      const c=n.querySelector('input'); if(c.checked!==!!a.done) c.checked=!!a.done;
+      const s=n.querySelector('.strike'); if(s.textContent!==a.text) s.textContent=a.text;
+      const up=n.querySelector('.up'), dn=n.querySelector('.down');
+      if(up) up.disabled=i===0; if(dn) dn.disabled=i===len-1;
+    });
+  emptyState(el, !list.length, 'No agenda items yet.');
   const addTo=$('addTo');
   if(addTo){
     const cur=DATA.agenda.find(a=>a.id===MTG.currentAgenda);
-    addTo.innerHTML=cur?`<b>${esc(cur.text)}</b>`:'';
+    addTo.textContent=cur?cur.text:'';
   }
 }
 function addAgenda(){
@@ -644,24 +835,28 @@ function renderNotes(){
   const notes=DATA.notes.slice().sort((a,b)=>(a.at||0)-(b.at||0));
   const groups=agSorted().map(a=>({id:a.id, title:a.text, list:notes.filter(n=>n.agendaId===a.id)})).filter(g=>g.list.length);
   const loose=notes.filter(n=>!n.agendaId || !DATA.agenda.some(a=>a.id===n.agendaId));
-  if(loose.length) groups.push({id:'', title:'General', list:loose});
-  const one=n=>{
-    const mine=n.by===ME.uid;
-    if(NOTE_EDIT===n.id) return `<div class="note"><textarea id="noteEdit">${esc(n.text)}</textarea>
-      <div class="row" style="justify-content:flex-end;margin-top:6px;"><button class="btn secondary sm" onclick="NOTE_EDIT=null;renderNotes()">Cancel</button><button class="btn sm" onclick="saveNoteEdit('${n.id}')">Save</button></div></div>`;
-    return `<div class="note"><div class="by"><b>${esc(n.byName||'')}</b><span style="white-space:nowrap">${fmtTime(n.at||0)}${n.editedAt?', edited':''}</span><span class="grow"></span>
-      ${(!ro&&mine)?`<button class="iconBtn" aria-label="Edit note" onclick="NOTE_EDIT='${n.id}';renderNotes()">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button>`:''}</div>
-      <div class="body">${esc(n.text)}</div></div>`;
-  };
-  // Keep a note being edited from being thrown away by someone else's change.
-  const editing=$('noteEdit'); const draft=editing?editing.value:null;
-  el.innerHTML=groups.length ? groups.map(g=>`<div class="noteGroup"><h3>${esc(g.title)}</h3>${g.list.map(one).join('')}</div>`).join('') : '<div class="small">No notes.</div>';
-  if(draft!==null && $('noteEdit')) $('noteEdit').value=draft;
+  if(loose.length) groups.push({id:'_general', title:'General', list:loose});
+  keyed(el, groups, g=>g.id, g=>`<div class="noteGroup"><h3></h3><div class="notes" id="ng-${g.id}"></div></div>`, (gEl,g)=>{
+    gEl.querySelector('h3').textContent=g.title;
+    keyed(gEl.querySelector('.notes'), g.list, n=>n.id+(NOTE_EDIT===n.id?':e':''), n=>{
+      const mine=n.by===ME.uid;
+      if(NOTE_EDIT===n.id) return `<div class="note" style="--pc:${colorFor(n.byName)}"><textarea id="noteEdit">${esc(n.text)}</textarea>
+        <div class="row" style="justify-content:flex-end;margin-top:6px;"><button class="btn secondary sm" onclick="NOTE_EDIT=null;renderNotes()">Cancel</button><button class="btn tc sm" onclick="saveNoteEdit('${n.id}')">Save</button></div></div>`;
+      return `<div class="note" style="--pc:${colorFor(n.byName)}"><div class="by"><b>${esc(n.byName||'')}</b><span class="tm" style="white-space:nowrap"></span><span class="grow"></span>
+        ${(!ro&&mine)?`<button class="iconBtn" aria-label="Edit note" onclick="NOTE_EDIT='${n.id}';renderNotes();setTimeout(()=>{const t=document.getElementById('noteEdit');if(t){t.focus();}},20)">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button>`:''}</div>
+        <div class="body"></div></div>`;
+    }, (nEl,n)=>{
+      if(NOTE_EDIT===n.id) return;
+      nEl.querySelector('.tm').textContent=fmtTime(n.at||0)+(n.editedAt?', edited':'');
+      const b=nEl.querySelector('.body'); if(b.textContent!==n.text) b.textContent=n.text;
+    });
+  });
+  emptyState(el, !groups.length, 'No notes yet.');
 }
 function addNote(){
   const inp=$('noteNew'); const text=(inp.value||'').trim(); if(!text) return;
   SUB('notes').add({text, agendaId:MTG.currentAgenda||'', by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
-  inp.value='';
+  inp.value=''; inp.focus();
 }
 function saveNoteEdit(id){
   const t=($('noteEdit').value||'').trim(); NOTE_EDIT=null;
@@ -678,37 +873,51 @@ function renderActionsPane(){
   const ro=readOnly();
   const opts=['<option value="">Unassigned</option>'].concat(userNames().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`)).join('');
   $('pane-actions').innerHTML=`<div class="panel">
-    ${ro?'':`<div class="aiForm" style="margin-bottom:14px;">
+    ${ro?'':`<div class="aiForm" style="margin-bottom:16px;">
       <input type="text" class="aiText" id="aiText" maxlength="300" aria-label="Action item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAction();}">
       <select id="aiWho" aria-label="Assigned to">${opts}</select>
       <input type="date" id="aiDue" aria-label="Due date">
-      <button class="btn" onclick="addAction()">${icon('plus')}Add</button></div>`}
-    <div class="panelTitle">Open <span class="count" id="aiOpenCount">0</span></div><div id="aiOpen"></div>
-    <div class="panelTitle" style="margin-top:18px;">Done <span class="count" id="aiDoneCount">0</span></div><div id="aiDone"></div>
+      <button class="btn tc" onclick="addAction()">${icon('plus')}Add</button></div>`}
+    <div class="panelTitle">Open <span class="count" id="aiOpenCount">0</span></div><div class="aiList" id="aiOpen"></div>
+    <div class="panelTitle" style="margin-top:20px;">Done <span class="count" id="aiDoneCount">0</span></div><div class="aiList" id="aiDone"></div>
   </div>`;
   renderActions();
 }
 function renderActions(){
   if(!$('aiOpen')) return;
   const ro=readOnly(), today=todayISO();
+  const soon=(()=>{ const d=new Date(); d.setDate(d.getDate()+2); return isoOf(d); })();
   const open=DATA.actions.filter(a=>!a.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0));
   const done=DATA.actions.filter(a=>a.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  const one=a=>`<div class="ai ${a.done?'done':''}">
-      <input type="checkbox" ${a.done?'checked':''} ${ro?'disabled':''} aria-label="Done" onchange="toggleAction('${a.id}',this.checked)">
-      <div class="grow"><div class="txt" ${ro?'':`onclick="editAction('${a.id}')"`}>${esc(a.text)}</div>
-        <div class="sub">${a.assignee?`<span class="who">${esc(a.assignee)}</span>`:''}${a.due?`<span class="due ${(!a.done&&a.due<today)?'late':''}">${fmtShortDate(a.due)}</span>`:''}${a.done&&a.doneBy?`<span>${esc(a.doneBy)}</span>`:''}</div></div>
+  const make=a=>`<div class="ai">
+      <input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="toggleAction('${a.id}',this.checked)">
+      <div class="grow"><div class="txt" ${ro?'':`onclick="editAction('${a.id}')"`}><span class="strike"></span></div><div class="sub"></div></div>
       ${ro?'':`<button class="iconBtn" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`}
     </div>`;
+  const patch=(el,a)=>{
+    el.classList.toggle('done', !!a.done);
+    const c=el.querySelector('input'); if(c.checked!==!!a.done) c.checked=!!a.done;
+    const s=el.querySelector('.strike'); if(s.textContent!==a.text) s.textContent=a.text;
+    const late=!a.done && a.due && a.due<today, near=!a.done && a.due && !late && a.due<=soon;
+    el.querySelector('.sub').innerHTML=(a.assignee?`<span class="who" style="--pc:${colorFor(a.assignee)}">${esc(a.assignee)}</span>`:'')
+      +(a.due?`<span class="due ${late?'late':near?'soon':''}">${fmtShortDate(a.due)}</span>`:'')
+      +(a.done&&a.doneBy?`<span>${esc(a.doneBy)}</span>`:'');
+  };
   $('aiOpenCount').textContent=open.length; $('aiDoneCount').textContent=done.length;
-  $('aiOpen').innerHTML=open.length?open.map(one).join(''):'<div class="small">None.</div>';
-  $('aiDone').innerHTML=done.length?done.map(one).join(''):'<div class="small">None.</div>';
+  keyed($('aiOpen'), open, a=>a.id, make, patch);
+  keyed($('aiDone'), done, a=>a.id, make, patch);
+  emptyState($('aiOpen'), !open.length, 'Nothing open.');
+  emptyState($('aiDone'), !done.length, 'Nothing done yet.');
 }
 function addAction(){
   const t=($('aiText').value||'').trim(); if(!t) return;
   SUB('actions').add({text:t, assignee:$('aiWho').value||'', due:$('aiDue').value||'', done:false, by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
   $('aiText').value=''; $('aiText').focus();
 }
-function toggleAction(id, on){ SUB('actions').doc(id).update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail); }
+/* A checked item stays in place a moment so the check can be seen, then moves. */
+function toggleAction(id, on){
+  setTimeout(()=>SUB('actions').doc(id).update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail), RM.matches?0:380);
+}
 async function editAction(id){
   const a=DATA.actions.find(x=>x.id===id); if(!a) return;
   const t=await askText('Edit Action Item', a.text, 'Save');
@@ -718,16 +927,22 @@ async function deleteAction(id){
   if(await askYesNo('Delete this action item?', '', 'Delete', true)) SUB('actions').doc(id).delete().catch(fail);
 }
 
-/* ---------- whiteboard ---------- */
+/* ---------- whiteboard ----------
+   Lines are drawn as smooth curves through the points the pen or finger
+   reports, including the in-between points browsers collect for fast
+   movement. While someone draws, everyone else sees the line grow as it is
+   drawn, smoothed between updates instead of appearing in chunks. Erased
+   lines fade out. */
 let WB={tool:'pen', color:COLORS[0], size:1, sticky:STICKY_COLORS[0]};
-let DRAW=null, inkTimer=0, boardW=0, boardH=0;
+let DRAW=null, inkSent=0, boardW=0, boardH=0, HOVER=null;
+const INK={remote:new Map(), fading:[], raf:0};
 function renderBoardPane(){
   const ro=readOnly();
   $('pane-board').innerHTML=`
     ${ro?'':`<div class="wbBar" id="wbBar"></div>`}
-    <div class="boardWrap"><div class="board ${ro?'readonly':WB.tool}" id="board">
+    <div class="board ${ro?'readonly':WB.tool}" id="board">
       <canvas id="cvMain"></canvas><canvas id="cvLive"></canvas>
-      <div class="stickyLayer" id="stickyLayer"></div></div></div>`;
+      <div class="stickyLayer" id="stickyLayer"></div></div>`;
   if(!ro) renderWbBar();
   const b=$('board');
   if(!ro){
@@ -735,6 +950,7 @@ function renderBoardPane(){
     b.addEventListener('pointermove', boardMove);
     b.addEventListener('pointerup', boardUp);
     b.addEventListener('pointercancel', boardUp);
+    b.addEventListener('pointerleave', ()=>{ HOVER=null; kick(); });
   }
   sizeBoard();
 }
@@ -744,53 +960,104 @@ function renderWbBar(){
   const colors = WB.tool==='sticky' ? STICKY_COLORS : COLORS;
   const cur = WB.tool==='sticky' ? WB.sticky : WB.color;
   bar.innerHTML=tool('pen','pen','Pen')+tool('marker','marker','Highlighter')+tool('eraser','eraser','Eraser')+tool('sticky','sticky','Sticky note')
-    +'<span class="sep"></span>'
-    +colors.map(c=>`<button class="swatch ${c===cur?'on':''}" style="background:${c}" aria-label="Color" onclick="setColor('${c}')"></button>`).join('')
+    +(WB.tool==='eraser'?'':'<span class="sep"></span>'+colors.map(c=>`<button class="swatch ${c===cur?'on':''}" style="background:${c}" aria-label="Color" onclick="setColor('${c}')"></button>`).join(''))
     +(WB.tool==='pen'||WB.tool==='marker'?'<span class="sep"></span>'+SIZES.map((s,i)=>`<button class="tool ${WB.size===i?'on':''}" aria-label="Size ${i+1}" onclick="WB.size=${i};renderWbBar()"><span class="sizeDot" style="width:${4+i*4}px;height:${4+i*4}px"></span></button>`).join(''):'')
-    +'<span class="grow"></span>'
+    +'<span class="sep"></span>'
     +`<button class="tool" onclick="undoBoard()" title="Undo" aria-label="Undo">${icon('undo')}</button>`
     +`<button class="tool" onclick="clearBoard()" title="Clear board" aria-label="Clear board">${icon('trash')}</button>`;
 }
-function setTool(k){ WB.tool=k; const b=$('board'); if(b) b.className='board '+k; renderWbBar(); }
+function setTool(k){ WB.tool=k; const b=$('board'); if(b) b.className='board '+k; renderWbBar(); kick(); }
 function setColor(c){ if(WB.tool==='sticky') WB.sticky=c; else WB.color=c; renderWbBar(); }
 function sizeBoard(){
   const b=$('board'); if(!b) return;
   const r=b.getBoundingClientRect(); if(!r.width) return;
-  const dpr=window.devicePixelRatio||1;
+  const dpr=Math.min(window.devicePixelRatio||1, 3);
   boardW=r.width; boardH=r.height;
   ['cvMain','cvLive'].forEach(id=>{ const c=$(id); c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); c.getContext('2d').setTransform(dpr,0,0,dpr,0,0); });
-  drawBoard(); drawLive(); renderStickies();
+  drawBoard(); kick(); renderStickies();
 }
 window.addEventListener('resize', ()=>{ if(MTG && TAB==='board') sizeBoard(); });
-function strokePath(ctx, pts, color, size, tool){
-  if(!pts || pts.length<2) return;
-  const scale=boardW/1000;
-  ctx.save();
-  ctx.lineCap='round'; ctx.lineJoin='round';
-  ctx.strokeStyle=color; ctx.globalAlpha=tool==='marker'?.35:1;
-  ctx.lineWidth=Math.max(1, size*scale*(tool==='marker'?3:1));
-  ctx.beginPath();
-  ctx.moveTo(pts[0]*boardW, pts[1]*boardH);
-  if(pts.length===2) ctx.lineTo(pts[0]*boardW+.01, pts[1]*boardH);
-  for(let i=2;i<pts.length;i+=2) ctx.lineTo(pts[i]*boardW, pts[i+1]*boardH);
-  ctx.stroke();
-  ctx.restore();
-}
 function boardColor(c){
   // Navy ink is drawn light on the dark board so it stays visible.
   if(document.documentElement.classList.contains('dark') && c===COLORS[0]) return '#dbe5f5';
   return c;
+}
+/* A smooth line: a curve from the middle of each segment to the next. */
+function strokePath(ctx, pts, color, size, tool, upto, alpha){
+  const n=Math.min(pts ? pts.length : 0, upto==null ? Infinity : upto*2);
+  if(n<2) return;
+  const W=boardW, H=boardH, scale=W/1000;
+  ctx.save();
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.strokeStyle=color; ctx.globalAlpha=(tool==='marker'?.35:1)*(alpha==null?1:alpha);
+  ctx.lineWidth=Math.max(1, size*scale*(tool==='marker'?3:1));
+  ctx.beginPath();
+  let x0=pts[0]*W, y0=pts[1]*H;
+  ctx.moveTo(x0, y0);
+  if(n===2){ ctx.lineTo(x0+.01, y0); }
+  else if(n===4){ ctx.lineTo(pts[2]*W, pts[3]*H); }
+  else{
+    for(let i=2;i<n-2;i+=2){
+      const x1=pts[i]*W, y1=pts[i+1]*H, x2=pts[i+2]*W, y2=pts[i+3]*H;
+      ctx.quadraticCurveTo(x1, y1, (x1+x2)/2, (y1+y2)/2);
+    }
+    ctx.lineTo(pts[n-2]*W, pts[n-1]*H);
+  }
+  ctx.stroke();
+  ctx.restore();
 }
 function drawBoard(){
   const c=$('cvMain'); if(!c || !boardW) return;
   const ctx=c.getContext('2d'); ctx.clearRect(0,0,boardW,boardH);
   DATA.strokes.slice().sort((a,b)=>(a.at||0)-(b.at||0)).forEach(s=>strokePath(ctx, s.pts, boardColor(s.color), s.size, s.tool));
 }
-function drawLive(){
+function onStrokes(){
+  // A line someone else just finished is now on the board itself.
+  DATA.strokes.forEach(s=>{ const r=INK.remote.get(s.by); if(r && r.id===s.id) INK.remote.delete(s.by); });
+  drawBoard(); kick();
+}
+/* Live layer: your line in progress, other people's lines in progress,
+   erased lines fading, and the eraser's circle. */
+function kick(){ if(!INK.raf) INK.raf=requestAnimationFrame(frame); }
+function frame(){
+  INK.raf=0;
   const c=$('cvLive'); if(!c || !boardW) return;
   const ctx=c.getContext('2d'); ctx.clearRect(0,0,boardW,boardH);
-  DATA.presence.forEach(p=>{ if(p.id!==ME.uid && p.ink && p.ink.pts) strokePath(ctx, p.ink.pts, boardColor(p.ink.color), p.ink.size, p.ink.tool); });
-  if(DRAW && DRAW.pts.length) strokePath(ctx, DRAW.pts, boardColor(DRAW.color), DRAW.size, DRAW.tool);
+  const now=performance.now();
+  let again=false;
+  INK.remote.forEach((r,u)=>{
+    const total=r.pts.length/2;
+    if(r.shown<total){ r.shown=Math.min(total, r.shown+Math.max(1, (total-r.shown)*0.22)); again=true; }
+    strokePath(ctx, r.pts, boardColor(r.color), r.size, r.tool, Math.floor(r.shown));
+    if(r.ended && r.shown>=total && now-r.ended>1500) INK.remote.delete(u);
+    else if(r.ended) again=true;
+  });
+  INK.fading=INK.fading.filter(f=>{
+    const t=(now-f.t0)/200;
+    if(t>=1) return false;
+    strokePath(ctx, f.s.pts, boardColor(f.s.color), f.s.size, f.s.tool, null, 1-t);
+    again=true; return true;
+  });
+  if(DRAW && DRAW.pts) strokePath(ctx, DRAW.pts, boardColor(DRAW.color), DRAW.size, DRAW.tool);
+  if(HOVER && WB.tool==='eraser' && !readOnly()){
+    ctx.save(); ctx.beginPath(); ctx.arc(HOVER[0]*boardW, HOVER[1]*boardH, 14, 0, Math.PI*2);
+    ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--c-board'); ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+    ctx.fillStyle='rgba(47,111,214,.08)'; ctx.fill(); ctx.stroke(); ctx.restore();
+  }
+  if(again) kick();
+}
+function onPresenceInk(){
+  DATA.presence.forEach(p=>{
+    if(p.id===ME.uid) return;
+    const cur=INK.remote.get(p.id);
+    if(p.ink && p.ink.pts && p.ink.id){
+      if(!cur || cur.id!==p.ink.id){
+        if(DATA.strokes.some(s=>s.id===p.ink.id)) return;
+        INK.remote.set(p.id, {id:p.ink.id, pts:p.ink.pts, color:p.ink.color, size:p.ink.size, tool:p.ink.tool, shown:0, ended:0});
+      } else if(p.ink.pts.length>cur.pts.length){ cur.pts=p.ink.pts; cur.ended=0; }
+    } else if(cur && !cur.ended){ cur.ended=performance.now(); }
+  });
+  kick();
 }
 function boardPt(e){
   const r=$('board').getBoundingClientRect();
@@ -799,71 +1066,90 @@ function boardPt(e){
 function boardDown(e){
   if(readOnly()) return;
   if(e.target.closest('.stk')) return;
+  if(e.button>0) return;
+  e.preventDefault();
   const [x,y]=boardPt(e);
   if(WB.tool==='sticky'){ addSticky(x,y); return; }
   $('board').setPointerCapture(e.pointerId);
-  if(WB.tool==='eraser'){ DRAW={erase:true, hit:new Set()}; eraseAt(x,y); return; }
-  DRAW={pts:[+x.toFixed(4), +y.toFixed(4)], color:WB.color, size:SIZES[WB.size], tool:WB.tool};
-  drawLive();
+  if(WB.tool==='eraser'){ DRAW={erase:true, hit:new Set()}; HOVER=[x,y]; eraseAt(x,y); kick(); return; }
+  DRAW={id:uid(), pts:[+x.toFixed(4), +y.toFixed(4)], color:WB.color, size:SIZES[WB.size], tool:WB.tool};
+  kick();
 }
 function boardMove(e){
-  if(!DRAW) return;
-  const [x,y]=boardPt(e);
-  if(DRAW.erase){ eraseAt(x,y); return; }
-  const n=DRAW.pts.length;
-  if(Math.abs(DRAW.pts[n-2]-x)+Math.abs(DRAW.pts[n-1]-y) < .002) return;
-  DRAW.pts.push(+x.toFixed(4), +y.toFixed(4));
-  drawLive();
-  // Others see the line as it is being drawn.
+  if(!DRAW){ if(WB.tool==='eraser'){ HOVER=boardPt(e); kick(); } return; }
+  const evs=(e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+  if(DRAW.erase){ evs.forEach(ev=>{ const p=boardPt(ev); HOVER=p; eraseAt(p[0],p[1]); }); kick(); return; }
+  const minStep=1.2/Math.max(boardW,1);
+  evs.forEach(ev=>{
+    const [x,y]=boardPt(ev), n=DRAW.pts.length;
+    if(Math.hypot(DRAW.pts[n-2]-x, (DRAW.pts[n-1]-y)*boardH/boardW) < minStep) return;
+    DRAW.pts.push(+x.toFixed(4), +y.toFixed(4));
+  });
+  kick();
   const now=Date.now();
-  if(now-inkTimer>140){ inkTimer=now; SUB('presence').doc(ME.uid).set({ink:{pts:DRAW.pts.slice(-600), color:DRAW.color, size:DRAW.size, tool:DRAW.tool}, at:now}, {merge:true}).catch(()=>{}); }
+  if(now-inkSent>110){ inkSent=now; sendInk(); }
+}
+function sendInk(){
+  if(!DRAW || DRAW.erase) return;
+  SUB('presence').doc(ME.uid).set({ink:{id:DRAW.id, pts:DRAW.pts.slice(0,3000), color:DRAW.color, size:DRAW.size, tool:DRAW.tool}, at:Date.now()}, {merge:true}).catch(()=>{});
 }
 function boardUp(){
   if(!DRAW) return;
   const d=DRAW; DRAW=null;
-  if(d.erase) return;
-  drawLive();
+  if(d.erase){ kick(); return; }
   SUB('presence').doc(ME.uid).set({ink:null}, {merge:true}).catch(()=>{});
-  if(d.pts.length<2) return;
-  // Shown straight away, before the save comes back.
-  const id=uid();
-  DATA.strokes.push({id, pts:d.pts, color:d.color, size:d.size, tool:d.tool, by:ME.uid, at:Date.now()});
-  drawBoard();
-  SUB('strokes').doc(id).set({pts:d.pts, color:d.color, size:d.size, tool:d.tool, by:ME.uid, at:Date.now()}).catch(fail);
+  if(d.pts.length<2){ kick(); return; }
+  // Kept on screen straight away, before the save comes back.
+  const s={id:d.id, pts:d.pts, color:d.color, size:d.size, tool:d.tool, by:ME.uid, at:Date.now()};
+  DATA.strokes.push(Object.assign({}, s));
+  const c=$('cvMain'); if(c) strokePath(c.getContext('2d'), s.pts, boardColor(s.color), s.size, s.tool);
+  kick();
+  const {id, ...rest}=s;
+  SUB('strokes').doc(id).set(rest).catch(fail);
 }
 function eraseAt(x,y){
   const rx=14/boardW, ry=14/boardH;
+  let hit=false;
   DATA.strokes.forEach(s=>{
     if(DRAW.hit.has(s.id)) return;
     const p=s.pts||[];
     for(let i=0;i<p.length;i+=2){
-      if(Math.abs(p[i]-x)<rx && Math.abs(p[i+1]-y)<ry){ DRAW.hit.add(s.id); SUB('strokes').doc(s.id).delete().catch(fail); break; }
+      // check the point and the middle of the segment to the next one
+      const mx=i+2<p.length?(p[i]+p[i+2])/2:p[i], my=i+3<p.length?(p[i+1]+p[i+3])/2:p[i+1];
+      if((Math.abs(p[i]-x)<rx && Math.abs(p[i+1]-y)<ry) || (Math.abs(mx-x)<rx && Math.abs(my-y)<ry)){
+        DRAW.hit.add(s.id); INK.fading.push({s, t0:performance.now()}); hit=true;
+        SUB('strokes').doc(s.id).delete().catch(fail); break;
+      }
     }
   });
-  if(DRAW.hit.size){ DATA.strokes=DATA.strokes.filter(s=>!DRAW.hit.has(s.id)); drawBoard(); }
+  if(hit){ DATA.strokes=DATA.strokes.filter(s=>!DRAW.hit.has(s.id)); drawBoard(); }
 }
 function undoBoard(){
   const mine=[...DATA.strokes.map(s=>({k:'strokes',s})), ...DATA.stickies.map(s=>({k:'stickies',s}))].filter(o=>o.s.by===ME.uid).sort((a,b)=>(b.s.at||0)-(a.s.at||0));
   if(!mine.length) return;
   const last=mine[0];
   SUB(last.k).doc(last.s.id).delete().catch(fail);
-  if(last.k==='strokes'){ DATA.strokes=DATA.strokes.filter(s=>s.id!==last.s.id); drawBoard(); }
+  if(last.k==='strokes'){ INK.fading.push({s:last.s, t0:performance.now()}); DATA.strokes=DATA.strokes.filter(s=>s.id!==last.s.id); drawBoard(); kick(); }
 }
 async function clearBoard(){
   if(!DATA.strokes.length && !DATA.stickies.length) return;
   if(!await askYesNo('Clear the whiteboard?', 'Everything on it is erased for everyone.', 'Clear', true)) return;
+  const now=performance.now();
+  DATA.strokes.forEach(s=>INK.fading.push({s, t0:now}));
   const all=[...DATA.strokes.map(s=>SUB('strokes').doc(s.id)), ...DATA.stickies.map(s=>SUB('stickies').doc(s.id))];
+  DATA.strokes=[]; drawBoard(); kick();
   try{ for(let i=0;i<all.length;i+=400){ const b=db.batch(); all.slice(i,i+400).forEach(r=>b.delete(r)); await b.commit(); } }catch(e){ fail(e); }
 }
 /* sticky notes */
 const STK_TIMERS={};
+function tiltOf(id){ let h=0; for(const c of String(id)) h=(h*33+c.charCodeAt(0))>>>0; return ((h%31)/10-1.5).toFixed(2)+'deg'; }
 function addSticky(x,y){
   const id=uid();
-  const doc={x:Math.min(.85,x), y:Math.min(.8,y), text:'', color:WB.sticky, by:ME.uid, at:Date.now()};
+  const doc={x:Math.min(.85,Math.max(0,x-.05)), y:Math.min(.8,Math.max(0,y-.03)), text:'', color:WB.sticky, by:ME.uid, at:Date.now()};
   DATA.stickies.push(Object.assign({id}, doc));
   renderStickies();
   SUB('stickies').doc(id).set(doc).catch(fail);
-  setTimeout(()=>{ const t=document.querySelector(`.stk[data-id="${id}"] textarea`); if(t) t.focus(); }, 30);
+  setTimeout(()=>{ const t=document.querySelector(`.stk[data-id="${id}"] textarea`); if(t) t.focus({preventScroll:true}); }, 40);
 }
 function renderStickies(){
   const layer=$('stickyLayer'); if(!layer) return;
@@ -873,27 +1159,34 @@ function renderStickies(){
     have.add(s.id);
     let el=layer.querySelector(`.stk[data-id="${s.id}"]`);
     if(!el){
-      el=document.createElement('div'); el.className='stk'; el.dataset.id=s.id;
+      el=document.createElement('div'); el.className='stk'; el.dataset.id=s.id; el.style.setProperty('--rot', tiltOf(s.id));
       el.innerHTML=`<div class="grip"><span class="by"></span>${ro?'':`<button aria-label="Delete sticky note">&times;</button>`}</div><textarea aria-label="Sticky note" ${ro?'readonly':''}></textarea>`;
       layer.appendChild(el);
       const ta=el.querySelector('textarea');
       ta.addEventListener('input', ()=>{
         clearTimeout(STK_TIMERS[s.id]);
-        STK_TIMERS[s.id]=setTimeout(()=>SUB('stickies').doc(s.id).update({text:ta.value}).catch(fail), 350);
+        STK_TIMERS[s.id]=setTimeout(()=>SUB('stickies').doc(s.id).update({text:ta.value}).catch(fail), 250);
       });
+      ta.addEventListener('blur', ()=>{ clearTimeout(STK_TIMERS[s.id]); const cur=DATA.stickies.find(x=>x.id===s.id); if(cur && cur.text!==ta.value) SUB('stickies').doc(s.id).update({text:ta.value}).catch(fail); });
       if(!ro){
         el.querySelector('.grip button').addEventListener('click', ev=>{ ev.stopPropagation(); SUB('stickies').doc(s.id).delete().catch(fail); });
         dragSticky(el, s.id);
       }
     }
-    el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%';
-    el.style.background=s.color||STICKY_COLORS[0];
-    el.querySelector('.by').textContent=(USERS && Object.values(USERS).find(u=>u.uid===s.by)||{}).username||'';
+    if(!el.classList.contains('dragging')){ el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%'; }
+    el.style.backgroundColor=s.color||STICKY_COLORS[0];
+    el.querySelector('.by').textContent=nameOfUid(s.by);
     const ta=el.querySelector('textarea');
     if(document.activeElement!==ta && ta.value!==(s.text||'')) ta.value=s.text||'';
   });
-  layer.querySelectorAll('.stk').forEach(el=>{ if(!have.has(el.dataset.id)) el.remove(); });
+  layer.querySelectorAll('.stk').forEach(el=>{
+    if(have.has(el.dataset.id) || el.classList.contains('leaving')) return;
+    if(RM.matches) el.remove(); else { el.classList.add('leaving'); setTimeout(()=>el.remove(), 240); }
+  });
 }
+/* Dragging moves the note with the finger using a transform, which the
+   browser can draw every frame, and sets its real position when let go.
+   Other people see it glide there. */
 function dragSticky(el, id){
   const grip=el.querySelector('.grip');
   let start=null;
@@ -901,20 +1194,26 @@ function dragSticky(el, id){
     if(e.target.tagName==='BUTTON') return;
     e.preventDefault(); e.stopPropagation();
     const r=$('board').getBoundingClientRect(), s=DATA.stickies.find(x=>x.id===id); if(!s) return;
-    start={px:e.clientX, py:e.clientY, x:s.x, y:s.y, w:r.width, h:r.height};
+    start={px:e.clientX, py:e.clientY, x:s.x, y:s.y, w:r.width, h:r.height, dx:0, dy:0};
+    el.classList.add('dragging');
     grip.setPointerCapture(e.pointerId);
   });
   grip.addEventListener('pointermove', e=>{
     if(!start) return;
-    const s=DATA.stickies.find(x=>x.id===id); if(!s) return;
-    s.x=Math.min(.95,Math.max(0,start.x+(e.clientX-start.px)/start.w));
-    s.y=Math.min(.95,Math.max(0,start.y+(e.clientY-start.py)/start.h));
-    el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%';
+    const nx=Math.min(.95,Math.max(0,start.x+(e.clientX-start.px)/start.w)), ny=Math.min(.95,Math.max(0,start.y+(e.clientY-start.py)/start.h));
+    start.dx=(nx-start.x)*start.w; start.dy=(ny-start.y)*start.h; start.nx=nx; start.ny=ny;
+    el.style.setProperty('--dx', start.dx+'px'); el.style.setProperty('--dy', start.dy+'px');
   });
   const end=()=>{
-    if(!start) return; start=null;
-    const s=DATA.stickies.find(x=>x.id===id); if(!s) return;
-    SUB('stickies').doc(id).update({x:+s.x.toFixed(4), y:+s.y.toFixed(4)}).catch(fail);
+    if(!start) return;
+    const st=start; start=null;
+    const s=DATA.stickies.find(x=>x.id===id);
+    el.style.transition='none';
+    el.style.setProperty('--dx','0px'); el.style.setProperty('--dy','0px');
+    if(s && st.nx!=null){ s.x=st.nx; s.y=st.ny; el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%'; }
+    void el.offsetWidth; el.style.transition='';
+    el.classList.remove('dragging');
+    if(s && st.nx!=null) SUB('stickies').doc(id).update({x:+s.x.toFixed(4), y:+s.y.toFixed(4)}).catch(fail);
   };
   grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
 }
@@ -924,6 +1223,8 @@ function dragSticky(el, id){
    it: their copy reports which tab and work order are on screen, and
    everyone following goes to the same place. */
 let PP={frame:null, ready:false, follow:true, lastView:'', viewTimer:null};
+const phoneMQ=window.matchMedia('(max-width:900px)');
+let PP_BACK='agenda';
 function presenterLive(){
   const p=MTG && MTG.presenter;
   if(!p || !p.uid) return null;
@@ -942,14 +1243,12 @@ function ppRenderBar(){
   const ro=readOnly(), p=presenterLive(), mine=p && p.uid===ME.uid;
   let left='';
   if(mine) left=`<span class="status">${icon('cast')}Presenting</span><button class="btn secondary sm" onclick="stopPresenting()">Stop Presenting</button>`;
-  else if(p) left=`<span class="status">${icon('cast')}${esc(p.name)}</span><label class="switch"><input type="checkbox" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>${ro?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`}`;
-  else left=ro?'':`<button class="btn sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
+  else if(p) left=`<span class="status">${icon('cast')}${esc(p.name)}</span><label class="switch"><input type="checkbox" class="chk" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>${ro?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`}`;
+  else left=ro?'':`<button class="btn tc sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
   bar.innerHTML=`<button class="btn secondary sm ppExitBtn" onclick="ppExitFull()">${icon('x')}Exit</button>`+left+'<span class="grow"></span>'
     +(ME.isAdmin?`<button class="btn secondary sm" onclick="resetPractice()" aria-label="Reset Practice Jobs">${icon('reset')}<span class="ppLbl">Reset Practice Jobs</span></button>`:'')
     +`<button class="btn secondary sm ppFullBtn" onclick="ppSetFull(true)">${icon('expand')}Full Screen</button>`;
 }
-const phoneMQ=window.matchMedia('(max-width:900px)');
-let PP_BACK='agenda';
 function ppSetFull(on){ document.body.classList.toggle('ppFull', !!on); ppFit(); }
 function ppExitFull(){
   ppSetFull(false);
