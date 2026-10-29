@@ -214,11 +214,20 @@ html.dark .panelTitle .count{color:var(--paper);}
 .ppBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
 .ppBar .status{font-size:.85em;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:8px;}
 .ppFrameWrap{position:relative;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh-1);background:var(--paper);
-  height:calc(100vh - 16em);min-height:420px;}
+  height:520px;min-height:360px;overscroll-behavior:contain;}
 .ppFrameWrap iframe{width:100%;height:100%;border:0;display:block;}
-body.ppFull .ppFrameWrap{position:fixed;inset:0;z-index:60;border-radius:0;height:auto;min-height:0;border:0;}
-.ppExit{display:none;position:fixed;z-index:61;right:12px;bottom:max(12px,env(safe-area-inset-bottom));}
-body.ppFull .ppExit{display:inline-flex;}
+.ppExitBtn{display:none;}
+/* Full screen: the practice copy takes the whole screen under a slim bar,
+   and the meeting page behind it cannot scroll. Phones always use it. */
+body.ppFull{overflow:hidden;}
+body.ppFull .ppStage{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--cream);
+  padding:max(6px,env(safe-area-inset-top)) 8px 0 8px;}
+body.ppFull .ppBar{margin:0;padding:4px 2px 6px;flex:0 0 auto;}
+body.ppFull .ppFrameWrap{flex:1 1 auto;height:auto !important;min-height:0;border-radius:var(--radius) var(--radius) 0 0;border-bottom:0;}
+body.ppFull .ppExitBtn{display:inline-flex;}
+body.ppFull .ppFullBtn{display:none;}
+body.ppTab:not(.ppFull){overscroll-behavior:none;}
+@media (max-width:900px){ body.ppFull .ppLbl{display:none;} body.ppFull .ppBar{font-size:.85em;flex-wrap:nowrap;overflow-x:auto;} }
 .switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:600;color:var(--navy);}
 .switch input{width:1.15em;height:1.15em;accent-color:var(--orange);}
 
@@ -456,7 +465,7 @@ function leaveMeeting(){
   if(MTG_ID && db && ME){ try{ SUB('presence').doc(ME.uid).delete().catch(()=>{}); }catch(e){} }
   ppTeardown();
   MTG=null; MTG_ID=null;
-  document.body.classList.remove('ppFull');
+  document.body.classList.remove('ppFull','ppTab');
 }
 function startPresence(){
   stopPresence();
@@ -507,7 +516,15 @@ function showTab(k){
   document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('hidden', p.id!=='pane-'+k));
   renderTabs();
   if(k==='board') requestAnimationFrame(sizeBoard);
-  if(k==='practice') ppEnsure();
+  document.body.classList.toggle('ppTab', k==='practice');
+  if(k==='practice'){
+    ppEnsure();
+    if(phoneMQ.matches) ppSetFull(true);
+    else { window.scrollTo(0,0); requestAnimationFrame(ppFit); }
+  } else {
+    PP_BACK=k;
+    document.body.classList.remove('ppFull');
+  }
 }
 function renderPeople(){
   const el=$('people'); if(!el) return;
@@ -915,9 +932,8 @@ function presenterLive(){
   return (pres && (Date.now()-(pres.at||0))<ALIVE_MS) ? p : null;
 }
 function renderPracticePane(){
-  $('pane-practice').innerHTML=`<div class="ppBar" id="ppBar"></div>
-    <div class="ppFrameWrap" id="ppWrap"></div>
-    <button class="btn ppExit" onclick="document.body.classList.remove('ppFull')">${icon('x')}Exit Full Screen</button>`;
+  $('pane-practice').innerHTML=`<div class="ppStage" id="ppStage"><div class="ppBar" id="ppBar"></div>
+    <div class="ppFrameWrap" id="ppWrap"></div></div>`;
   ppRenderBar();
   if(PP.frame) $('ppWrap').appendChild(PP.frame);
 }
@@ -928,10 +944,26 @@ function ppRenderBar(){
   if(mine) left=`<span class="status">${icon('cast')}Presenting</span><button class="btn secondary sm" onclick="stopPresenting()">Stop Presenting</button>`;
   else if(p) left=`<span class="status">${icon('cast')}${esc(p.name)}</span><label class="switch"><input type="checkbox" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>${ro?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`}`;
   else left=ro?'':`<button class="btn sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
-  bar.innerHTML=left+'<span class="grow"></span>'
-    +(ME.isAdmin?`<button class="btn secondary sm" onclick="resetPractice()">${icon('reset')}Reset Practice Jobs</button>`:'')
-    +`<button class="btn secondary sm" onclick="document.body.classList.add('ppFull')">${icon('expand')}Full Screen</button>`;
+  bar.innerHTML=`<button class="btn secondary sm ppExitBtn" onclick="ppExitFull()">${icon('x')}Exit</button>`+left+'<span class="grow"></span>'
+    +(ME.isAdmin?`<button class="btn secondary sm" onclick="resetPractice()" aria-label="Reset Practice Jobs">${icon('reset')}<span class="ppLbl">Reset Practice Jobs</span></button>`:'')
+    +`<button class="btn secondary sm ppFullBtn" onclick="ppSetFull(true)">${icon('expand')}Full Screen</button>`;
 }
+const phoneMQ=window.matchMedia('(max-width:900px)');
+let PP_BACK='agenda';
+function ppSetFull(on){ document.body.classList.toggle('ppFull', !!on); ppFit(); }
+function ppExitFull(){
+  ppSetFull(false);
+  if(phoneMQ.matches) showTab(PP_BACK && PP_BACK!=='practice' ? PP_BACK : 'agenda');
+}
+/* Off full screen, the practice copy is sized to the rest of the window so
+   the meeting page itself never needs to scroll while it is open. */
+function ppFit(){
+  const w=$('ppWrap'); if(!w) return;
+  if(document.body.classList.contains('ppFull') || TAB!=='practice'){ w.style.height=''; return; }
+  const top=w.getBoundingClientRect().top+window.scrollY;
+  w.style.height=Math.max(360, window.innerHeight-top-24)+'px';
+}
+window.addEventListener('resize', ()=>{ if(MTG && TAB==='practice') ppFit(); });
 function ppEnsure(){
   if(PP.frame){ if($('ppWrap') && !PP.frame.parentNode) $('ppWrap').appendChild(PP.frame); return; }
   const f=document.createElement('iframe');
