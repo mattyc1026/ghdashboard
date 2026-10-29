@@ -297,7 +297,8 @@ html.dark .liveTag{color:#1a0d00;}
 .ppBar .status .ic{width:1.15em;height:1.15em;}
 .ppFrameWrap{position:relative;border:1px solid var(--line);border-top:4px solid var(--tc);border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh-1);background:var(--paper);
   height:520px;min-height:360px;overscroll-behavior:contain;}
-.ppFrameWrap iframe{width:100%;height:100%;border:0;display:block;}
+.ppFrameWrap iframe{width:1px;min-width:100%;max-width:100%;height:100%;border:0;display:block;}
+body.ppTab{overflow-x:hidden;}
 .ppExitBtn{display:none !important;}
 .switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:700;color:var(--navy);}
 /* Full screen: the practice copy takes the whole screen under a slim bar,
