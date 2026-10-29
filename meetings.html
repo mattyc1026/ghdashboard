@@ -299,6 +299,33 @@ html.dark .liveTag{color:#1a0d00;}
   height:520px;min-height:360px;overscroll-behavior:contain;}
 .ppFrameWrap iframe{width:1px;min-width:100%;max-width:100%;height:100%;border:0;display:block;}
 body.ppTab{overflow-x:hidden;}
+.ppFrameWrap iframe.ppOwn.behind{visibility:hidden;}
+/* the presenter's screen, live */
+.mirror{position:absolute;inset:0;background:color-mix(in srgb, var(--tc) 6%, var(--cream));overflow:hidden;z-index:2;}
+.mirrorBox{position:absolute;left:0;top:0;transform-origin:0 0;box-shadow:0 0 0 1px var(--line),var(--sh-2);background:var(--paper);overflow:hidden;}
+.mirrorBox iframe{position:absolute;inset:0;border:0;display:block;pointer-events:none;background:var(--paper);}
+.mirrorWait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;pointer-events:none;}
+.mirrorWait:empty{display:none;}
+.gestures{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.gTouch{position:absolute;left:0;top:0;width:0;height:0;transition:transform 70ms linear;}
+.gTouch span{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;
+  background:radial-gradient(circle, rgba(70,78,92,.30) 0 55%, rgba(70,78,92,.16) 70%, rgba(70,78,92,0) 72%);
+  box-shadow:0 0 0 1.5px rgba(70,78,92,.28);animation:gDown .16s var(--ease-out) both;}
+.gTouch.lift span{animation:gUp .4s var(--ease) forwards;}
+@keyframes gDown{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
+@keyframes gUp{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.35)}}
+.gCursor{position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:rgba(70,78,92,.22);box-shadow:0 0 0 1.5px rgba(70,78,92,.35);
+  transition:transform 90ms linear, opacity .4s;}
+.gCursor.idle{opacity:0;}
+.gTap{position:absolute;border-radius:8px;background:rgba(47,111,214,.14);box-shadow:0 0 0 2px rgba(47,111,214,.55);
+  animation:gTap 1.25s var(--ease) forwards;}
+@keyframes gTap{0%{opacity:0;transform:scale(.98)}12%{opacity:1;transform:scale(1)}70%{opacity:1}100%{opacity:0}}
+/* highlight boxes */
+.hlLayer{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden;}
+.hlLayer.drawing{pointer-events:auto;cursor:crosshair;background:rgba(255,214,0,.04);}
+.hlBox{position:absolute;left:0;top:0;border-radius:8px;background:rgba(255,212,0,.24);box-shadow:0 0 0 2.5px rgba(242,178,0,.9),0 0 18px rgba(255,200,0,.35);}
+.hlLayer.drawing .hlBox:not(.draft){cursor:pointer;}
+.hlBox.draft{background:rgba(255,212,0,.16);box-shadow:0 0 0 2px rgba(242,178,0,.7);}
 .ppExitBtn{display:none !important;}
 .switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:700;color:var(--navy);}
 /* Full screen: the practice copy takes the whole screen under a slim bar,
@@ -311,7 +338,7 @@ body.ppFull .ppFrameWrap{flex:1 1 auto;height:auto !important;min-height:0;borde
 body.ppFull .ppExitBtn{display:inline-flex !important;}
 body.ppFull .ppFullBtn{display:none;}
 body.ppTab:not(.ppFull){overscroll-behavior:none;}
-@media (max-width:900px){ body.ppFull .ppLbl{display:none;} body.ppFull .ppBar{font-size:.85em;flex-wrap:nowrap;overflow-x:auto;} }
+@media (max-width:900px){ body.ppFull .ppLbl{display:none;} body.ppFull .ppBar{font-size:.8em;gap:6px;} .ppBar .switch{white-space:nowrap;} }
 
 /* modal + toast */
 .overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;
@@ -356,6 +383,7 @@ html.dark .toast{color:var(--paper);}
   <symbol id="i-portal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3 9h18M8 4v5" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
   <symbol id="i-cast" viewBox="0 0 24 24"><path d="M3 8V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2h-6M3 12a8 8 0 018 8M3 16a4 4 0 014 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="3.5" cy="20" r="1" fill="currentColor"/></symbol>
   <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-highlight" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-dasharray="3 2.4"/><path d="M14 14l5 6M17 13l3 1-1 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M5.5 15a7 7 0 0012 2.5M18.5 9a7 7 0 00-12-2.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
 </svg>
 
@@ -702,7 +730,7 @@ function showTab(k, initial){
   if(k==='practice'){
     ppEnsure();
     if(phoneMQ.matches) ppSetFull(true);
-    else { window.scrollTo(0,0); requestAnimationFrame(ppFit); }
+    else { window.scrollTo(0,0); requestAnimationFrame(()=>{ ppFit(); mirFit(); }); }
   } else {
     PP_BACK=k;
     document.body.classList.remove('ppFull');
@@ -727,7 +755,7 @@ function onDataChange(n){
   else if(n==='actions') renderActions();
   else if(n==='strokes') onStrokes();
   else if(n==='stickies') renderStickies();
-  else if(n==='presence'){ renderPeople(); onPresenceInk(); ppRenderBar(); renderTabs(); }
+  else if(n==='presence'){ renderPeople(); onPresenceInk(); ppRenderBar(); renderTabs(); ppUpdateMode(); }
 }
 async function renameMeeting(){
   const t=await askText('Rename Meeting', MTG.title||'', 'Save');
@@ -738,7 +766,7 @@ async function endMeeting(){
 }
 function setStatus(st){
   const upd={status:st};
-  if(st==='ended'){ upd.endedAt=Date.now(); upd.presenter=null; upd.view=null; }
+  if(st==='ended'){ upd.endedAt=Date.now(); upd.presenter=null; upd.view=null; upd.hl=[]; upd.followLock=false; }
   MREF().update(upd).catch(fail);
 }
 async function deleteMeeting(){
@@ -1220,10 +1248,14 @@ function dragSticky(el, id){
 }
 
 /* ---------- practice portal ----------
-   The practice copy of the portal runs in a frame. One person can present
-   it: their copy reports which tab and work order are on screen, and
-   everyone following goes to the same place. */
-let PP={frame:null, ready:false, follow:true, lastView:'', viewTimer:null};
+   Everyone has their own practice copy of the portal in a frame. When
+   someone presents, their copy streams its screen: the page and every
+   change to it, scrolling, typing, pop-ups, and where they touch. Everyone
+   following sees a live, exact copy of the presenter's screen, with their
+   touches drawn as soft circles and the items they tap lit up. The presenter
+   can also draw highlight boxes, and can hide the Follow switch so no one
+   can stop following. */
+let PP={frame:null, ready:false, follow:true, role:'none'};
 const phoneMQ=window.matchMedia('(max-width:900px)');
 let PP_BACK='agenda';
 function presenterLive(){
@@ -1233,24 +1265,40 @@ function presenterLive(){
   const pres=DATA.presence.find(x=>x.id===p.uid);
   return (pres && (Date.now()-(pres.at||0))<ALIVE_MS) ? p : null;
 }
+const iPresent=()=>{ const p=presenterLive(); return !!(p && p.uid===ME.uid); };
+const followLocked=()=>!!(MTG && MTG.followLock);
+function iFollow(){ const p=presenterLive(); return !!(p && p.uid!==ME.uid && (PP.follow || followLocked())); }
 function renderPracticePane(){
   $('pane-practice').innerHTML=`<div class="ppStage" id="ppStage"><div class="ppBar" id="ppBar"></div>
-    <div class="ppFrameWrap" id="ppWrap"></div></div>`;
+    <div class="ppFrameWrap" id="ppWrap">
+      <div class="mirror hidden" id="ppMirror"><div class="mirrorBox" id="mirrorBox"><iframe id="mirrorFrame" title="Presenter's screen" sandbox="allow-same-origin" tabindex="-1"></iframe><div class="gestures" id="gestures"></div></div>
+        <div class="mirrorWait" id="mirrorWait"></div></div>
+      <div class="hlLayer" id="hlLayer"></div>
+    </div></div>`;
   ppRenderBar();
-  if(PP.frame) $('ppWrap').appendChild(PP.frame);
+  if(PP.frame) $('ppWrap').prepend(PP.frame);
+  ppUpdateMode();
 }
 function ppRenderBar(){
   const bar=$('ppBar'); if(!bar) return;
   const ro=readOnly(), p=presenterLive(), mine=p && p.uid===ME.uid;
   let left='';
-  if(mine) left=`<span class="status">${icon('cast')}Presenting</span><button class="btn secondary sm" onclick="stopPresenting()">Stop Presenting</button>`;
-  else if(p) left=`<span class="status">${icon('cast')}${esc(p.name)}</span><label class="switch"><input type="checkbox" class="chk" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>${ro?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`}`;
-  else left=ro?'':`<button class="btn tc sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
+  if(mine){
+    left=`<span class="status">${icon('cast')}Presenting</span>
+      <button class="btn secondary sm" onclick="stopPresenting()">Stop Presenting</button>
+      <button class="btn ${HL.mode?'tc':'secondary'} sm" onclick="setHlMode(!HL.mode)" aria-pressed="${HL.mode}">${icon('highlight')}<span class="ppLbl">Highlight</span></button>
+      ${(MTG.hl&&MTG.hl.length)?`<button class="btn secondary sm" onclick="clearHighlights()">${icon('x')}<span class="ppLbl">Clear Highlights</span></button>`:''}
+      <label class="switch"><input type="checkbox" class="chk" ${followLocked()?'':'checked'} onchange="setFollowLock(!this.checked)">Others can unfollow</label>`;
+  } else if(p){
+    left=`<span class="status">${icon('cast')}${esc(p.name)}</span>`
+      +(followLocked()?'':`<label class="switch"><input type="checkbox" class="chk" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>`)
+      +((ro||followLocked())?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`);
+  } else left=ro?'':`<button class="btn tc sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
   bar.innerHTML=`<button class="btn secondary sm ppExitBtn" onclick="ppExitFull()">${icon('x')}Exit</button>`+left+'<span class="grow"></span>'
-    +(ME.isAdmin?`<button class="btn secondary sm" onclick="resetPractice()" aria-label="Reset Practice Jobs">${icon('reset')}<span class="ppLbl">Reset Practice Jobs</span></button>`:'')
+    +(ME.isAdmin && !(p && !mine && followLocked())?`<button class="btn secondary sm" onclick="resetPractice()" aria-label="Reset Practice Jobs">${icon('reset')}<span class="ppLbl">Reset Practice Jobs</span></button>`:'')
     +`<button class="btn secondary sm ppFullBtn" onclick="ppSetFull(true)">${icon('expand')}Full Screen</button>`;
 }
-function ppSetFull(on){ document.body.classList.toggle('ppFull', !!on); ppFit(); }
+function ppSetFull(on){ document.body.classList.toggle('ppFull', !!on); ppFit(); requestAnimationFrame(mirFit); }
 function ppExitFull(){
   ppSetFull(false);
   if(phoneMQ.matches) showTab(PP_BACK && PP_BACK!=='practice' ? PP_BACK : 'agenda');
@@ -1263,60 +1311,423 @@ function ppFit(){
   const top=w.getBoundingClientRect().top+window.scrollY;
   w.style.height=Math.max(360, window.innerHeight-top-24)+'px';
 }
-window.addEventListener('resize', ()=>{ if(MTG && TAB==='practice') ppFit(); });
+window.addEventListener('resize', ()=>{ if(MTG && TAB==='practice'){ ppFit(); mirFit(); } });
 function ppEnsure(){
-  if(PP.frame){ if($('ppWrap') && !PP.frame.parentNode) $('ppWrap').appendChild(PP.frame); return; }
+  if(PP.frame){ if($('ppWrap') && !PP.frame.parentNode) $('ppWrap').prepend(PP.frame); return; }
   const f=document.createElement('iframe');
-  f.title='Practice Portal';
+  f.title='Practice Portal'; f.className='ppOwn';
   f.src=PORTAL_URL+'?training=1&meeting='+encodeURIComponent(MTG_ID);
-  PP.frame=f; PP.ready=false; PP.lastView='';
-  $('ppWrap').appendChild(f);
+  PP.frame=f; PP.ready=false; PP.role='none';
+  $('ppWrap').prepend(f);
 }
 function ppTeardown(){
+  mirStopSending(); repStop();
   if(PP.frame && PP.frame.parentNode) PP.frame.parentNode.removeChild(PP.frame);
-  PP.frame=null; PP.ready=false; PP.lastView='';
-  clearTimeout(PP.viewTimer);
+  PP.frame=null; PP.ready=false; PP.role='none';
+  HL.mode=false;
 }
 function ppPost(m){ if(PP.frame && PP.frame.contentWindow) PP.frame.contentWindow.postMessage(Object.assign({source:'gh_meeting'}, m), location.origin); }
-function ppRole(){
-  const p=presenterLive();
-  if(p && p.uid===ME.uid) return 'present';
-  if(p && PP.follow) return 'follow';
-  return 'none';
-}
-function ppSync(){
-  if(!PP.ready) return;
-  const role=ppRole();
-  ppPost({type:'role', role});
-  if(role==='follow' && MTG.view) ppPost({type:'view', state:MTG.view});
+/* Decides, after any change, whether this device is sending its screen,
+   watching someone else's, or just using its own practice copy. */
+function ppUpdateMode(){
+  if(!MTG || !$('ppWrap')) return;
+  const role=iPresent()?'present':'none';
+  if(PP.ready && role!==PP.role){ PP.role=role; ppPost({type:'role', role}); if(role==='present') mirStartSending(); else mirStopSending(); }
+  const watching=iFollow();
+  if(watching){ ppEnsure(); repStart(); } else repStop();
+  $('ppMirror').classList.toggle('hidden', !watching);
+  if(PP.frame) PP.frame.classList.toggle('behind', watching);
+  if(!iPresent() && HL.mode) setHlMode(false);
+  renderHighlights();
 }
 function ppOnMeeting(prev){
   const pp=prev.presenter||{}, np=MTG.presenter||{};
-  if(pp.uid!==np.uid){
-    if(np.uid && np.uid!==ME.uid){ PP.follow=true; if(TAB!=='practice') toast(np.name+' is presenting the practice portal.'); }
-    ppRenderBar(); ppSync(); return;
+  if(pp.uid!==np.uid && np.uid && np.uid!==ME.uid){
+    PP.follow=true;
+    if(TAB!=='practice') toast(np.name+' is presenting the practice portal.');
   }
-  if(ppRole()==='follow' && JSON.stringify(prev.view)!==JSON.stringify(MTG.view)) ppPost({type:'view', state:MTG.view});
+  if(iPresent() && MTG.snapReq && MTG.snapReq!==prev.snapReq) mirRequestSnap();
+  if(JSON.stringify(prev.hl||[])!==JSON.stringify(MTG.hl||[])) renderHighlights();
+  ppRenderBar(); ppUpdateMode();
 }
-function setFollow(on){ PP.follow=on; ppSync(); }
+function setFollow(on){ PP.follow=on; ppUpdateMode(); ppRenderBar(); }
+function setFollowLock(on){ MREF().update({followLock:!!on}).catch(fail); }
 function startPresenting(){
   if(TAB!=='practice') showTab('practice');
-  MREF().update({presenter:{uid:ME.uid, name:ME.name, at:Date.now()}}).catch(fail);
+  MREF().update({presenter:{uid:ME.uid, name:ME.name, at:Date.now()}, hl:[], followLock:false}).catch(fail);
 }
-function stopPresenting(){ MREF().update({presenter:null, view:null}).catch(fail); }
+function stopPresenting(){ MREF().update({presenter:null, view:null, hl:[], followLock:false}).catch(fail); }
 window.addEventListener('message', e=>{
   if(e.origin!==location.origin || !PP.frame || e.source!==PP.frame.contentWindow) return;
   const d=e.data||{};
   if(d.source!=='gh_training') return;
-  if(d.type==='ready'){ PP.ready=true; ppSync(); }
-  else if(d.type==='view' && ppRole()==='present'){
-    const s=JSON.stringify(d.state);
-    if(s===PP.lastView) return;
-    PP.lastView=s;
-    clearTimeout(PP.viewTimer);
-    PP.viewTimer=setTimeout(()=>MREF().update({view:d.state}).catch(()=>{}), 120);
-  }
+  if(d.type==='ready'){ PP.ready=true; PP.role='none'; ppUpdateMode(); }
+  else if(d.type==='mirror' && iPresent()){ if(d.snap) mirSnap(d.snap); if(d.ops) mirQueue(d.ops); }
+  else if(d.type==='ptr' && iPresent()){ mirQueue([{p:d.p}]); }
 });
+
+/* ----- sending (presenter) -----
+   The screen goes out in small numbered pieces under the meeting's stream.
+   A fresh full copy goes out every minute and whenever someone starts
+   following, and older pieces are deleted, so joining late is quick. */
+const MIR={epoch:0, seq:0, buf:[], timer:0, chain:Promise.resolve(), every:null, reqTimer:null};
+const STREAM=()=>SUB('stream');
+const docKey=(e,s)=>e+'_'+String(s).padStart(7,'0');
+async function packText(str){
+  if(window.CompressionStream){
+    try{
+      const cs=new Blob([str]).stream().pipeThrough(new CompressionStream('gzip'));
+      const buf=new Uint8Array(await new Response(cs).arrayBuffer());
+      let bin=''; for(let i=0;i<buf.length;i+=0x8000) bin+=String.fromCharCode.apply(null, buf.subarray(i,i+0x8000));
+      return {z:1, d:btoa(bin)};
+    }catch(e){}
+  }
+  return {z:0, d:str};
+}
+async function unpackText(z, d){
+  if(!z) return d;
+  const bin=atob(d), buf=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
+  const ds=new Blob([buf]).stream().pipeThrough(new DecompressionStream('gzip'));
+  return await new Response(ds).text();
+}
+function mirStartSending(){
+  clearInterval(MIR.every);
+  MIR.every=setInterval(()=>ppPost({type:'snap'}), 60000);
+}
+function mirStopSending(){
+  clearInterval(MIR.every); MIR.every=null;
+  clearTimeout(MIR.timer); MIR.timer=0; MIR.buf=[];
+  if(MIR.epoch && MTG_ID){
+    MIR.epoch=0;
+    MIR.chain=MIR.chain.then(()=>mirPrune(Infinity)).catch(()=>{});
+  }
+}
+function mirRequestSnap(){ clearTimeout(MIR.reqTimer); MIR.reqTimer=setTimeout(()=>ppPost({type:'snap'}), 250); }
+function mirSnap(snap){
+  const epoch=Date.now(), json=JSON.stringify(snap);
+  clearTimeout(MIR.timer); MIR.timer=0; MIR.buf=[];
+  MIR.epoch=epoch; MIR.seq=0;
+  MIR.chain=MIR.chain.then(async()=>{
+    const pk=await packText(json), CH=700000, parts=Math.max(1, Math.ceil(pk.d.length/CH));
+    const b=db.batch();
+    for(let i=0;i<parts;i++) b.set(STREAM().doc(docKey(epoch,i)), {e:epoch, s:i, kind:'snap', parts, z:pk.z, d:pk.d.slice(i*CH,(i+1)*CH), at:Date.now()});
+    await b.commit();
+    // pieces that follow are numbered after the snapshot's parts
+    if(MIR.epoch===epoch) MIR.seq=parts;
+    mirPrune(epoch).catch(()=>{});
+  }).catch(e=>console.error('mirror snapshot', e));
+}
+function mirQueue(ops){
+  if(!MIR.epoch) return;
+  MIR.buf.push(...ops);
+  if(!MIR.timer) MIR.timer=setTimeout(mirFlush, 110);
+}
+function mirFlush(){
+  MIR.timer=0;
+  if(!MIR.epoch || !MIR.buf.length) return;
+  const ops=MIR.buf; MIR.buf=[];
+  const epoch=MIR.epoch;
+  MIR.chain=MIR.chain.then(async()=>{
+    if(MIR.epoch!==epoch) return;
+    const s=MIR.seq++;
+    const pk=await packText(JSON.stringify(ops));
+    await STREAM().doc(docKey(epoch,s)).set({e:epoch, s, kind:'ops', z:pk.z, d:pk.d, at:Date.now()});
+  }).catch(e=>console.error('mirror ops', e));
+}
+async function mirPrune(keepFrom){
+  const s=await STREAM().get();
+  const old=s.docs.filter(d=>(d.data().e||0)<keepFrom);
+  for(let i=0;i<old.length;i+=400){ const b=db.batch(); old.slice(i,i+400).forEach(d=>b.delete(d.ref)); await b.commit(); }
+}
+
+/* ----- watching (follower) ----- */
+const REP={on:false, unsub:null, epoch:0, next:0, docs:new Map(), nodes:new Map(), vw:0, vh:0, scale:1, ox:0, oy:0,
+  head:null, scroll:new Map(), raf:0, busy:false, touches:new Map(), cursor:null, waitTimer:0};
+const SVGNS='http://www.w3.org/2000/svg';
+async function portalHead(){
+  if(REP.head!=null) return REP.head;
+  try{
+    const html=await (await fetch(PORTAL_URL, {cache:'force-cache'})).text();
+    const d=new DOMParser().parseFromString(html, 'text/html');
+    REP.head=[...d.head.querySelectorAll('meta[charset],style,link[rel="stylesheet"],link[rel="preconnect"]')].map(n=>n.outerHTML).join('');
+  }catch(e){ REP.head=''; }
+  return REP.head;
+}
+function repStart(){
+  if(REP.on) return;
+  REP.on=true; REP.epoch=0; REP.next=0; REP.docs.clear();
+  $('mirrorWait').textContent='';
+  REP.waitTimer=setTimeout(()=>{ if(REP.on && !REP.epoch) $('mirrorWait').textContent='Connecting to '+((presenterLive()||{}).name||'the presenter')+'…'; }, 600);
+  MREF().update({snapReq:Date.now()}).catch(()=>{});
+  REP.unsub=STREAM().onSnapshot(snap=>{
+    snap.docChanges().forEach(ch=>{ if(ch.type!=='removed'){ const d=ch.doc.data(); REP.docs.set(docKey(d.e,d.s), d); } });
+    repProcess();
+  }, e=>console.error('stream', e));
+}
+function repStop(){
+  if(!REP.on) return;
+  REP.on=false;
+  if(REP.unsub){ REP.unsub(); REP.unsub=null; }
+  clearTimeout(REP.waitTimer);
+  REP.docs.clear(); REP.epoch=0; REP.nodes.clear();
+  const g=$('gestures'); if(g) g.innerHTML='';
+  REP.touches.clear(); REP.cursor=null;
+  const f=$('mirrorFrame'); if(f){ f.removeAttribute('srcdoc'); f.dataset.ready=''; }
+}
+async function repProcess(){
+  if(REP.busy || !REP.on) return;
+  REP.busy=true;
+  try{
+    // the newest complete full copy wins
+    let best=0;
+    REP.docs.forEach(d=>{ if(d.kind==='snap' && d.e>best){ let ok=true; for(let i=0;i<d.parts;i++) if(!REP.docs.has(docKey(d.e,i))) ok=false; if(ok) best=d.e; } });
+    if(best && best>REP.epoch){
+      const first=REP.docs.get(docKey(best,0)); let d='';
+      for(let i=0;i<first.parts;i++) d+=REP.docs.get(docKey(best,i)).d;
+      const snap=JSON.parse(await unpackText(first.z, d));
+      await repBuild(snap);
+      REP.epoch=best; REP.next=first.parts;
+      [...REP.docs.keys()].forEach(k=>{ if(+k.split('_')[0]<best) REP.docs.delete(k); });
+      clearTimeout(REP.waitTimer); $('mirrorWait').textContent='';
+    }
+    if(REP.epoch){
+      for(;;){
+        const k=docKey(REP.epoch, REP.next), d=REP.docs.get(k);
+        if(!d) break;
+        REP.docs.delete(k); REP.next++;
+        if(d.kind==='ops') repApply(JSON.parse(await unpackText(d.z, d.d)));
+      }
+    }
+  }catch(e){ console.error('mirror', e); }
+  REP.busy=false;
+  // more may have arrived while this ran
+  if(REP.on && [...REP.docs.values()].some(d=>(d.e===REP.epoch && d.s===REP.next) || (d.kind==='snap' && d.e>REP.epoch))) setTimeout(repProcess, 0);
+}
+function repDoc(){ const f=$('mirrorFrame'); return f && f.contentDocument; }
+async function repBuild(snap){
+  const f=$('mirrorFrame'); if(!f) return;
+  if(f.dataset.ready!=='1'){
+    const head=await portalHead();
+    await new Promise(res=>{ f.onload=()=>res(); f.srcdoc='<!DOCTYPE html><html><head>'+head+'</head><body></body></html>'; });
+    f.dataset.ready='1';
+  }
+  const doc=f.contentDocument;
+  REP.nodes.clear(); REP.scroll.clear();
+  syncAttrs(doc.documentElement, snap.html);
+  const body=doc.body;
+  syncAttrs(body, snap.body.a);
+  REP.nodes.set(snap.body.i, body);
+  while(body.firstChild) body.removeChild(body.firstChild);
+  (snap.body.k||[]).forEach(c=>{ const n=repMake(doc,c); if(n) body.appendChild(n); });
+  repAfterBuild(doc.body);
+  repViewport(snap.vw, snap.vh);
+  doc.scrollingElement.scrollTop=snap.sy[0]; doc.scrollingElement.scrollLeft=snap.sy[1];
+}
+function syncAttrs(el, a){
+  if(!el || !a) return;
+  [...el.attributes].forEach(at=>{ if(!(at.name in a)) el.removeAttribute(at.name); });
+  for(const k in a){ if(el.getAttribute(k)!==a[k]){ try{ el.setAttribute(k, a[k]); }catch(e){} } }
+}
+function repMake(doc, o){
+  if(o.x!=null){ const t=doc.createTextNode(o.x); REP.nodes.set(o.i, t); return t; }
+  let el;
+  try{ el=o.s ? doc.createElementNS(SVGNS, o.t) : doc.createElement(o.t); }catch(e){ return null; }
+  for(const k in o.a){ try{ el.setAttribute(k, o.a[k]); }catch(e){} }
+  REP.nodes.set(o.i, el);
+  if(o.f!=null){
+    el.setAttribute('srcdoc', '<body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;font:600 15px system-ui,sans-serif;color:#7a879c;background:#f3f5f9">'+esc(o.f)+'</body>');
+    return el;
+  }
+  (o.k||[]).forEach(c=>{ const n=repMake(doc,c); if(n) el.appendChild(n); });
+  if(o.v!=null) el._v=o.v;
+  if(o.c!=null) el._c=o.c;
+  if(o.sc) el._sc=o.sc;
+  return el;
+}
+function repAfterBuild(root){
+  // form values and scroll positions can only be set once nodes are in place
+  const walk=n=>{
+    if(n._v!=null){ try{ n.value=n._v; }catch(e){} delete n._v; }
+    if(n._c!=null){ n.checked=n._c; delete n._c; }
+    if(n._sc){ n.scrollTop=n._sc[0]; n.scrollLeft=n._sc[1]; delete n._sc; }
+    for(const c of n.children||[]) walk(c);
+  };
+  walk(root);
+}
+function repApply(ops){
+  const doc=repDoc(); if(!doc) return;
+  ops.forEach(op=>{
+    if(op.k){
+      const [pid, kids]=op.k;
+      const parent=REP.nodes.get(pid); if(!parent || parent.nodeType!==1) return;
+      while(parent.firstChild) parent.removeChild(parent.firstChild);
+      kids.forEach(c=>{ const n=repMake(doc,c); if(n) parent.appendChild(n); });
+      repAfterBuild(parent);
+    } else if(op.a){
+      const el=REP.nodes.get(op.a[0]); if(el && el.nodeType===1) syncAttrs(el, op.a[1]);
+    } else if(op.h){
+      syncAttrs(doc.documentElement, op.h);
+    } else if(op.x){
+      const t=REP.nodes.get(op.x[0]); if(t) t.data=op.x[1];
+    } else if(op.v){
+      const el=REP.nodes.get(op.v[0]); if(el){ try{ el.value=op.v[1]; }catch(e){} el.checked=op.v[2]; }
+    } else if(op.sc){
+      const [id, t, l]=op.sc;
+      const el=id===0 ? doc.scrollingElement : REP.nodes.get(id);
+      if(el){ REP.scroll.set(el, [t,l]); repTick(); }
+    } else if(op.vp){
+      repViewport(op.vp[0], op.vp[1]);
+    } else if(op.p){
+      gesture(op.p);
+    }
+  });
+}
+/* Scrolling glides to where the presenter is rather than jumping. */
+function repTick(){ if(!REP.raf) REP.raf=requestAnimationFrame(repFrame); }
+function repFrame(){
+  REP.raf=0;
+  let again=false;
+  REP.scroll.forEach((v,el)=>{
+    if(!el.isConnected){ REP.scroll.delete(el); return; }
+    const dt=v[0]-el.scrollTop, dl=v[1]-el.scrollLeft;
+    if(Math.abs(dt)<1 && Math.abs(dl)<1 || RM.matches){ el.scrollTop=v[0]; el.scrollLeft=v[1]; REP.scroll.delete(el); return; }
+    el.scrollTop+=dt*0.35; el.scrollLeft+=dl*0.35; again=true;
+  });
+  if(HL_RENDER_NEEDED()) renderHighlights();
+  if(again) repTick();
+}
+function repViewport(w,h){ REP.vw=w; REP.vh=h; mirFit(); }
+/* The presenter's screen is shown at its own size, scaled to fit here. */
+function mirFit(){
+  const wrap=$('ppMirror'), box=$('mirrorBox'), f=$('mirrorFrame');
+  if(!wrap || !box || !REP.vw) return;
+  const W=wrap.clientWidth, H=wrap.clientHeight;
+  const sc=Math.min(W/REP.vw, H/REP.vh);
+  REP.scale=sc; REP.ox=(W-REP.vw*sc)/2; REP.oy=(H-REP.vh*sc)/2;
+  box.style.width=REP.vw+'px'; box.style.height=REP.vh+'px';
+  box.style.transform=`translate(${REP.ox}px,${REP.oy}px) scale(${sc})`;
+  f.style.width=REP.vw+'px'; f.style.height=REP.vh+'px';
+  renderHighlights();
+}
+
+/* ----- gestures drawn on the follower's screen ----- */
+function gesture(p){
+  const layer=$('gestures'); if(!layer) return;
+  if(p.k==='h'){
+    // mouse moving without a click: a small ring follows it
+    let c=REP.cursor;
+    if(!c){ c=document.createElement('div'); c.className='gCursor'; layer.appendChild(c); REP.cursor=c; }
+    c.style.transform=`translate(${p.x}px,${p.y}px)`;
+    c.classList.remove('idle'); clearTimeout(c._t); c._t=setTimeout(()=>c.classList.add('idle'), 1600);
+    return;
+  }
+  if(p.k==='d'){
+    const t=document.createElement('div'); t.className='gTouch';
+    t.innerHTML='<span></span>';
+    t.style.transform=`translate(${p.x}px,${p.y}px)`;
+    layer.appendChild(t);
+    REP.touches.set(p.id, t);
+    if(REP.cursor) REP.cursor.classList.add('idle');
+  } else if(p.k==='m'){
+    const t=REP.touches.get(p.id); if(t) t.style.transform=`translate(${p.x}px,${p.y}px)`;
+  } else if(p.k==='u'){
+    const t=REP.touches.get(p.id); REP.touches.delete(p.id);
+    if(t){ t.style.transform=`translate(${p.x}px,${p.y}px)`; t.classList.add('lift'); setTimeout(()=>t.remove(), 420); }
+    if(p.tap) tapGlow(p.tap);
+  }
+}
+function tapGlow(id){
+  const el=REP.nodes.get(id), layer=$('gestures');
+  if(!el || !el.isConnected || !el.getBoundingClientRect || !layer) return;
+  const r=el.getBoundingClientRect();
+  if(!r.width && !r.height) return;
+  const g=document.createElement('div'); g.className='gTap';
+  g.style.left=r.left+'px'; g.style.top=r.top+'px'; g.style.width=r.width+'px'; g.style.height=r.height+'px';
+  layer.appendChild(g);
+  setTimeout(()=>g.remove(), 1300);
+}
+
+/* ----- highlight boxes the presenter draws -----
+   Each box remembers the scrolling area it was drawn over and how far that
+   area was scrolled, so it moves with the page under it and disappears with
+   the pop-up it was drawn on. */
+let HL={mode:false, draft:null};
+const HL_RENDER_NEEDED=()=>!!(MTG && MTG.hl && MTG.hl.length);
+function setHlMode(on){
+  HL.mode=!!on;
+  const L=$('hlLayer'); if(L) L.classList.toggle('drawing', HL.mode);
+  ppRenderBar(); renderHighlights();
+}
+function clearHighlights(){ MREF().update({hl:[]}).catch(fail); }
+function ownScroll(sid){
+  try{ const w=PP.frame && PP.frame.contentWindow; return w && w.GH_MIRROR ? w.GH_MIRROR.scrollOf(sid) : null; }catch(e){ return null; }
+}
+function repScroll(sid){
+  const doc=repDoc(); if(!doc) return null;
+  const el=sid ? REP.nodes.get(sid) : doc.scrollingElement;
+  return (el && el.isConnected) ? [el.scrollTop, el.scrollLeft] : null;
+}
+function renderHighlights(){
+  const L=$('hlLayer'); if(!L) return;
+  const list=(MTG && MTG.hl) || [];
+  const watching=REP.on && REP.epoch && !$('ppMirror').classList.contains('hidden');
+  const mine=iPresent();
+  let boxes=[];
+  if(mine || watching){
+    boxes=list.map(h=>{
+      const sc=mine ? ownScroll(h.sid) : repScroll(h.sid);
+      if(!sc) return null;
+      let x=h.x-(sc[1]-h.sl), y=h.y-(sc[0]-h.st), w=h.w, hh=h.h;
+      if(!mine){ x=REP.ox+x*REP.scale; y=REP.oy+y*REP.scale; w*=REP.scale; hh*=REP.scale; }
+      return {id:h.id, x, y, w, h:hh};
+    }).filter(Boolean);
+  }
+  if(HL.draft) boxes.push(Object.assign({id:'_draft', draft:true}, HL.draft));
+  keyed(L, boxes, b=>b.id, b=>`<div class="hlBox${b.draft?' draft':''}"></div>`, (el,b)=>{
+    el.style.transform=`translate(${b.x}px,${b.y}px)`; el.style.width=b.w+'px'; el.style.height=b.h+'px';
+    el.onclick = (mine && HL.mode && !b.draft) ? (e)=>{ e.stopPropagation(); MREF().update({hl:(MTG.hl||[]).filter(x=>x.id!==b.id)}).catch(fail); } : null;
+  });
+  L.classList.toggle('drawing', mine && HL.mode);
+}
+(function(){
+  // drawing highlight boxes over the presenter's own practice copy
+  let start=null;
+  document.addEventListener('pointerdown', e=>{
+    const L=$('hlLayer');
+    if(!L || !HL.mode || !iPresent() || e.target!==L) return;
+    e.preventDefault();
+    const r=L.getBoundingClientRect();
+    start={x:e.clientX-r.left, y:e.clientY-r.top, id:e.pointerId};
+    L.setPointerCapture(e.pointerId);
+    HL.draft={x:start.x, y:start.y, w:0, h:0};
+    renderHighlights();
+  });
+  document.addEventListener('pointermove', e=>{
+    if(!start || e.pointerId!==start.id) return;
+    const r=$('hlLayer').getBoundingClientRect();
+    const x=e.clientX-r.left, y=e.clientY-r.top;
+    HL.draft={x:Math.min(x,start.x), y:Math.min(y,start.y), w:Math.abs(x-start.x), h:Math.abs(y-start.y)};
+    renderHighlights();
+  });
+  const end=e=>{
+    if(!start || e.pointerId!==start.id) return;
+    const d=HL.draft; start=null; HL.draft=null;
+    if(d && d.w>10 && d.h>10){
+      let a={sid:0, st:0, sl:0};
+      try{ a=PP.frame.contentWindow.GH_MIRROR.anchorAt(d.x+d.w/2, d.y+d.h/2); }catch(err){}
+      const box={id:uid(), x:Math.round(d.x), y:Math.round(d.y), w:Math.round(d.w), h:Math.round(d.h), sid:a.sid, st:a.st, sl:a.sl};
+      MTG.hl=(MTG.hl||[]).concat([box]);
+      MREF().update({hl:MTG.hl}).catch(fail);
+      ppRenderBar();
+    }
+    renderHighlights();
+  };
+  document.addEventListener('pointerup', end);
+  document.addEventListener('pointercancel', end);
+  // the presenter's boxes follow their own scrolling too
+  setInterval(()=>{ if(iPresent() && HL_RENDER_NEEDED() && TAB==='practice') renderHighlights(); }, 120);
+})();
 /* Wipes the practice jobs for everyone and starts them again from the
    built-in set. Every open practice copy notices and reloads. */
 async function resetPractice(){
