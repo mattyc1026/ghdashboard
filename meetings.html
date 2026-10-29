@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Good &amp; Handy Meetings</title>
+<link rel="icon" href="favicon.ico?v=2" sizes="any">
+<link rel="icon" type="image/png" sizes="192x192" href="favicon.png?v=2">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=2">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script>
+/* Display settings are shared with the portal on this device. */
+(function(){
+  try{
+    var r=document.documentElement;
+    if(localStorage.getItem('gh_dark_mode')==='1') r.classList.add('dark');
+    if(localStorage.getItem('gh_high_contrast')==='1') r.classList.add('hc');
+    var M=[15,18,21,25,29], D=[14,16,18,21,24];
+    var i=M.indexOf(parseInt(localStorage.getItem('gh_text_scale'),10));
+    if(i<0) i=M.length-1;
+    r.style.setProperty('--mScale', M[i]+'px');
+    r.style.setProperty('--dScale', D[i]+'px');
+  }catch(e){}
+})();
+</script>
+<style>
+:root{
+  --navy:#0f2647; --navy2:#1b3f73; --orange:#e8791a;
+  --cream:#e9edf3; --paper:#ffffff; --ink:#141f33; --muted:#5f6e87;
+  --line:#dbe2ec; --line-soft:#eaeef4; --grid-line:rgba(15,38,71,.045);
+  --red:#ffd9d9; --redb:#c0392b; --green:#d2f2df; --greenb:#1f8a55;
+  --hl:#fff4e6;
+  --f-display:'DM Serif Display',Georgia,serif;
+  --f-body:'DM Sans',system-ui,-apple-system,sans-serif;
+  --f-data:'DM Mono',ui-monospace,monospace;
+  --radius:12px; --radius-sm:8px;
+  --sh-1:0 1px 2px rgba(15,38,71,.06),0 1px 3px rgba(15,38,71,.08);
+  --sh-2:0 6px 18px rgba(15,38,71,.12);
+  --board:#ffffff;
+}
+html.dark{
+  color-scheme:dark;
+  --navy:#dbe5f5; --navy2:#16233a; --orange:#ff9a45;
+  --cream:#0e1522; --paper:#161f30; --ink:#e7edf7; --muted:#94a3bb;
+  --line:#2b3a54; --line-soft:#1f2c42; --grid-line:rgba(219,229,245,.04);
+  --red:#38202a; --redb:#ff8f7d; --green:#12301f; --greenb:#4fd48a;
+  --hl:#2b2418;
+  --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 6px 18px rgba(0,0,0,.5);
+  --board:#1b2438;
+}
+html.hc{ --line:#0f2647; --muted:#2b3a54; --ink:#000; }
+html.dark.hc{ --line:#dbe5f5; --muted:#c9d4e6; --ink:#fff; }
+*{box-sizing:border-box;}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;}
+body{margin:0;font-family:var(--f-body);color:var(--ink);font-size:var(--dScale,16px);line-height:1.5;
+  background-color:var(--cream);
+  background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
+  background-size:24px 24px;min-height:100vh;}
+@media (max-width:900px){ body{font-size:var(--mScale,18px);} }
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
+@media (max-width:900px){ input,select,textarea{font-size:max(16px,1em);} }
+.hidden{display:none !important;}
+
+/* ---- top bar ---- */
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
+  padding:10px 18px;padding-top:max(10px,env(safe-area-inset-top));
+  background:var(--navy);color:#fff;box-shadow:var(--sh-2);}
+html.dark header.top{background:#0b1220;color:var(--ink);border-bottom:1px solid var(--line);}
+header.top a.back{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.9em;opacity:.9;}
+header.top .ttl{font-family:var(--f-display);font-size:1.35em;flex:1 1 auto;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+header.top .who{font-size:.85em;opacity:.85;white-space:nowrap;}
+main{max-width:1280px;margin:0 auto;padding:18px;}
+@media (max-width:900px){ main{padding:12px;} header.top{padding-left:12px;padding-right:12px;} }
+
+/* ---- buttons, fields ---- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;border:1.5px solid var(--navy);background:var(--navy);color:#fff;
+  font-weight:700;border-radius:var(--radius-sm);padding:9px 16px;min-height:40px;cursor:pointer;box-shadow:var(--sh-1);white-space:nowrap;}
+html.dark .btn{color:var(--paper);}
+html.dark .btn.secondary{color:var(--navy);}
+html.dark .btn.danger{color:var(--redb);}
+html.dark .btn.orange{color:#1a0d00;}
+.btn.secondary{background:var(--paper);color:var(--navy);border-color:var(--line);}
+.btn.secondary:hover{border-color:var(--navy);}
+.btn.danger{background:var(--red);color:var(--redb);border-color:var(--redb);}
+.btn.orange{background:var(--orange);border-color:var(--orange);color:#fff;}
+.btn.sm{padding:6px 11px;min-height:34px;font-size:.85em;}
+.btn[disabled]{opacity:.5;cursor:not-allowed;}
+.btn .ic,.iconBtn .ic{width:1.05em;height:1.05em;flex:0 0 auto;}
+.iconBtn{display:inline-flex;align-items:center;justify-content:center;width:2.1em;height:2.1em;border-radius:var(--radius-sm);
+  border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;flex:0 0 auto;}
+.iconBtn:hover{border-color:var(--line);color:var(--navy);}
+input[type=text],input[type=date],select,textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
+  padding:9px 11px;min-height:42px;outline:none;}
+input:focus,select:focus,textarea:focus{border-color:var(--orange);}
+textarea{resize:vertical;min-height:70px;line-height:1.45;}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);padding:16px;}
+.panelTitle{font-size:.74em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);margin:0 0 10px;
+  display:flex;align-items:center;gap:8px;}
+.panelTitle .count{background:var(--navy);color:#fff;border-radius:999px;padding:1px 8px;font-family:var(--f-data);font-weight:500;letter-spacing:0;}
+html.dark .panelTitle .count{color:var(--paper);}
+.small{font-size:.82em;color:var(--muted);}
+.row{display:flex;gap:8px;align-items:center;}
+.grow{flex:1 1 auto;min-width:0;}
+
+/* ---- meeting list ---- */
+.listHead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 16px;}
+.listHead h1{font-family:var(--f-display);font-weight:400;font-size:2em;margin:0;color:var(--navy);}
+.mtgRow{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-left:5px solid var(--line);
+  border-radius:var(--radius);padding:13px 16px;margin-bottom:10px;cursor:pointer;box-shadow:var(--sh-1);transition:transform .12s,box-shadow .12s;}
+.mtgRow:hover{transform:translateY(-2px);box-shadow:var(--sh-2);}
+.mtgRow.live{border-left-color:var(--orange);}
+.mtgRow .name{font-family:var(--f-display);font-size:1.2em;color:var(--navy);line-height:1.25;}
+.mtgRow .meta{font-size:.82em;color:var(--muted);}
+.liveTag{background:var(--orange);color:#fff;font-size:.66em;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
+.endedTag{background:var(--line-soft);color:var(--muted);font-size:.66em;font-weight:700;letter-spacing:.1em;padding:3px 9px;border-radius:20px;text-transform:uppercase;}
+.sectionLabel{font-size:.76em;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--navy);
+  border-bottom:1px solid var(--line);padding-bottom:8px;margin:24px 2px 12px;}
+.empty{border:1.5px dashed var(--line);border-radius:var(--radius);padding:22px;text-align:center;color:var(--muted);}
+
+/* ---- meeting screen ---- */
+.mtgHead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:12px;}
+.mtgHead h1{font-family:var(--f-display);font-weight:400;font-size:1.8em;margin:0;color:var(--navy);line-height:1.2;cursor:text;}
+.mtgHead .when{font-size:.85em;color:var(--muted);}
+.mtgHead .spacer{flex:1 1 auto;}
+.people{display:flex;flex-wrap:wrap;gap:6px;}
+.chip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--paper);border-radius:999px;padding:3px 10px 3px 4px;font-size:.8em;font-weight:600;color:var(--navy);}
+.chip .dot{width:1.6em;height:1.6em;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.8em;font-weight:700;text-transform:uppercase;}
+.chip.me{border-color:var(--orange);}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px;overflow-x:auto;scrollbar-width:none;}
+.tabs::-webkit-scrollbar{display:none;}
+.tabs button{border:0;background:transparent;padding:10px 14px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
+  border-bottom:3px solid transparent;margin-bottom:-1px;display:inline-flex;align-items:center;gap:7px;}
+.tabs button.on{color:var(--navy);border-bottom-color:var(--orange);}
+.tabs button .ic{width:1.1em;height:1.1em;}
+@media (max-width:900px){
+  .tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-bottom:0;overflow:visible;}
+  .tabs button{border:1.5px solid var(--line);border-radius:var(--radius-sm);background:var(--paper);margin:0;padding:9px 8px;justify-content:center;font-size:.85em;white-space:normal;text-align:center;line-height:1.2;}
+  .tabs button.on{border-color:var(--orange);background:var(--hl);}
+}
+.tabs .liveDot{width:.55em;height:.55em;border-radius:50%;background:var(--orange);display:inline-block;}
+
+/* agenda + notes */
+.anGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;align-items:start;}
+@media (max-width:900px){ .anGrid{grid-template-columns:minmax(0,1fr);} }
+.agItem{display:flex;align-items:flex-start;gap:8px;padding:9px 8px;border-radius:var(--radius-sm);border:1px solid transparent;}
+.agItem + .agItem{margin-top:2px;}
+.agItem.current{background:var(--hl);border-color:var(--orange);}
+.agItem .txt{flex:1 1 auto;min-width:0;cursor:pointer;overflow-wrap:anywhere;padding-top:2px;}
+.agItem.done .txt{text-decoration:line-through;color:var(--muted);}
+.agItem input[type=checkbox]{width:1.15em;height:1.15em;margin-top:.25em;accent-color:var(--orange);flex:0 0 auto;cursor:pointer;}
+.agItem .tools{display:flex;gap:0;opacity:.0;transition:opacity .12s;}
+.agItem:hover .tools,.agItem.current .tools{opacity:1;}
+@media (hover:none){ .agItem .tools{opacity:1;} }
+/* On a phone the item text keeps the full width; the move, edit and delete
+   buttons show on their own row under the current item only. */
+@media (max-width:900px){
+  .agItem{flex-wrap:wrap;}
+  .agItem .txt{flex:1 1 0;}
+  .agItem .tools{display:none;flex:0 0 100%;justify-content:flex-end;opacity:1;}
+  .agItem.current .tools{display:flex;}
+}
+.addRow{display:flex;gap:8px;margin-top:10px;}
+.noteGroup + .noteGroup{margin-top:16px;}
+.noteGroup h3{font-size:.78em;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 8px;font-weight:700;}
+.note{border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 11px;background:var(--paper);}
+.note + .note{margin-top:8px;}
+.note .by{font-size:.76em;color:var(--muted);display:flex;align-items:center;gap:6px;}
+.note .by b{color:var(--navy);}
+.note .body{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px;}
+.composer{margin-top:14px;}
+.composer .addTo{font-size:.78em;color:var(--muted);margin-bottom:6px;}
+.composer .addTo b{color:var(--navy);}
+
+/* whiteboard */
+.wbBar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;}
+.wbBar .sep{width:1px;height:1.8em;background:var(--line);margin:0 4px;}
+.tool{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-width:2.4em;height:2.4em;padding:0 10px;border-radius:var(--radius-sm);
+  border:1.5px solid var(--line);background:var(--paper);color:var(--navy);cursor:pointer;font-weight:700;font-size:.85em;}
+.tool.on{border-color:var(--orange);background:var(--hl);}
+.tool .ic{width:1.2em;height:1.2em;}
+.swatch{width:2em;height:2em;border-radius:50%;border:2px solid var(--paper);box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0;}
+.swatch.on{box-shadow:0 0 0 2.5px var(--orange);}
+.sizeDot{border-radius:50%;background:var(--navy);display:inline-block;}
+.boardWrap{position:relative;width:100%;}
+.board{position:relative;width:100%;aspect-ratio:16/10;background:var(--board);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--sh-1);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;}
+.board canvas{position:absolute;inset:0;width:100%;height:100%;}
+.board.pen{cursor:crosshair;} .board.eraser{cursor:cell;} .board.sticky{cursor:copy;}
+.stickyLayer{position:absolute;inset:0;pointer-events:none;}
+.stk{position:absolute;width:15%;min-width:120px;pointer-events:auto;border-radius:6px;box-shadow:0 4px 10px rgba(0,0,0,.18);
+  display:flex;flex-direction:column;color:#1d1a00;}
+.stk .grip{height:1.6em;cursor:grab;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 8px;font-size:.7em;
+  color:rgba(0,0,0,.55);touch-action:none;}
+.stk .grip button{border:0;background:transparent;color:rgba(0,0,0,.55);cursor:pointer;font-size:1.4em;line-height:1;padding:0 4px;}
+.stk textarea{border:0;background:transparent;resize:none;min-height:5.5em;padding:2px 8px 8px;font-size:.85em;line-height:1.35;color:#1d1a00;border-radius:0 0 6px 6px;}
+.stk textarea:focus{outline:none;}
+.board.readonly .stk .grip{cursor:default;}
+
+/* action items */
+.aiForm{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr) minmax(0,.9fr) auto;gap:8px;align-items:center;}
+@media (max-width:900px){ .aiForm{grid-template-columns:minmax(0,1fr);} }
+.ai{display:flex;align-items:flex-start;gap:10px;padding:10px 4px;border-bottom:1px solid var(--line-soft);}
+.ai:last-child{border-bottom:0;}
+.ai input[type=checkbox]{width:1.25em;height:1.25em;margin-top:.2em;accent-color:var(--greenb);flex:0 0 auto;cursor:pointer;}
+.ai .txt{overflow-wrap:anywhere;cursor:text;}
+.ai.done .txt{text-decoration:line-through;color:var(--muted);}
+.ai .sub{display:flex;flex-wrap:wrap;gap:6px 10px;margin-top:3px;font-size:.78em;color:var(--muted);}
+.ai .who{font-weight:700;color:var(--navy);}
+.ai .due.late{color:var(--redb);font-weight:700;}
+
+/* practice portal */
+.ppBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
+.ppBar .status{font-size:.85em;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:8px;}
+.ppFrameWrap{position:relative;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh-1);background:var(--paper);
+  height:calc(100vh - 16em);min-height:420px;}
+.ppFrameWrap iframe{width:100%;height:100%;border:0;display:block;}
+body.ppFull .ppFrameWrap{position:fixed;inset:0;z-index:60;border-radius:0;height:auto;min-height:0;border:0;}
+.ppExit{display:none;position:fixed;z-index:61;right:12px;bottom:max(12px,env(safe-area-inset-bottom));}
+body.ppFull .ppExit{display:inline-flex;}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:600;color:var(--navy);}
+.switch input{width:1.15em;height:1.15em;accent-color:var(--orange);}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;}
+.modal{background:var(--paper);border-radius:var(--radius);box-shadow:var(--sh-2);width:100%;max-width:440px;padding:18px;}
+.modal h2{font-family:var(--f-display);font-weight:400;margin:0 0 12px;color:var(--navy);font-size:1.4em;}
+.modal .msg{margin:0 0 14px;white-space:pre-wrap;}
+.modal .acts{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;flex-wrap:wrap;}
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);background:var(--navy);color:#fff;
+  padding:10px 16px;border-radius:var(--radius-sm);box-shadow:var(--sh-2);z-index:90;font-weight:600;font-size:.9em;max-width:calc(100vw - 32px);}
+html.dark .toast{color:var(--paper);}
+.gate{max-width:460px;margin:60px auto;text-align:center;}
+.gate h1{font-family:var(--f-display);font-weight:400;color:var(--navy);}
+.gate .err{font-family:var(--f-data);font-size:.8em;color:var(--redb);margin-top:10px;overflow-wrap:anywhere;}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16l-1 4z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-marker" viewBox="0 0 24 24"><path d="M5 19l3-1 9-9-2-2-9 9-1 3zM14 6l2-2 4 4-2 2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M3 22h8" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity=".45"/></symbol>
+  <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M16 3l5 5-10 10H6l-3-3L16 3zM13 18h8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-sticky" viewBox="0 0 24 24"><path d="M4 4h16v10l-6 6H4V4zM14 20v-6h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 21l4-4 4 4M7 13l3-3 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-portal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3 9h18M8 4v5" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
+  <symbol id="i-cast" viewBox="0 0 24 24"><path d="M3 8V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2h-6M3 12a8 8 0 018 8M3 16a4 4 0 014 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="3.5" cy="20" r="1" fill="currentColor"/></symbol>
+  <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M5.5 15a7 7 0 0012 2.5M18.5 9a7 7 0 00-12-2.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+</svg>
+
+<header class="top">
+  <a class="back" id="backLink" href="index.html"><svg class="ic" style="width:1.1em;height:1.1em"><use href="#i-back"/></svg><span id="backText">Dashboard</span></a>
+  <div class="ttl" id="topTitle"></div>
+  <div class="who" id="whoami"></div>
+</header>
+<main id="main"></main>
+<div id="modalRoot"></div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script>
+'use strict';
+/* =========================================================================
+   MEETINGS
+   A live workspace for in-person meetings: agenda and shared notes, a
+   whiteboard, action items, and the practice copy of the portal. Every
+   device in the meeting sees the same thing as it changes. It runs on the
+   portal's Firebase project and sign-in, which this page shares because both
+   sites live at the same address.
+
+   Firestore layout, all under gh_portal/meetings/items/{meetingId}:
+     the meeting itself  {title, createdAt, createdBy, status, presenter, view, currentAgenda}
+     agenda/{id}         {text, order, done}
+     notes/{id}          {text, agendaId, by, at}
+     actions/{id}        {text, assignee, due, done}
+     strokes/{id}        {pts:[x,y,x,y...], color, size, tool, by, at}
+     stickies/{id}       {x, y, text, color, by, at}
+     presence/{uid}      {name, at, ink}
+   Board positions are stored as fractions of the board, so every screen size
+   draws the same picture.
+========================================================================= */
+const PORTAL_URL='../goodandhandyportal/';
+const CFG_KEY='gh_portal_sync_cfg';
+const PORTAL_DB_KEY='gh_portal_db_v1';
+const SUBS=['agenda','notes','actions','strokes','stickies','presence'];
+const COLORS=['#0f2647','#e8791a','#c0392b','#1f8a55','#2f6fd6','#7b4bc4'];
+const STICKY_COLORS=['#fff27a','#ffd0c2','#d2f2df','#d6e4ff','#f1dcff'];
+const SIZES=[2.5,5,10];
+const PRESENCE_MS=20000, ALIVE_MS=65000;
+
+let db=null, ME=null, USERS={};
+let MEETINGS=[], LIST_UNSUB=null;
+let MTG=null, MTG_ID=null, MTG_UNSUBS=[];
+let DATA={agenda:[], notes:[], actions:[], strokes:[], stickies:[], presence:[]};
+let TAB='agenda';
+let presenceTimer=null;
+
+/* ---------- small helpers ---------- */
+const $=id=>document.getElementById(id);
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function icon(n){ return `<svg class="ic"><use href="#i-${n}"/></svg>`; }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
+function fmtDate(ms){ return new Date(ms).toLocaleDateString([], {weekday:'short', month:'short', day:'numeric', year:'numeric'}); }
+function fmtTime(ms){ return new Date(ms).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
+function fmtShortDate(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString([], {month:'short', day:'numeric'}); }
+function todayISO(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function colorFor(name){ let h=0; for(const c of String(name)) h=(h*31+c.charCodeAt(0))>>>0; return COLORS[h%COLORS.length]; }
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg; document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 2600);
+}
+function askYesNo(title, msg, yesLabel, danger){
+  return new Promise(res=>{
+    $('modalRoot').innerHTML=`<div class="overlay"><div class="modal"><h2>${esc(title)}</h2>${msg?`<p class="msg">${esc(msg)}</p>`:''}
+      <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn ${danger?'danger':''}" id="mYes">${esc(yesLabel||'OK')}</button></div></div></div>`;
+    const done=v=>{ $('modalRoot').innerHTML=''; res(v); };
+    $('mNo').onclick=()=>done(false); $('mYes').onclick=()=>done(true);
+  });
+}
+function askText(title, value, yesLabel){
+  return new Promise(res=>{
+    $('modalRoot').innerHTML=`<div class="overlay"><div class="modal"><h2>${esc(title)}</h2>
+      <input type="text" id="mText" value="${esc(value||'')}" maxlength="120">
+      <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn" id="mYes">${esc(yesLabel||'Save')}</button></div></div></div>`;
+    const inp=$('mText'); setTimeout(()=>{ inp.focus(); inp.select(); }, 30);
+    const done=v=>{ $('modalRoot').innerHTML=''; res(v); };
+    $('mNo').onclick=()=>done(null);
+    $('mYes').onclick=()=>done(inp.value.trim());
+    inp.onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); done(inp.value.trim()); } if(e.key==='Escape') done(null); };
+  });
+}
+function gate(title, detail){
+  $('main').innerHTML=`<div class="gate panel"><h1>${esc(title)}</h1>
+    <a class="btn" href="${PORTAL_URL}">Open the Portal</a>${detail?`<div class="err">${esc(detail)}</div>`:''}</div>`;
+}
+function fail(e){
+  console.error(e);
+  toast(e && e.code==='permission-denied' ? 'Not allowed. Check the Firestore rules.' : 'That did not save. Check your connection.');
+}
+const ROOT=()=>db.collection('gh_portal').doc('meetings').collection('items');
+const MREF=()=>ROOT().doc(MTG_ID);
+const SUB=n=>MREF().collection(n);
+const readOnly=()=>!MTG || MTG.status==='ended';
+
+/* ---------- start-up: same Firebase project and sign-in as the portal ---------- */
+function boot(){
+  let cfg=null;
+  try{ cfg=JSON.parse(localStorage.getItem(CFG_KEY)||'null'); }catch(e){}
+  if(!cfg || typeof firebase==='undefined'){ gate('This device is not connected to the portal.'); return; }
+  try{
+    if(!cfg.storageBucket && cfg.projectId) cfg.storageBucket=cfg.projectId+'.appspot.com';
+    if(!firebase.apps.length) firebase.initializeApp(cfg);
+    db=firebase.firestore();
+  }catch(e){ gate('Meetings could not connect.', e && (e.message||e.code)); return; }
+  try{ USERS=(JSON.parse(localStorage.getItem(PORTAL_DB_KEY)||'{}')||{}).users||{}; }catch(e){ USERS={}; }
+  firebase.auth().onAuthStateChanged(user=>{
+    if(!user){ ME=null; stopAll(); gate('Sign in to the portal on this device first.'); return; }
+    const rec=Object.values(USERS).find(u=>u.uid===user.uid);
+    ME={uid:user.uid, name:rec ? rec.username : (user.email||'').split('@')[0], isAdmin:!!(rec && rec.isAdmin)};
+    $('whoami').textContent=ME.name;
+    // The portal's user list, for names and action item assignees.
+    db.collection('gh_portal').doc('main').get().then(s=>{
+      const raw=s.exists && s.data().meta;
+      if(!raw) return;
+      try{
+        const u=JSON.parse(raw).users||{};
+        if(Object.keys(u).length){ USERS=u; const r=Object.values(u).find(x=>x.uid===ME.uid); if(r){ ME.name=r.username; ME.isAdmin=!!r.isAdmin; $('whoami').textContent=ME.name; } if(MTG) render(); }
+      }catch(e){}
+    }).catch(()=>{});
+    route();
+  });
+  window.addEventListener('hashchange', route);
+}
+function stopAll(){ leaveMeeting(); if(LIST_UNSUB){ LIST_UNSUB(); LIST_UNSUB=null; } }
+function route(){
+  if(!ME) return;
+  const m=location.hash.match(/^#m=([\w-]+)/);
+  if(m){ openMeeting(m[1]); } else { leaveMeeting(); showList(); }
+}
+
+/* ---------- meeting list ---------- */
+function showList(){
+  $('backLink').href='index.html'; $('backText').textContent='Dashboard';
+  $('backLink').onclick=null;
+  document.title='Good & Handy Meetings';
+  renderList();
+  if(LIST_UNSUB) return;
+  LIST_UNSUB=ROOT().onSnapshot(snap=>{
+    MEETINGS=snap.docs.map(d=>Object.assign({id:d.id}, d.data())).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
+    if(!MTG_ID) renderList();
+  }, e=>{ console.error(e); if(!MTG_ID) gate('Meetings could not connect.', e && (e.code||e.message)); });
+}
+function renderList(){
+  const live=MEETINGS.filter(m=>m.status!=='ended'), past=MEETINGS.filter(m=>m.status==='ended');
+  const row=m=>`<div class="mtgRow ${m.status!=='ended'?'live':''}" onclick="location.hash='m=${m.id}'">
+      <div class="grow"><div class="name">${esc(m.title||'Meeting')}</div>
+      <div class="meta">${fmtDate(m.createdAt||Date.now())}, ${fmtTime(m.createdAt||Date.now())}${m.createdByName?', '+esc(m.createdByName):''}</div></div>
+      ${m.status!=='ended'?'<span class="liveTag">Live</span>':'<span class="endedTag">Ended</span>'}
+    </div>`;
+  $('main').innerHTML=`<div class="listHead"><h1>Meetings</h1><button class="btn orange" onclick="newMeeting()">${icon('plus')}New Meeting</button></div>
+    ${live.length?`<div class="sectionLabel">Live</div>${live.map(row).join('')}`:''}
+    <div class="sectionLabel">Past Meetings</div>
+    ${past.length?past.map(row).join(''):'<div class="empty">No past meetings.</div>'}`;
+}
+async function newMeeting(){
+  const d=new Date();
+  const title=await askText('New Meeting', 'Meeting, '+d.toLocaleDateString([], {month:'short', day:'numeric'}), 'Start');
+  if(title===null) return;
+  const ref=ROOT().doc();
+  try{
+    await ref.set({title:title||'Meeting', createdAt:Date.now(), createdBy:ME.uid, createdByName:ME.name, status:'live', presenter:null, view:null, currentAgenda:null});
+    location.hash='m='+ref.id;
+  }catch(e){ fail(e); }
+}
+
+/* ---------- opening a meeting ---------- */
+function openMeeting(id){
+  if(MTG_ID===id) return;
+  leaveMeeting();
+  MTG_ID=id; MTG=null;
+  DATA={agenda:[], notes:[], actions:[], strokes:[], stickies:[], presence:[]};
+  try{ TAB=sessionStorage.getItem('gh_mtg_tab_'+id)||'agenda'; }catch(e){ TAB='agenda'; }
+  $('backLink').href='#'; $('backText').textContent='Meetings';
+  $('topTitle').textContent='';
+  $('backLink').onclick=e=>{ e.preventDefault(); location.hash=''; };
+  $('main').innerHTML='<div class="small" style="padding:20px">Loading…</div>';
+  MTG_UNSUBS.push(MREF().onSnapshot(s=>{
+    if(!s.exists){ if(MTG){ toast('This meeting was deleted.'); } location.hash=''; return; }
+    const prev=MTG;
+    MTG=Object.assign({id:s.id}, s.data());
+    document.title=(MTG.title||'Meeting')+', Good & Handy';
+    if(!prev) render(); else onMeetingChange(prev);
+  }, e=>{ console.error(e); gate('This meeting could not load.', e && (e.code||e.message)); }));
+  SUBS.forEach(n=>{
+    MTG_UNSUBS.push(SUB(n).onSnapshot(s=>{
+      DATA[n]=s.docs.map(d=>Object.assign({id:d.id}, d.data()));
+      if(MTG) onDataChange(n);
+    }, e=>console.error(n, e)));
+  });
+  startPresence();
+}
+function leaveMeeting(){
+  MTG_UNSUBS.forEach(u=>{ try{ u(); }catch(e){} }); MTG_UNSUBS=[];
+  stopPresence();
+  if(MTG_ID && db && ME){ try{ SUB('presence').doc(ME.uid).delete().catch(()=>{}); }catch(e){} }
+  ppTeardown();
+  MTG=null; MTG_ID=null;
+  document.body.classList.remove('ppFull');
+}
+function startPresence(){
+  stopPresence();
+  const beat=()=>{ if(MTG_ID && ME) SUB('presence').doc(ME.uid).set({name:ME.name, at:Date.now()}, {merge:true}).catch(()=>{}); };
+  beat();
+  presenceTimer=setInterval(beat, PRESENCE_MS);
+}
+function stopPresence(){ clearInterval(presenceTimer); presenceTimer=null; }
+window.addEventListener('pagehide', ()=>{ if(MTG_ID && ME && db){ try{ SUB('presence').doc(ME.uid).delete(); }catch(e){} } });
+document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && MTG_ID) startPresence(); });
+function livePeople(){
+  const now=Date.now();
+  return DATA.presence.filter(p=>p.id===ME.uid || (now-(p.at||0))<ALIVE_MS).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+}
+
+/* ---------- meeting screen ---------- */
+const TABS=[['agenda','list','Agenda & Notes'],['board','board','Whiteboard'],['actions','check','Action Items'],['practice','portal','Practice Portal']];
+function render(){
+  if(!MTG) return;
+  const ro=readOnly();
+  $('main').innerHTML=`
+    <div class="mtgHead">
+      <div><h1 id="mtgTitle" title="Rename">${esc(MTG.title||'Meeting')}</h1>
+      <div class="when">${fmtDate(MTG.createdAt||Date.now())}, ${fmtTime(MTG.createdAt||Date.now())}</div></div>
+      <div class="spacer"></div>
+      <div class="people" id="people"></div>
+      ${ro?`<button class="btn secondary sm" onclick="setStatus('live')">Reopen</button>`
+          :`<button class="btn secondary sm" onclick="endMeeting()">End Meeting</button>`}
+      ${(ME.isAdmin || MTG.createdBy===ME.uid)?`<button class="iconBtn" title="Delete meeting" aria-label="Delete meeting" onclick="deleteMeeting()">${icon('trash')}</button>`:''}
+    </div>
+    <div class="tabs" id="tabs"></div>
+    <section id="pane-agenda" class="pane"></section>
+    <section id="pane-board" class="pane"></section>
+    <section id="pane-actions" class="pane"></section>
+    <section id="pane-practice" class="pane"></section>`;
+  $('mtgTitle').onclick=renameMeeting;
+  renderPeople(); renderTabs();
+  renderAgendaPane(); renderBoardPane(); renderActionsPane(); renderPracticePane();
+  showTab(TAB);
+}
+function renderTabs(){
+  const presenting=presenterLive();
+  $('tabs').innerHTML=TABS.map(([k,ic,l])=>`<button class="${k===TAB?'on':''}" onclick="showTab('${k}')">${icon(ic)}${l}${k==='practice'&&presenting?'<span class="liveDot"></span>':''}</button>`).join('');
+}
+function showTab(k){
+  TAB=k;
+  try{ sessionStorage.setItem('gh_mtg_tab_'+MTG_ID, k); }catch(e){}
+  document.querySelectorAll('.pane').forEach(p=>p.classList.toggle('hidden', p.id!=='pane-'+k));
+  renderTabs();
+  if(k==='board') requestAnimationFrame(sizeBoard);
+  if(k==='practice') ppEnsure();
+}
+function renderPeople(){
+  const el=$('people'); if(!el) return;
+  el.innerHTML=livePeople().map(p=>`<span class="chip ${p.id===ME.uid?'me':''}"><span class="dot" style="background:${colorFor(p.name)}">${esc(String(p.name||'?').slice(0,1))}</span>${esc(p.name)}</span>`).join('');
+}
+function onMeetingChange(prev){
+  if(prev.status!==MTG.status){ render(); return; }
+  if(prev.title!==MTG.title){ const t=$('mtgTitle'); if(t) t.textContent=MTG.title||'Meeting'; }
+  if(prev.currentAgenda!==MTG.currentAgenda){ renderAgendaList(); renderNotes(); }
+  ppOnMeeting(prev);
+  renderTabs();
+}
+function onDataChange(n){
+  if(n==='agenda'){ renderAgendaList(); renderNotes(); }
+  else if(n==='notes') renderNotes();
+  else if(n==='actions') renderActions();
+  else if(n==='strokes'){ drawBoard(); }
+  else if(n==='stickies') renderStickies();
+  else if(n==='presence'){ renderPeople(); drawLive(); ppRenderBar(); renderTabs(); }
+}
+async function renameMeeting(){
+  const t=await askText('Rename Meeting', MTG.title||'', 'Save');
+  if(t) MREF().update({title:t}).catch(fail);
+}
+async function endMeeting(){
+  if(await askYesNo('End this meeting?', '', 'End Meeting')) setStatus('ended');
+}
+function setStatus(st){
+  const upd={status:st};
+  if(st==='ended'){ upd.endedAt=Date.now(); upd.presenter=null; upd.view=null; }
+  MREF().update(upd).catch(fail);
+}
+async function deleteMeeting(){
+  if(!await askYesNo('Delete this meeting?', 'Its agenda, notes, whiteboard and action items are deleted for everyone.', 'Delete', true)) return;
+  const id=MTG_ID, ref=MREF();
+  location.hash='';
+  try{
+    for(const n of SUBS){
+      const s=await ref.collection(n).get();
+      for(let i=0;i<s.docs.length;i+=400){
+        const b=db.batch(); s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref)); await b.commit();
+      }
+    }
+    await ref.delete();
+    toast('Meeting deleted.');
+  }catch(e){ fail(e); }
+}
+
+/* ---------- agenda + notes ---------- */
+let NOTE_EDIT=null;
+function renderAgendaPane(){
+  const ro=readOnly();
+  $('pane-agenda').innerHTML=`<div class="anGrid">
+    <div class="panel"><div class="panelTitle">Agenda <span class="count" id="agCount">0</span></div>
+      <div id="agList"></div>
+      ${ro?'':`<div class="addRow"><input type="text" id="agNew" maxlength="200" aria-label="New agenda item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda();}"><button class="btn" onclick="addAgenda()" aria-label="Add agenda item">${icon('plus')}Add</button></div>`}
+    </div>
+    <div class="panel"><div class="panelTitle">Notes <span class="count" id="noteCount">0</span></div>
+      <div id="noteList"></div>
+      ${ro?'':`<div class="composer"><div class="addTo" id="addTo"></div>
+        <textarea id="noteNew" aria-label="New note" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();addNote();}"></textarea>
+        <div class="row" style="justify-content:flex-end;margin-top:8px;"><button class="btn" onclick="addNote()">${icon('plus')}Add Note</button></div></div>`}
+    </div></div>`;
+  renderAgendaList(); renderNotes();
+}
+const agSorted=()=>DATA.agenda.slice().sort((a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0));
+function renderAgendaList(){
+  const el=$('agList'); if(!el) return;
+  const ro=readOnly(), list=agSorted();
+  $('agCount').textContent=list.length;
+  el.innerHTML=list.length ? list.map((a,i)=>`<div class="agItem ${a.done?'done':''} ${MTG.currentAgenda===a.id?'current':''}">
+      <input type="checkbox" ${a.done?'checked':''} ${ro?'disabled':''} aria-label="Done" onchange="SUB('agenda').doc('${a.id}').update({done:this.checked}).catch(fail)">
+      <div class="txt" onclick="${ro?'':`setCurrentAgenda('${a.id}')`}">${esc(a.text)}</div>
+      ${ro?'':`<div class="tools">
+        <button class="iconBtn" aria-label="Move up" ${i===0?'disabled':''} onclick="moveAgenda('${a.id}',-1)">${icon('up')}</button>
+        <button class="iconBtn" aria-label="Move down" ${i===list.length-1?'disabled':''} onclick="moveAgenda('${a.id}',1)">${icon('down')}</button>
+        <button class="iconBtn" aria-label="Edit" onclick="editAgenda('${a.id}')">${icon('pen')}</button>
+        <button class="iconBtn" aria-label="Delete" onclick="deleteAgenda('${a.id}')">${icon('x')}</button></div>`}
+    </div>`).join('') : '<div class="small">No agenda items.</div>';
+  const addTo=$('addTo');
+  if(addTo){
+    const cur=DATA.agenda.find(a=>a.id===MTG.currentAgenda);
+    addTo.innerHTML=cur?`<b>${esc(cur.text)}</b>`:'';
+  }
+}
+function addAgenda(){
+  const inp=$('agNew'); const text=(inp.value||'').trim(); if(!text) return;
+  const max=DATA.agenda.reduce((m,a)=>Math.max(m,a.order||0),0);
+  const ref=SUB('agenda').doc();
+  ref.set({text, order:max+1, done:false, by:ME.uid, at:Date.now()}).catch(fail);
+  if(!MTG.currentAgenda) MREF().update({currentAgenda:ref.id}).catch(()=>{});
+  inp.value=''; inp.focus();
+}
+function setCurrentAgenda(id){ MREF().update({currentAgenda: MTG.currentAgenda===id ? null : id}).catch(fail); }
+function moveAgenda(id, dir){
+  const list=agSorted(); const i=list.findIndex(a=>a.id===id); const j=i+dir;
+  if(i<0||j<0||j>=list.length) return;
+  const b=db.batch();
+  list.forEach((a,k)=>{ const ord = k===i ? j : k===j ? i : k; if((a.order||0)!==ord+1) b.update(SUB('agenda').doc(a.id), {order:ord+1}); });
+  b.commit().catch(fail);
+}
+async function editAgenda(id){
+  const a=DATA.agenda.find(x=>x.id===id); if(!a) return;
+  const t=await askText('Edit Agenda Item', a.text, 'Save');
+  if(t) SUB('agenda').doc(id).update({text:t}).catch(fail);
+}
+async function deleteAgenda(id){
+  const a=DATA.agenda.find(x=>x.id===id); if(!a) return;
+  if(!await askYesNo('Delete this agenda item?', a.text, 'Delete', true)) return;
+  SUB('agenda').doc(id).delete().catch(fail);
+  if(MTG.currentAgenda===id) MREF().update({currentAgenda:null}).catch(()=>{});
+}
+function renderNotes(){
+  const el=$('noteList'); if(!el) return;
+  const ro=readOnly();
+  $('noteCount').textContent=DATA.notes.length;
+  const notes=DATA.notes.slice().sort((a,b)=>(a.at||0)-(b.at||0));
+  const groups=agSorted().map(a=>({id:a.id, title:a.text, list:notes.filter(n=>n.agendaId===a.id)})).filter(g=>g.list.length);
+  const loose=notes.filter(n=>!n.agendaId || !DATA.agenda.some(a=>a.id===n.agendaId));
+  if(loose.length) groups.push({id:'', title:'General', list:loose});
+  const one=n=>{
+    const mine=n.by===ME.uid;
+    if(NOTE_EDIT===n.id) return `<div class="note"><textarea id="noteEdit">${esc(n.text)}</textarea>
+      <div class="row" style="justify-content:flex-end;margin-top:6px;"><button class="btn secondary sm" onclick="NOTE_EDIT=null;renderNotes()">Cancel</button><button class="btn sm" onclick="saveNoteEdit('${n.id}')">Save</button></div></div>`;
+    return `<div class="note"><div class="by"><b>${esc(n.byName||'')}</b><span style="white-space:nowrap">${fmtTime(n.at||0)}${n.editedAt?', edited':''}</span><span class="grow"></span>
+      ${(!ro&&mine)?`<button class="iconBtn" aria-label="Edit note" onclick="NOTE_EDIT='${n.id}';renderNotes()">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button>`:''}</div>
+      <div class="body">${esc(n.text)}</div></div>`;
+  };
+  // Keep a note being edited from being thrown away by someone else's change.
+  const editing=$('noteEdit'); const draft=editing?editing.value:null;
+  el.innerHTML=groups.length ? groups.map(g=>`<div class="noteGroup"><h3>${esc(g.title)}</h3>${g.list.map(one).join('')}</div>`).join('') : '<div class="small">No notes.</div>';
+  if(draft!==null && $('noteEdit')) $('noteEdit').value=draft;
+}
+function addNote(){
+  const inp=$('noteNew'); const text=(inp.value||'').trim(); if(!text) return;
+  SUB('notes').add({text, agendaId:MTG.currentAgenda||'', by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
+  inp.value='';
+}
+function saveNoteEdit(id){
+  const t=($('noteEdit').value||'').trim(); NOTE_EDIT=null;
+  if(t) SUB('notes').doc(id).update({text:t, editedAt:Date.now()}).catch(fail);
+  renderNotes();
+}
+async function deleteNote(id){
+  if(await askYesNo('Delete this note?', '', 'Delete', true)) SUB('notes').doc(id).delete().catch(fail);
+}
+
+/* ---------- action items ---------- */
+function userNames(){ return Object.values(USERS).map(u=>u.username).filter(Boolean).sort(); }
+function renderActionsPane(){
+  const ro=readOnly();
+  const opts=['<option value="">Unassigned</option>'].concat(userNames().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`)).join('');
+  $('pane-actions').innerHTML=`<div class="panel">
+    ${ro?'':`<div class="aiForm" style="margin-bottom:14px;">
+      <input type="text" class="aiText" id="aiText" maxlength="300" aria-label="Action item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAction();}">
+      <select id="aiWho" aria-label="Assigned to">${opts}</select>
+      <input type="date" id="aiDue" aria-label="Due date">
+      <button class="btn" onclick="addAction()">${icon('plus')}Add</button></div>`}
+    <div class="panelTitle">Open <span class="count" id="aiOpenCount">0</span></div><div id="aiOpen"></div>
+    <div class="panelTitle" style="margin-top:18px;">Done <span class="count" id="aiDoneCount">0</span></div><div id="aiDone"></div>
+  </div>`;
+  renderActions();
+}
+function renderActions(){
+  if(!$('aiOpen')) return;
+  const ro=readOnly(), today=todayISO();
+  const open=DATA.actions.filter(a=>!a.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0));
+  const done=DATA.actions.filter(a=>a.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+  const one=a=>`<div class="ai ${a.done?'done':''}">
+      <input type="checkbox" ${a.done?'checked':''} ${ro?'disabled':''} aria-label="Done" onchange="toggleAction('${a.id}',this.checked)">
+      <div class="grow"><div class="txt" ${ro?'':`onclick="editAction('${a.id}')"`}>${esc(a.text)}</div>
+        <div class="sub">${a.assignee?`<span class="who">${esc(a.assignee)}</span>`:''}${a.due?`<span class="due ${(!a.done&&a.due<today)?'late':''}">${fmtShortDate(a.due)}</span>`:''}${a.done&&a.doneBy?`<span>${esc(a.doneBy)}</span>`:''}</div></div>
+      ${ro?'':`<button class="iconBtn" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`}
+    </div>`;
+  $('aiOpenCount').textContent=open.length; $('aiDoneCount').textContent=done.length;
+  $('aiOpen').innerHTML=open.length?open.map(one).join(''):'<div class="small">None.</div>';
+  $('aiDone').innerHTML=done.length?done.map(one).join(''):'<div class="small">None.</div>';
+}
+function addAction(){
+  const t=($('aiText').value||'').trim(); if(!t) return;
+  SUB('actions').add({text:t, assignee:$('aiWho').value||'', due:$('aiDue').value||'', done:false, by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
+  $('aiText').value=''; $('aiText').focus();
+}
+function toggleAction(id, on){ SUB('actions').doc(id).update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail); }
+async function editAction(id){
+  const a=DATA.actions.find(x=>x.id===id); if(!a) return;
+  const t=await askText('Edit Action Item', a.text, 'Save');
+  if(t) SUB('actions').doc(id).update({text:t}).catch(fail);
+}
+async function deleteAction(id){
+  if(await askYesNo('Delete this action item?', '', 'Delete', true)) SUB('actions').doc(id).delete().catch(fail);
+}
+
+/* ---------- whiteboard ---------- */
+let WB={tool:'pen', color:COLORS[0], size:1, sticky:STICKY_COLORS[0]};
+let DRAW=null, inkTimer=0, boardW=0, boardH=0;
+function renderBoardPane(){
+  const ro=readOnly();
+  $('pane-board').innerHTML=`
+    ${ro?'':`<div class="wbBar" id="wbBar"></div>`}
+    <div class="boardWrap"><div class="board ${ro?'readonly':WB.tool}" id="board">
+      <canvas id="cvMain"></canvas><canvas id="cvLive"></canvas>
+      <div class="stickyLayer" id="stickyLayer"></div></div></div>`;
+  if(!ro) renderWbBar();
+  const b=$('board');
+  if(!ro){
+    b.addEventListener('pointerdown', boardDown);
+    b.addEventListener('pointermove', boardMove);
+    b.addEventListener('pointerup', boardUp);
+    b.addEventListener('pointercancel', boardUp);
+  }
+  sizeBoard();
+}
+function renderWbBar(){
+  const bar=$('wbBar'); if(!bar) return;
+  const tool=(k,ic,l)=>`<button class="tool ${WB.tool===k?'on':''}" onclick="setTool('${k}')" title="${l}" aria-label="${l}">${icon(ic)}</button>`;
+  const colors = WB.tool==='sticky' ? STICKY_COLORS : COLORS;
+  const cur = WB.tool==='sticky' ? WB.sticky : WB.color;
+  bar.innerHTML=tool('pen','pen','Pen')+tool('marker','marker','Highlighter')+tool('eraser','eraser','Eraser')+tool('sticky','sticky','Sticky note')
+    +'<span class="sep"></span>'
+    +colors.map(c=>`<button class="swatch ${c===cur?'on':''}" style="background:${c}" aria-label="Color" onclick="setColor('${c}')"></button>`).join('')
+    +(WB.tool==='pen'||WB.tool==='marker'?'<span class="sep"></span>'+SIZES.map((s,i)=>`<button class="tool ${WB.size===i?'on':''}" aria-label="Size ${i+1}" onclick="WB.size=${i};renderWbBar()"><span class="sizeDot" style="width:${4+i*4}px;height:${4+i*4}px"></span></button>`).join(''):'')
+    +'<span class="grow"></span>'
+    +`<button class="tool" onclick="undoBoard()" title="Undo" aria-label="Undo">${icon('undo')}</button>`
+    +`<button class="tool" onclick="clearBoard()" title="Clear board" aria-label="Clear board">${icon('trash')}</button>`;
+}
+function setTool(k){ WB.tool=k; const b=$('board'); if(b) b.className='board '+k; renderWbBar(); }
+function setColor(c){ if(WB.tool==='sticky') WB.sticky=c; else WB.color=c; renderWbBar(); }
+function sizeBoard(){
+  const b=$('board'); if(!b) return;
+  const r=b.getBoundingClientRect(); if(!r.width) return;
+  const dpr=window.devicePixelRatio||1;
+  boardW=r.width; boardH=r.height;
+  ['cvMain','cvLive'].forEach(id=>{ const c=$(id); c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); c.getContext('2d').setTransform(dpr,0,0,dpr,0,0); });
+  drawBoard(); drawLive(); renderStickies();
+}
+window.addEventListener('resize', ()=>{ if(MTG && TAB==='board') sizeBoard(); });
+function strokePath(ctx, pts, color, size, tool){
+  if(!pts || pts.length<2) return;
+  const scale=boardW/1000;
+  ctx.save();
+  ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.strokeStyle=color; ctx.globalAlpha=tool==='marker'?.35:1;
+  ctx.lineWidth=Math.max(1, size*scale*(tool==='marker'?3:1));
+  ctx.beginPath();
+  ctx.moveTo(pts[0]*boardW, pts[1]*boardH);
+  if(pts.length===2) ctx.lineTo(pts[0]*boardW+.01, pts[1]*boardH);
+  for(let i=2;i<pts.length;i+=2) ctx.lineTo(pts[i]*boardW, pts[i+1]*boardH);
+  ctx.stroke();
+  ctx.restore();
+}
+function boardColor(c){
+  // Navy ink is drawn light on the dark board so it stays visible.
+  if(document.documentElement.classList.contains('dark') && c===COLORS[0]) return '#dbe5f5';
+  return c;
+}
+function drawBoard(){
+  const c=$('cvMain'); if(!c || !boardW) return;
+  const ctx=c.getContext('2d'); ctx.clearRect(0,0,boardW,boardH);
+  DATA.strokes.slice().sort((a,b)=>(a.at||0)-(b.at||0)).forEach(s=>strokePath(ctx, s.pts, boardColor(s.color), s.size, s.tool));
+}
+function drawLive(){
+  const c=$('cvLive'); if(!c || !boardW) return;
+  const ctx=c.getContext('2d'); ctx.clearRect(0,0,boardW,boardH);
+  DATA.presence.forEach(p=>{ if(p.id!==ME.uid && p.ink && p.ink.pts) strokePath(ctx, p.ink.pts, boardColor(p.ink.color), p.ink.size, p.ink.tool); });
+  if(DRAW && DRAW.pts.length) strokePath(ctx, DRAW.pts, boardColor(DRAW.color), DRAW.size, DRAW.tool);
+}
+function boardPt(e){
+  const r=$('board').getBoundingClientRect();
+  return [Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)), Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))];
+}
+function boardDown(e){
+  if(readOnly()) return;
+  if(e.target.closest('.stk')) return;
+  const [x,y]=boardPt(e);
+  if(WB.tool==='sticky'){ addSticky(x,y); return; }
+  $('board').setPointerCapture(e.pointerId);
+  if(WB.tool==='eraser'){ DRAW={erase:true, hit:new Set()}; eraseAt(x,y); return; }
+  DRAW={pts:[+x.toFixed(4), +y.toFixed(4)], color:WB.color, size:SIZES[WB.size], tool:WB.tool};
+  drawLive();
+}
+function boardMove(e){
+  if(!DRAW) return;
+  const [x,y]=boardPt(e);
+  if(DRAW.erase){ eraseAt(x,y); return; }
+  const n=DRAW.pts.length;
+  if(Math.abs(DRAW.pts[n-2]-x)+Math.abs(DRAW.pts[n-1]-y) < .002) return;
+  DRAW.pts.push(+x.toFixed(4), +y.toFixed(4));
+  drawLive();
+  // Others see the line as it is being drawn.
+  const now=Date.now();
+  if(now-inkTimer>140){ inkTimer=now; SUB('presence').doc(ME.uid).set({ink:{pts:DRAW.pts.slice(-600), color:DRAW.color, size:DRAW.size, tool:DRAW.tool}, at:now}, {merge:true}).catch(()=>{}); }
+}
+function boardUp(){
+  if(!DRAW) return;
+  const d=DRAW; DRAW=null;
+  if(d.erase) return;
+  drawLive();
+  SUB('presence').doc(ME.uid).set({ink:null}, {merge:true}).catch(()=>{});
+  if(d.pts.length<2) return;
+  // Shown straight away, before the save comes back.
+  const id=uid();
+  DATA.strokes.push({id, pts:d.pts, color:d.color, size:d.size, tool:d.tool, by:ME.uid, at:Date.now()});
+  drawBoard();
+  SUB('strokes').doc(id).set({pts:d.pts, color:d.color, size:d.size, tool:d.tool, by:ME.uid, at:Date.now()}).catch(fail);
+}
+function eraseAt(x,y){
+  const rx=14/boardW, ry=14/boardH;
+  DATA.strokes.forEach(s=>{
+    if(DRAW.hit.has(s.id)) return;
+    const p=s.pts||[];
+    for(let i=0;i<p.length;i+=2){
+      if(Math.abs(p[i]-x)<rx && Math.abs(p[i+1]-y)<ry){ DRAW.hit.add(s.id); SUB('strokes').doc(s.id).delete().catch(fail); break; }
+    }
+  });
+  if(DRAW.hit.size){ DATA.strokes=DATA.strokes.filter(s=>!DRAW.hit.has(s.id)); drawBoard(); }
+}
+function undoBoard(){
+  const mine=[...DATA.strokes.map(s=>({k:'strokes',s})), ...DATA.stickies.map(s=>({k:'stickies',s}))].filter(o=>o.s.by===ME.uid).sort((a,b)=>(b.s.at||0)-(a.s.at||0));
+  if(!mine.length) return;
+  const last=mine[0];
+  SUB(last.k).doc(last.s.id).delete().catch(fail);
+  if(last.k==='strokes'){ DATA.strokes=DATA.strokes.filter(s=>s.id!==last.s.id); drawBoard(); }
+}
+async function clearBoard(){
+  if(!DATA.strokes.length && !DATA.stickies.length) return;
+  if(!await askYesNo('Clear the whiteboard?', 'Everything on it is erased for everyone.', 'Clear', true)) return;
+  const all=[...DATA.strokes.map(s=>SUB('strokes').doc(s.id)), ...DATA.stickies.map(s=>SUB('stickies').doc(s.id))];
+  try{ for(let i=0;i<all.length;i+=400){ const b=db.batch(); all.slice(i,i+400).forEach(r=>b.delete(r)); await b.commit(); } }catch(e){ fail(e); }
+}
+/* sticky notes */
+const STK_TIMERS={};
+function addSticky(x,y){
+  const id=uid();
+  const doc={x:Math.min(.85,x), y:Math.min(.8,y), text:'', color:WB.sticky, by:ME.uid, at:Date.now()};
+  DATA.stickies.push(Object.assign({id}, doc));
+  renderStickies();
+  SUB('stickies').doc(id).set(doc).catch(fail);
+  setTimeout(()=>{ const t=document.querySelector(`.stk[data-id="${id}"] textarea`); if(t) t.focus(); }, 30);
+}
+function renderStickies(){
+  const layer=$('stickyLayer'); if(!layer) return;
+  const ro=readOnly();
+  const have=new Set();
+  DATA.stickies.forEach(s=>{
+    have.add(s.id);
+    let el=layer.querySelector(`.stk[data-id="${s.id}"]`);
+    if(!el){
+      el=document.createElement('div'); el.className='stk'; el.dataset.id=s.id;
+      el.innerHTML=`<div class="grip"><span class="by"></span>${ro?'':`<button aria-label="Delete sticky note">&times;</button>`}</div><textarea aria-label="Sticky note" ${ro?'readonly':''}></textarea>`;
+      layer.appendChild(el);
+      const ta=el.querySelector('textarea');
+      ta.addEventListener('input', ()=>{
+        clearTimeout(STK_TIMERS[s.id]);
+        STK_TIMERS[s.id]=setTimeout(()=>SUB('stickies').doc(s.id).update({text:ta.value}).catch(fail), 350);
+      });
+      if(!ro){
+        el.querySelector('.grip button').addEventListener('click', ev=>{ ev.stopPropagation(); SUB('stickies').doc(s.id).delete().catch(fail); });
+        dragSticky(el, s.id);
+      }
+    }
+    el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%';
+    el.style.background=s.color||STICKY_COLORS[0];
+    el.querySelector('.by').textContent=(USERS && Object.values(USERS).find(u=>u.uid===s.by)||{}).username||'';
+    const ta=el.querySelector('textarea');
+    if(document.activeElement!==ta && ta.value!==(s.text||'')) ta.value=s.text||'';
+  });
+  layer.querySelectorAll('.stk').forEach(el=>{ if(!have.has(el.dataset.id)) el.remove(); });
+}
+function dragSticky(el, id){
+  const grip=el.querySelector('.grip');
+  let start=null;
+  grip.addEventListener('pointerdown', e=>{
+    if(e.target.tagName==='BUTTON') return;
+    e.preventDefault(); e.stopPropagation();
+    const r=$('board').getBoundingClientRect(), s=DATA.stickies.find(x=>x.id===id); if(!s) return;
+    start={px:e.clientX, py:e.clientY, x:s.x, y:s.y, w:r.width, h:r.height};
+    grip.setPointerCapture(e.pointerId);
+  });
+  grip.addEventListener('pointermove', e=>{
+    if(!start) return;
+    const s=DATA.stickies.find(x=>x.id===id); if(!s) return;
+    s.x=Math.min(.95,Math.max(0,start.x+(e.clientX-start.px)/start.w));
+    s.y=Math.min(.95,Math.max(0,start.y+(e.clientY-start.py)/start.h));
+    el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%';
+  });
+  const end=()=>{
+    if(!start) return; start=null;
+    const s=DATA.stickies.find(x=>x.id===id); if(!s) return;
+    SUB('stickies').doc(id).update({x:+s.x.toFixed(4), y:+s.y.toFixed(4)}).catch(fail);
+  };
+  grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+}
+
+/* ---------- practice portal ----------
+   The practice copy of the portal runs in a frame. One person can present
+   it: their copy reports which tab and work order are on screen, and
+   everyone following goes to the same place. */
+let PP={frame:null, ready:false, follow:true, lastView:'', viewTimer:null};
+function presenterLive(){
+  const p=MTG && MTG.presenter;
+  if(!p || !p.uid) return null;
+  if(p.uid===ME.uid) return p;
+  const pres=DATA.presence.find(x=>x.id===p.uid);
+  return (pres && (Date.now()-(pres.at||0))<ALIVE_MS) ? p : null;
+}
+function renderPracticePane(){
+  $('pane-practice').innerHTML=`<div class="ppBar" id="ppBar"></div>
+    <div class="ppFrameWrap" id="ppWrap"></div>
+    <button class="btn ppExit" onclick="document.body.classList.remove('ppFull')">${icon('x')}Exit Full Screen</button>`;
+  ppRenderBar();
+  if(PP.frame) $('ppWrap').appendChild(PP.frame);
+}
+function ppRenderBar(){
+  const bar=$('ppBar'); if(!bar) return;
+  const ro=readOnly(), p=presenterLive(), mine=p && p.uid===ME.uid;
+  let left='';
+  if(mine) left=`<span class="status">${icon('cast')}Presenting</span><button class="btn secondary sm" onclick="stopPresenting()">Stop Presenting</button>`;
+  else if(p) left=`<span class="status">${icon('cast')}${esc(p.name)}</span><label class="switch"><input type="checkbox" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>${ro?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`}`;
+  else left=ro?'':`<button class="btn sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
+  bar.innerHTML=left+'<span class="grow"></span>'
+    +(ME.isAdmin?`<button class="btn secondary sm" onclick="resetPractice()">${icon('reset')}Reset Practice Jobs</button>`:'')
+    +`<button class="btn secondary sm" onclick="document.body.classList.add('ppFull')">${icon('expand')}Full Screen</button>`;
+}
+function ppEnsure(){
+  if(PP.frame){ if($('ppWrap') && !PP.frame.parentNode) $('ppWrap').appendChild(PP.frame); return; }
+  const f=document.createElement('iframe');
+  f.title='Practice Portal';
+  f.src=PORTAL_URL+'?training=1&meeting='+encodeURIComponent(MTG_ID);
+  PP.frame=f; PP.ready=false; PP.lastView='';
+  $('ppWrap').appendChild(f);
+}
+function ppTeardown(){
+  if(PP.frame && PP.frame.parentNode) PP.frame.parentNode.removeChild(PP.frame);
+  PP.frame=null; PP.ready=false; PP.lastView='';
+  clearTimeout(PP.viewTimer);
+}
+function ppPost(m){ if(PP.frame && PP.frame.contentWindow) PP.frame.contentWindow.postMessage(Object.assign({source:'gh_meeting'}, m), location.origin); }
+function ppRole(){
+  const p=presenterLive();
+  if(p && p.uid===ME.uid) return 'present';
+  if(p && PP.follow) return 'follow';
+  return 'none';
+}
+function ppSync(){
+  if(!PP.ready) return;
+  const role=ppRole();
+  ppPost({type:'role', role});
+  if(role==='follow' && MTG.view) ppPost({type:'view', state:MTG.view});
+}
+function ppOnMeeting(prev){
+  const pp=prev.presenter||{}, np=MTG.presenter||{};
+  if(pp.uid!==np.uid){
+    if(np.uid && np.uid!==ME.uid){ PP.follow=true; if(TAB!=='practice') toast(np.name+' is presenting the practice portal.'); }
+    ppRenderBar(); ppSync(); return;
+  }
+  if(ppRole()==='follow' && JSON.stringify(prev.view)!==JSON.stringify(MTG.view)) ppPost({type:'view', state:MTG.view});
+}
+function setFollow(on){ PP.follow=on; ppSync(); }
+function startPresenting(){
+  if(TAB!=='practice') showTab('practice');
+  MREF().update({presenter:{uid:ME.uid, name:ME.name, at:Date.now()}}).catch(fail);
+}
+function stopPresenting(){ MREF().update({presenter:null, view:null}).catch(fail); }
+window.addEventListener('message', e=>{
+  if(e.origin!==location.origin || !PP.frame || e.source!==PP.frame.contentWindow) return;
+  const d=e.data||{};
+  if(d.source!=='gh_training') return;
+  if(d.type==='ready'){ PP.ready=true; ppSync(); }
+  else if(d.type==='view' && ppRole()==='present'){
+    const s=JSON.stringify(d.state);
+    if(s===PP.lastView) return;
+    PP.lastView=s;
+    clearTimeout(PP.viewTimer);
+    PP.viewTimer=setTimeout(()=>MREF().update({view:d.state}).catch(()=>{}), 120);
+  }
+});
+/* Wipes the practice jobs for everyone and starts them again from the
+   built-in set. Every open practice copy notices and reloads. */
+async function resetPractice(){
+  if(!await askYesNo('Reset the practice jobs?', 'All practice jobs go back to the starting set for everyone.', 'Reset', true)) return;
+  const tref=db.collection('gh_portal').doc('training');
+  try{
+    const s=await tref.collection('workOrders').get();
+    for(let i=0;i<s.docs.length;i+=400){ const b=db.batch(); s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref)); await b.commit(); }
+    await tref.set({schema:2, resetAt:Date.now()});
+    toast('Practice jobs reset.');
+  }catch(e){ fail(e); }
+}
+
+boot();
+</script>
+</body>
+</html>
