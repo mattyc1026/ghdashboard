@@ -27,18 +27,22 @@
 </script>
 <style>
 /* ---- Colour ----
-   Navy and orange come from the logo. Each of the four tools then has a
-   colour of its own, used for its tab, its panels, its buttons and its
-   check marks, so you can tell at a glance which one you are in:
-   agenda orange, whiteboard blue, action items green, practice red. */
+   Navy and orange come from the logo. Each of the three tools has a colour
+   of its own, agenda orange, whiteboard blue and practice red. Like the
+   portal's job cards, each tool's colour washes in from one side and fades
+   away across its surfaces. */
 :root{
   --navy:#0f2647; --navy-2:#1b3f73; --orange:#e8791a;
   --cream:#e9edf3; --paper:#ffffff; --ink:#141f33; --muted:#5f6e87;
   --line:#dbe2ec; --line-soft:#eaeef4; --grid-line:rgba(15,38,71,.045);
   --red:#c0392b; --green:#1f8a55; --blue:#2f6fd6;
-  --c-agenda:#e8791a; --c-board:#2f6fd6; --c-actions:#1f8a55; --c-practice:#c0392b;
+  --c-agenda:#e8791a; --c-board:#2f6fd6; --c-practice:#c0392b;
   --on-c:#ffffff;
-  --board:#fbfcfe; --board-dot:rgba(47,111,214,.16);
+  --board:#fbfcfe; --board-mark:rgba(47,111,214,.18);
+  /* raised and recessed surfaces */
+  --raise-hi:rgba(255,255,255,.95); --raise-lo:rgba(15,38,71,.07);
+  --raise-sh:0 1px 2px rgba(15,38,71,.08),0 6px 16px rgba(15,38,71,.08);
+  --well:#e3e8f0; --well-in:inset 0 2px 5px rgba(15,38,71,.13),inset 0 1px 1px rgba(15,38,71,.08),inset 0 -1px 0 rgba(255,255,255,.85);
   --f-display:'DM Serif Display',Georgia,serif;
   --f-body:'DM Sans',system-ui,-apple-system,sans-serif;
   --radius:14px; --radius-sm:9px;
@@ -53,18 +57,19 @@ html.dark{
   --cream:#0e1522; --paper:#161f30; --ink:#e7edf7; --muted:#94a3bb;
   --line:#2b3a54; --line-soft:#1f2c42; --grid-line:rgba(219,229,245,.04);
   --red:#ff8f7d; --green:#4fd48a; --blue:#7aa8ff;
-  --c-agenda:#ff9a45; --c-board:#7aa8ff; --c-actions:#4fd48a; --c-practice:#ff8f7d;
+  --c-agenda:#ff9a45; --c-board:#7aa8ff; --c-practice:#ff8f7d;
   --on-c:#0e1522;
-  --board:#121b2b; --board-dot:rgba(122,168,255,.16);
+  --board:#121b2b; --board-mark:rgba(122,168,255,.18);
+  --raise-hi:rgba(255,255,255,.07); --raise-lo:rgba(0,0,0,.35);
+  --raise-sh:0 1px 2px rgba(0,0,0,.5),0 8px 18px rgba(0,0,0,.35);
+  --well:#0b111c; --well-in:inset 0 2px 6px rgba(0,0,0,.6),inset 0 1px 1px rgba(0,0,0,.4),inset 0 -1px 0 rgba(255,255,255,.05);
   --sh-1:0 1px 2px rgba(0,0,0,.4); --sh-2:0 12px 30px rgba(0,0,0,.55);
 }
 html.hc{ --line:#0f2647; --muted:#2b3a54; --ink:#000; }
 html.dark.hc{ --line:#dbe5f5; --muted:#c9d4e6; --ink:#fff; }
 body[data-tab=agenda]{--tc:var(--c-agenda);}
 body[data-tab=board]{--tc:var(--c-board);}
-body[data-tab=actions]{--tc:var(--c-actions);}
 body[data-tab=practice]{--tc:var(--c-practice);}
-.tint{background:color-mix(in srgb, var(--tc) 9%, var(--paper));}
 
 *{box-sizing:border-box;}
 html{-webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-tap-highlight-color:transparent;}
@@ -72,25 +77,28 @@ body{margin:0;font-family:var(--f-body);color:var(--ink);font-size:var(--dScale,
   background-color:var(--cream);
   background-image:linear-gradient(var(--grid-line) 1px,transparent 1px),linear-gradient(90deg,var(--grid-line) 1px,transparent 1px);
   background-size:24px 24px;min-height:100vh;}
+/* The open tool's colour washes down from the top of the page and fades. */
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:min(460px,60vh);pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,color-mix(in srgb, var(--tc) 16%, transparent),transparent);transition:background .4s;}
 @media (max-width:900px){ body{font-size:var(--mScale,18px);} }
 button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit;}
 @media (max-width:900px){ input,select,textarea{font-size:max(16px,1em);} }
 .hidden{display:none !important;}
 :focus-visible{outline:2.5px solid var(--tc);outline-offset:2px;}
 
-/* ---- top bar, with the four tool colours as a stripe under it ---- */
+/* ---- top bar, with the tool colours as a stripe under it ---- */
 header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:12px;
   padding:10px 18px;padding-top:max(10px,env(safe-area-inset-top));
   background:var(--navy);color:#fff;}
 header.top::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;
-  background:linear-gradient(90deg,var(--c-agenda) 0 25%,var(--c-board) 25% 50%,var(--c-actions) 50% 75%,var(--c-practice) 75% 100%);}
+  background:linear-gradient(90deg,var(--c-agenda),var(--c-board) 50%,var(--c-practice));}
 html.dark header.top{background:#0b1220;color:var(--ink);}
 header.top a.back{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.9em;opacity:.92;
   padding:4px 8px 4px 2px;border-radius:8px;transition:background .15s;}
 header.top a.back:hover{background:rgba(255,255,255,.1);}
 header.top .ttl{flex:1 1 auto;}
-header.top .who{font-size:.85em;opacity:.9;white-space:nowrap;display:inline-flex;align-items:center;gap:8px;}
-main{max-width:1280px;margin:0 auto;padding:22px 18px 18px;}
+header.top .who{font-size:.85em;opacity:.9;white-space:nowrap;}
+main{position:relative;max-width:1280px;margin:0 auto;padding:22px 18px 18px;}
 @media (max-width:900px){ main{padding:16px 12px 12px;} header.top{padding-left:12px;padding-right:12px;} }
 
 /* ---- buttons, fields ---- */
@@ -100,13 +108,14 @@ main{max-width:1280px;margin:0 auto;padding:22px 18px 18px;}
 .btn:hover{filter:brightness(1.08);}
 .btn:active{transform:scale(.96);}
 html.dark .btn{color:var(--paper);}
-.btn.tc{background:var(--tc);border-color:var(--tc);color:var(--on-c);}
+.btn.tc{background:linear-gradient(135deg,var(--tc),color-mix(in srgb, var(--tc) 75%, #fff));border-color:var(--tc);color:var(--on-c);}
+html.dark .btn.tc{background:linear-gradient(135deg,var(--tc),color-mix(in srgb, var(--tc) 70%, #000));}
 .btn.secondary{background:var(--paper);color:var(--navy);border-color:var(--line);}
 .btn.secondary:hover{border-color:var(--tc);filter:none;}
 html.dark .btn.secondary{color:var(--navy);}
 .btn.danger{background:color-mix(in srgb, var(--red) 12%, var(--paper));color:var(--red);border-color:var(--red);}
 html.dark .btn.danger{color:var(--red);}
-.btn.orange{background:var(--orange);border-color:var(--orange);color:#fff;}
+.btn.orange{background:linear-gradient(135deg,var(--orange),#f5a04f);border-color:var(--orange);color:#fff;}
 html.dark .btn.orange{color:#1a0d00;}
 .btn.sm{padding:6px 11px;min-height:34px;font-size:.85em;}
 .btn[disabled]{opacity:.5;cursor:not-allowed;}
@@ -116,12 +125,11 @@ html.dark .btn.orange{color:#1a0d00;}
 .iconBtn:hover{background:color-mix(in srgb, var(--tc) 12%, transparent);color:var(--tc);}
 .iconBtn:active{transform:scale(.9);}
 .iconBtn[disabled]{opacity:.3;pointer-events:none;}
-input[type=text],input[type=date],select,textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
+input[type=text],select,textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
   padding:9px 11px;min-height:42px;outline:none;transition:border-color .15s,box-shadow .15s;}
 input:focus,select:focus,textarea:focus{border-color:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb, var(--tc) 20%, transparent);}
 textarea{resize:vertical;min-height:70px;line-height:1.45;}
-/* Check boxes: a rounded square in the tool's colour that fills with a check. */
-input.chk{appearance:none;-webkit-appearance:none;width:1.3em;height:1.3em;margin:.12em 0 0;border:2px solid color-mix(in srgb, var(--tc) 55%, var(--line));
+input.chk{appearance:none;-webkit-appearance:none;width:1.3em;height:1.3em;margin:0;border:2px solid color-mix(in srgb, var(--tc) 55%, var(--line));
   border-radius:.4em;background:var(--paper);cursor:pointer;flex:0 0 auto;display:grid;place-items:center;
   transition:background-color .18s,border-color .18s,transform .18s var(--ease);}
 input.chk::after{content:"";width:.62em;height:.34em;border:solid var(--on-c);border-width:0 0 .16em .16em;transform:translateY(-.06em) rotate(-45deg) scale(0);transition:transform .22s var(--ease-out);}
@@ -129,14 +137,10 @@ input.chk:checked{background:var(--tc);border-color:var(--tc);animation:pop .28s
 input.chk:checked::after{transform:translateY(-.06em) rotate(-45deg) scale(1);}
 input.chk:disabled{cursor:default;opacity:.7;}
 @keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
-/* Text crossed out with a line drawn across it, not switched instantly. */
-.strike{background:linear-gradient(currentColor,currentColor) 0 58%/0 1.5px no-repeat;transition:background-size .3s var(--ease),color .3s;
+.strike{background:linear-gradient(currentColor,currentColor) 0 58%/0 .09em no-repeat;transition:background-size .3s var(--ease),color .3s;
   -webkit-box-decoration-break:clone;box-decoration-break:clone;}
-.done .strike{background-size:100% 1.5px;color:var(--muted);}
-
-.panel{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);padding:16px 18px 18px;
-  border-top:4px solid var(--tc);}
-.panelTitle{font-size:1.02em;font-weight:700;color:var(--tc);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+.done .strike{background-size:100% .09em;color:var(--muted);}
+.panel{background:linear-gradient(100deg,color-mix(in srgb, var(--tc) 12%, var(--paper)),var(--paper) 60%);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);padding:16px 18px 18px;}
 .count{background:color-mix(in srgb, var(--tc) 14%, var(--paper));color:var(--tc);border-radius:999px;padding:0 9px;font-weight:700;font-size:.8em;min-width:1.8em;text-align:center;
   font-variant-numeric:tabular-nums;}
 .small{font-size:.82em;color:var(--muted);}
@@ -147,12 +151,12 @@ input.chk:disabled{cursor:default;opacity:.7;}
 /* ---- meeting list ---- */
 .listHead{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;margin:6px 0 18px;}
 .listHead h1{font-family:var(--f-display);font-weight:400;font-size:2.1em;margin:0;color:var(--navy);line-height:1.1;}
-.mtgRow{display:flex;align-items:center;gap:14px;background:var(--paper);border:1px solid var(--line);border-left:6px solid var(--line);
+.mtgRow{display:flex;align-items:center;gap:14px;background:linear-gradient(90deg,color-mix(in srgb, var(--muted) 10%, var(--paper)),var(--paper) 55%);border:1px solid var(--line);border-left:6px solid var(--line);
   border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;cursor:pointer;box-shadow:var(--sh-1);
   transition:transform .18s var(--ease),box-shadow .18s,border-color .18s;}
 .mtgRow:hover{transform:translateY(-2px);box-shadow:var(--sh-2);}
 .mtgRow:active{transform:scale(.99);}
-.mtgRow.live{border-left-color:var(--orange);background:linear-gradient(90deg,color-mix(in srgb, var(--orange) 10%, var(--paper)),var(--paper) 60%);}
+.mtgRow.live{border-left-color:var(--orange);background:linear-gradient(90deg,color-mix(in srgb, var(--orange) 18%, var(--paper)),var(--paper) 65%);}
 .mtgRow .name{font-family:var(--f-display);font-size:1.25em;color:var(--navy);line-height:1.25;}
 .mtgRow .meta{font-size:.82em;color:var(--muted);}
 .liveTag{display:inline-flex;align-items:center;gap:6px;background:var(--orange);color:#fff;font-size:.72em;font-weight:700;padding:3px 10px 3px 8px;border-radius:20px;}
@@ -162,7 +166,6 @@ html.dark .liveTag{color:#1a0d00;}
 .endedTag{background:var(--line-soft);color:var(--muted);font-size:.72em;font-weight:700;padding:3px 10px;border-radius:20px;}
 .sectionLabel{font-size:1em;font-weight:700;color:var(--navy);margin:26px 2px 10px;display:flex;align-items:center;gap:8px;}
 .sectionLabel .count{--tc:var(--orange);}
-.empty{border:1.5px dashed var(--line);border-radius:var(--radius);padding:22px;text-align:center;color:var(--muted);}
 
 /* ---- meeting screen ---- */
 .mtgHead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;margin-bottom:14px;}
@@ -171,128 +174,164 @@ html.dark .liveTag{color:#1a0d00;}
 .mtgHead .spacer{flex:1 1 auto;}
 .people{display:flex;flex-wrap:wrap;gap:6px;}
 .chip{display:inline-flex;align-items:center;gap:6px;border:1.5px solid color-mix(in srgb, var(--pc) 45%, var(--line));
-  background:color-mix(in srgb, var(--pc) 10%, var(--paper));border-radius:999px;padding:3px 11px 3px 4px;font-size:.8em;font-weight:700;color:var(--navy);
+  background:linear-gradient(90deg,color-mix(in srgb, var(--pc) 18%, var(--paper)),var(--paper));border-radius:999px;padding:3px 11px 3px 4px;font-size:.8em;font-weight:700;color:var(--navy);
   animation:chipIn .3s var(--ease-out);}
 .chip .dot{width:1.7em;height:1.7em;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;color:#fff;font-size:.78em;font-weight:700;
   text-transform:uppercase;background:var(--pc);position:relative;}
 .chip .dot::after{content:"";position:absolute;right:-1px;bottom:-1px;width:.55em;height:.55em;border-radius:50%;background:#3bd16f;border:2px solid var(--paper);}
 @keyframes chipIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
-
-/* tool tabs */
-.tabs{position:relative;display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;padding:2px;}
+.tabs{position:relative;display:flex;gap:6px;margin-bottom:18px;overflow-x:auto;scrollbar-width:none;padding:2px;}
 .tabs::-webkit-scrollbar{display:none;}
-.tabs button{--c:var(--tc);border:1.5px solid var(--line);background:var(--paper);padding:9px 16px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
+.tabs button{border:1.5px solid var(--line);background:var(--paper);padding:9px 16px;font-weight:700;color:var(--muted);cursor:pointer;white-space:nowrap;
   border-radius:999px;display:inline-flex;align-items:center;gap:8px;position:relative;
   transition:background-color .22s var(--ease),color .22s,border-color .22s,transform .12s var(--ease),box-shadow .22s;}
 .tabs button .ic{width:1.15em;height:1.15em;color:var(--c);transition:color .22s;}
 .tabs button:hover{border-color:var(--c);color:var(--navy);}
 .tabs button:active{transform:scale(.96);}
-.tabs button.on{background:var(--c);border-color:var(--c);color:var(--on-c);box-shadow:0 4px 14px color-mix(in srgb, var(--c) 35%, transparent);}
+.tabs button.on{background:linear-gradient(120deg,var(--c),color-mix(in srgb, var(--c) 62%, var(--paper)));border-color:var(--c);color:var(--on-c);box-shadow:0 4px 14px color-mix(in srgb, var(--c) 35%, transparent);}
 .tabs button.on .ic{color:var(--on-c);}
 .tabs .liveDot{width:.55em;height:.55em;border-radius:50%;background:var(--c-practice);display:inline-block;animation:breathe 1.6s ease-in-out infinite;}
 .tabs button.on .liveDot{background:var(--on-c);}
 @media (max-width:900px){
-  .tabs{display:grid;grid-template-columns:1fr 1fr;overflow:visible;}
-  .tabs button{border-radius:var(--radius-sm);padding:9px 8px;justify-content:center;font-size:.85em;white-space:normal;text-align:center;line-height:1.2;}
+  .tabs{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;}
+  .tabs button{border-radius:var(--radius-sm);padding:9px 6px;justify-content:center;font-size:.8em;white-space:normal;text-align:center;line-height:1.2;flex-direction:column;gap:3px;}
 }
 .pane{animation:paneIn .26s var(--ease-out);}
 @keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-/* agenda + notes */
-.anGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;align-items:start;}
-@media (max-width:900px){ .anGrid{grid-template-columns:minmax(0,1fr);} }
-.agList{display:flex;flex-direction:column;gap:3px;}
-.agItem{--ib:var(--paper);position:relative;display:flex;align-items:flex-start;gap:10px;padding:9px 8px;border-radius:var(--radius-sm);border:1.5px solid transparent;
-  background:var(--ib);transition:background-color .25s var(--ease),border-color .25s var(--ease);}
-.agItem:hover{--ib:color-mix(in srgb, var(--tc) 6%, var(--paper));}
-.agItem.current{--ib:color-mix(in srgb, var(--tc) 13%, var(--paper));border-color:var(--tc);}
-.agItem .txt{flex:1 1 auto;min-width:0;cursor:pointer;overflow-wrap:anywhere;padding-top:1px;}
-.agItem .tools{display:flex;opacity:0;transition:opacity .18s;position:absolute;right:4px;top:50%;transform:translateY(-50%);
-  padding-left:26px;background:linear-gradient(90deg,transparent,var(--ib) 22px);border-radius:var(--radius-sm);}
-.agItem .tools{pointer-events:none;}
+/* ---- agenda + notes ----
+   Agenda items are raised headers. Each one's notes sit under it, indented,
+   in a recessed well, with the writer's name on the left. */
+.agenda{max-width:980px;}
+#agList{display:flex;flex-direction:column;}
+.agSec{margin-bottom:18px;}
+.agItem{--ib:color-mix(in srgb, var(--tc) 16%, var(--paper));position:relative;display:flex;align-items:center;gap:12px;padding:13px 14px 13px 16px;border-radius:var(--radius);
+  background:linear-gradient(90deg,var(--ib),var(--paper) 72%);border:1px solid color-mix(in srgb, var(--tc) 22%, var(--line));
+  box-shadow:inset 0 1px 0 var(--raise-hi),inset 0 -1px 0 var(--raise-lo),var(--raise-sh);
+  transition:box-shadow .25s var(--ease),border-color .25s var(--ease),transform .2s var(--ease);}
+.agItem.current{--ib:color-mix(in srgb, var(--tc) 30%, var(--paper));border-color:var(--tc);
+  box-shadow:inset 0 1px 0 var(--raise-hi),inset 0 -1px 0 var(--raise-lo),var(--raise-sh),0 0 0 3px color-mix(in srgb, var(--tc) 20%, transparent);}
+.agItem .txt{flex:1 1 auto;min-width:0;cursor:pointer;overflow-wrap:anywhere;font-size:1.32em;font-weight:700;line-height:1.25;color:var(--navy);letter-spacing:-.005em;}
+.agItem.general .txt{cursor:default;}
+.agItem .nc{font-size:.8em;font-weight:700;color:var(--tc);white-space:nowrap;}
+@media (max-width:900px){ .agItem .txt{font-size:1.1em;overflow-wrap:break-word;} .agItem .nc{display:none;} .agItem{padding:11px 12px;gap:10px;} }
+.agItem .tools{display:flex;opacity:0;pointer-events:none;transition:opacity .18s;}
 .agItem:hover .tools,.agItem:focus-within .tools{opacity:1;pointer-events:auto;}
-@media (max-width:900px), (hover:none){ .agItem .tools{pointer-events:auto;} }
-/* On a phone or tablet the item text keeps the full width; the move, edit
-   and delete buttons show on their own row under the current item only. */
 @media (max-width:900px), (hover:none){
   .agItem{flex-wrap:wrap;}
   .agItem .txt{flex:1 1 0;}
-  .agItem .tools{display:none;flex:0 0 100%;justify-content:flex-end;opacity:1;position:static;transform:none;padding:0;background:none;}
+  .agItem .tools{display:none;flex:0 0 100%;justify-content:flex-end;opacity:1;pointer-events:auto;margin:-4px -6px -6px 0;}
   .agItem.current .tools{display:flex;}
 }
-.addRow{display:flex;gap:8px;margin-top:12px;}
-.noteGroup + .noteGroup{margin-top:18px;}
-.noteGroup h3{font-size:.86em;color:var(--tc);margin:0 0 8px;font-weight:700;display:flex;align-items:center;gap:8px;}
-.noteGroup h3::before{content:"";width:.5em;height:.5em;border-radius:2px;background:var(--tc);}
-.notes{display:flex;flex-direction:column;gap:8px;}
-.note{border:1px solid var(--line);border-left:4px solid var(--pc);border-radius:var(--radius-sm);padding:9px 11px;background:var(--paper);}
-.note .by{font-size:.78em;color:var(--muted);display:flex;align-items:center;gap:6px;}
-.note .by b{color:var(--pc);}
-.note .body{white-space:pre-wrap;overflow-wrap:anywhere;margin-top:3px;}
-.composer{margin-top:14px;}
-.composer .addTo{display:inline-flex;align-items:center;gap:7px;font-size:.8em;color:var(--tc);font-weight:700;margin-bottom:8px;
-  background:color-mix(in srgb, var(--tc) 12%, var(--paper));border-radius:999px;padding:3px 11px 3px 9px;max-width:100%;}
-.composer .addTo::before{content:"";width:.5em;height:.5em;border-radius:2px;background:var(--tc);flex:0 0 auto;}
-.composer .addTo:empty{display:none;}
+.well{margin:10px 0 0 2.4em;border-radius:12px;background:linear-gradient(90deg,color-mix(in srgb, var(--tc) 8%, var(--well)),var(--well) 70%);box-shadow:var(--well-in);padding:6px 14px 10px;}
+@media (max-width:900px){ .well{margin-left:1.1em;padding:4px 10px 8px;} }
+.notes{display:flex;flex-direction:column;}
+.note{display:grid;grid-template-columns:minmax(4.5em,max-content) 1fr auto;column-gap:14px;align-items:baseline;padding:9px 2px;border-bottom:1px solid color-mix(in srgb, var(--line) 70%, transparent);}
+.note:last-child{border-bottom:0;}
+.note .who{font-weight:700;color:var(--pc);font-size:.86em;white-space:nowrap;}
+.note .body{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0;}
+.note .tm{display:block;font-size:.72em;color:var(--muted);font-weight:500;margin-top:1px;}
+.note .tools{display:flex;opacity:0;transition:opacity .15s;}
+.note:hover .tools,.note:focus-within .tools{opacity:1;}
+@media (hover:none){ .note .tools{opacity:1;} }
+@media (max-width:560px){ .note{grid-template-columns:1fr auto;} .note .who{grid-column:1/-1;} }
+.note.editing{grid-template-columns:1fr;}
+.note textarea{background:var(--paper);}
+.compose{display:flex;gap:8px;align-items:flex-end;padding-top:8px;}
+.compose textarea{min-height:42px;height:42px;resize:none;background:color-mix(in srgb, var(--paper) 70%, var(--well));box-shadow:inset 0 1px 3px rgba(15,38,71,.08);overflow:hidden;}
+.addAgenda{display:flex;gap:8px;margin-top:4px;max-width:980px;}
+.addAgenda input{font-size:1.1em;font-weight:700;border-radius:var(--radius);min-height:50px;
+  background:linear-gradient(90deg,color-mix(in srgb, var(--tc) 8%, var(--paper)),var(--paper) 70%);box-shadow:inset 0 1px 0 var(--raise-hi),var(--sh-1);}
+.addAgenda .btn{min-height:50px;border-radius:var(--radius);}
 
-/* whiteboard */
-.wbBar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-bottom:10px;background:var(--paper);border:1px solid var(--line);
-  border-radius:999px;padding:6px 8px;box-shadow:var(--sh-1);width:max-content;max-width:100%;}
-@media (max-width:900px){ .wbBar{border-radius:var(--radius);width:auto;} }
-.wbBar .sep{width:1px;height:1.8em;background:var(--line);margin:0 3px;}
-.tool{display:inline-flex;align-items:center;justify-content:center;min-width:2.4em;height:2.4em;padding:0 9px;border-radius:999px;
+/* ---- whiteboard ---- */
+.wbWrap{position:relative;}
+.wbBar{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:4px;margin-bottom:10px;
+  background:linear-gradient(90deg,color-mix(in srgb, var(--c-board) 14%, var(--paper)),var(--paper) 55%);border:1px solid var(--line);
+  border-radius:16px;padding:6px;box-shadow:inset 0 1px 0 var(--raise-hi),var(--raise-sh);}
+.wbBar .sep{width:1px;height:1.9em;background:var(--line);margin:0 3px;flex:0 0 auto;}
+@media (max-width:900px){
+  .wbBar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;font-size:.78em;border-radius:14px;}
+  .wbBar::-webkit-scrollbar{display:none;}
+  .wbBar .grow{display:none;}
+  .menuPop{position:fixed;right:10px;top:auto;margin-top:6px;}
+}
+.tool{position:relative;display:inline-flex;align-items:center;justify-content:center;min-width:2.35em;height:2.35em;padding:0 6px;border-radius:11px;flex:0 0 auto;
   border:1.5px solid transparent;background:transparent;color:var(--navy);cursor:pointer;font-weight:700;font-size:.85em;
-  transition:background-color .18s,border-color .18s,transform .12s var(--ease),color .18s;}
-.tool:hover{background:color-mix(in srgb, var(--c-board) 10%, transparent);}
+  transition:background-color .18s,border-color .18s,transform .12s var(--ease),color .18s,box-shadow .18s;}
+.tool:hover{background:color-mix(in srgb, var(--c-board) 12%, transparent);}
 .tool:active{transform:scale(.9);}
-.tool.on{background:var(--c-board);color:var(--on-c);}
-.tool .ic{width:1.25em;height:1.25em;}
-.swatch{width:1.9em;height:1.9em;border-radius:50%;border:2.5px solid var(--paper);box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0;
-  transition:transform .18s var(--ease),box-shadow .18s;}
+.tool.on{background:linear-gradient(135deg,var(--c-board),color-mix(in srgb, var(--c-board) 70%, #fff));color:var(--on-c);box-shadow:0 3px 10px color-mix(in srgb, var(--c-board) 35%, transparent);}
+.tool .ic{width:1.3em;height:1.3em;}
+.tool[disabled]{opacity:.35;pointer-events:none;}
+.swatch{width:1.85em;height:1.85em;border-radius:50%;border:2.5px solid var(--paper);box-shadow:0 0 0 1.5px var(--line);cursor:pointer;padding:0;
+  transition:transform .18s var(--ease),box-shadow .18s;flex:0 0 auto;}
 .swatch:hover{transform:scale(1.1);}
 .swatch.on{box-shadow:0 0 0 2.5px var(--navy);transform:scale(1.12);}
 .sizeDot{border-radius:50%;background:currentColor;display:inline-block;}
-.board{position:relative;width:100%;aspect-ratio:16/10;background-color:var(--board);
-  background-image:radial-gradient(var(--board-dot) 1.2px, transparent 1.4px);background-size:22px 22px;
-  border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--sh-1);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;}
+.menuPop{position:absolute;right:6px;top:calc(100% + 6px);z-index:30;background:var(--paper);border:1px solid var(--line);border-radius:14px;box-shadow:var(--sh-2);
+  padding:8px;min-width:220px;animation:modalIn .2s var(--ease-out);}
+.menuPop .mi{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;padding:9px 10px;border-radius:9px;cursor:pointer;font-weight:600;color:var(--navy);text-align:left;}
+.menuPop .mi:hover{background:color-mix(in srgb, var(--c-board) 10%, transparent);}
+.menuPop .mi .ic{width:1.2em;height:1.2em;color:var(--c-board);}
+.menuPop .seg{display:flex;gap:4px;padding:4px 6px 8px;}
+.menuPop .seg button{flex:1;border:1.5px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 4px;font-weight:700;font-size:.8em;cursor:pointer;color:var(--navy);}
+.menuPop .seg button.on{border-color:var(--c-board);background:color-mix(in srgb, var(--c-board) 12%, var(--paper));color:var(--c-board);}
+.menuPop .lbl{font-size:.78em;font-weight:700;color:var(--muted);padding:6px 10px 2px;}
+.board{position:relative;width:100%;height:560px;background-color:var(--board);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:inset 0 1px 0 var(--raise-hi),var(--sh-1);overflow:hidden;touch-action:none;user-select:none;-webkit-user-select:none;}
+.board.bg-dots{background-image:radial-gradient(var(--board-mark) 1.3px, transparent 1.5px);}
+.board.bg-grid{background-image:linear-gradient(var(--board-mark) 1px,transparent 1px),linear-gradient(90deg,var(--board-mark) 1px,transparent 1px);}
 .board canvas{position:absolute;inset:0;width:100%;height:100%;}
-.board.pen,.board.marker{cursor:crosshair;} .board.eraser{cursor:none;} .board.sticky{cursor:copy;}
-.stickyLayer{position:absolute;inset:0;pointer-events:none;}
-.stk{--dx:0px;--dy:0px;--rot:0deg;--sc:1;position:absolute;width:15%;min-width:120px;pointer-events:auto;border-radius:4px 4px 10px 4px;
+.board.t-pen,.board.t-marker,.board.t-shape,.board.t-laser{cursor:crosshair;}
+.board.t-eraser{cursor:none;} .board.t-sticky{cursor:copy;} .board.t-text{cursor:text;}
+.board.t-hand,.board.panning{cursor:grab;} .board.panning{cursor:grabbing;}
+.board.t-select{cursor:default;} .board.t-select.overItem{cursor:move;}
+.stickyLayer,.cursorLayer{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.stk{--rot:0deg;position:absolute;left:0;top:0;width:150px;pointer-events:auto;border-radius:4px 4px 12px 4px;transform-origin:0 0;
   box-shadow:0 2px 3px rgba(0,0,0,.12),0 8px 18px rgba(0,0,0,.14);display:flex;flex-direction:column;color:#1d1a00;
-  transform:translate(var(--dx),var(--dy)) rotate(var(--rot)) scale(var(--sc));
-  transition:left .32s var(--ease),top .32s var(--ease),transform .2s var(--ease),box-shadow .2s,background-color .2s;
-  animation:stkIn .34s var(--ease-out);}
-.stk.dragging{transition:transform .12s var(--ease),box-shadow .2s;--sc:1.04;box-shadow:0 6px 10px rgba(0,0,0,.14),0 22px 40px rgba(0,0,0,.24);z-index:5;}
-.stk.leaving{animation:stkOut .22s var(--ease) forwards;pointer-events:none;}
-@keyframes stkIn{from{opacity:0;transform:translate(0,8px) rotate(var(--rot)) scale(.6)}to{opacity:1}}
+  background-image:linear-gradient(170deg,rgba(255,255,255,.35),rgba(255,255,255,0) 40%);
+  transition:box-shadow .2s,background-color .2s;}
+.stk .in{display:flex;flex-direction:column;transform:rotate(var(--rot));transform-origin:50% 50%;border-radius:inherit;background:inherit;box-shadow:inherit;
+  animation:stkIn .34s var(--ease-out);transition:transform .2s var(--ease);}
+.stk{background:none;box-shadow:none;}
+.stk.dragging .in{transform:rotate(0deg) scale(1.04);box-shadow:0 6px 10px rgba(0,0,0,.14),0 22px 40px rgba(0,0,0,.24);}
+.stk.dragging{z-index:5;}
+.stk.glide{transition:transform .32s var(--ease);}
+.stk.leaving .in{animation:stkOut .22s var(--ease) forwards;pointer-events:none;}
+@keyframes stkIn{from{opacity:0;transform:translateY(8px) rotate(var(--rot)) scale(.6)}to{opacity:1}}
 @keyframes stkOut{to{opacity:0;transform:rotate(var(--rot)) scale(.6)}}
-.stk .grip{height:1.7em;cursor:grab;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 9px;font-size:.7em;font-weight:700;
+.stk .grip{height:22px;cursor:grab;display:flex;align-items:center;justify-content:space-between;padding:0 4px 0 9px;font-size:10px;font-weight:700;
   color:rgba(0,0,0,.5);touch-action:none;}
 .stk.dragging .grip{cursor:grabbing;}
-.stk .grip button{border:0;background:transparent;color:rgba(0,0,0,.5);cursor:pointer;font-size:1.5em;line-height:1;padding:0 4px;border-radius:6px;}
+.stk .grip button{border:0;background:transparent;color:rgba(0,0,0,.5);cursor:pointer;font-size:17px;line-height:1;padding:0 4px;border-radius:6px;}
 .stk .grip button:hover{background:rgba(0,0,0,.08);}
-.stk textarea{border:0;background:transparent;resize:none;min-height:5.5em;padding:2px 9px 9px;font-size:.88em;line-height:1.35;color:#1d1a00;box-shadow:none;}
+.stk textarea{border:0;background:transparent;resize:none;min-height:88px;padding:2px 10px 10px;font-size:14px;line-height:1.35;color:#1d1a00;box-shadow:none;font-weight:500;}
 .stk textarea:focus{outline:none;box-shadow:none;}
 .board.readonly .stk .grip{cursor:default;}
+.textEdit{position:absolute;left:0;top:0;z-index:6;transform-origin:0 0;border:1.5px dashed var(--c-board);border-radius:6px;background:color-mix(in srgb, var(--board) 85%, transparent);
+  font-weight:600;line-height:1.25;padding:2px 4px;min-width:60px;min-height:0;resize:none;overflow:hidden;white-space:pre;box-shadow:none;}
+.cur{position:absolute;left:0;top:0;transition:transform .12s linear, opacity .5s;pointer-events:none;}
+.cur svg{width:18px;height:18px;display:block;filter:drop-shadow(0 1px 1px rgba(0,0,0,.3));}
+.cur span{position:absolute;left:14px;top:14px;background:var(--pc);color:#fff;font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;white-space:nowrap;}
+.cur.idle{opacity:0;}
+.zoomBox{position:absolute;right:10px;bottom:10px;z-index:7;display:flex;align-items:center;gap:2px;background:color-mix(in srgb, var(--paper) 92%, transparent);
+  border:1px solid var(--line);border-radius:12px;padding:3px;box-shadow:var(--sh-1);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);}
+.zoomBox button{border:0;background:transparent;color:var(--navy);font-weight:700;min-width:2.1em;height:2.1em;border-radius:9px;cursor:pointer;font-size:.85em;font-variant-numeric:tabular-nums;}
+.zoomBox button:hover{background:color-mix(in srgb, var(--c-board) 12%, transparent);}
+.zoomBox .ic{width:1.15em;height:1.15em;vertical-align:middle;}
+.selBar{position:absolute;z-index:8;display:flex;gap:4px;padding:4px;background:var(--paper);border:1px solid var(--line);border-radius:12px;box-shadow:var(--sh-2);
+  transform:translate(-50%,-100%);animation:modalIn .18s var(--ease-out);}
+.selBar .swatch{width:1.5em;height:1.5em;}
+body.wbFull{overflow:hidden;}
+body.wbFull .wbWrap{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--cream);padding:max(8px,env(safe-area-inset-top)) 8px 8px;animation:paneIn .26s var(--ease-out);}
+body.wbFull .board{flex:1 1 auto;height:auto !important;}
+body.wbFull .wbBar{margin-bottom:8px;}
+body.wbTab:not(.wbFull){overscroll-behavior:none;}
 
-/* action items */
-.aiForm{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr) minmax(0,.9fr) auto;gap:8px;align-items:center;}
-@media (max-width:900px){ .aiForm{grid-template-columns:minmax(0,1fr);} }
-.aiList{display:flex;flex-direction:column;}
-.ai{display:flex;align-items:flex-start;gap:12px;padding:11px 6px;border-bottom:1px solid var(--line-soft);transition:background-color .2s;border-radius:var(--radius-sm);}
-.ai:hover{background:color-mix(in srgb, var(--tc) 5%, transparent);}
-.ai:last-child{border-bottom:0;}
-.ai .txt{overflow-wrap:anywhere;cursor:text;}
-.ai .sub{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:5px;font-size:.78em;color:var(--muted);align-items:center;}
-.ai .who{font-weight:700;color:var(--pc);background:color-mix(in srgb, var(--pc) 12%, var(--paper));border-radius:999px;padding:1px 9px;}
-.ai .due{border-radius:999px;padding:1px 9px;background:var(--line-soft);}
-.ai .due.soon{background:color-mix(in srgb, var(--orange) 16%, var(--paper));color:var(--orange);font-weight:700;}
-.ai .due.late{background:color-mix(in srgb, var(--red) 14%, var(--paper));color:var(--red);font-weight:700;}
-.ai.done .due{background:var(--line-soft);color:var(--muted);font-weight:400;}
-
-/* practice portal */
-.ppBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;}
+/* ---- practice portal ---- */
+.ppBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;padding:6px 8px;border-radius:14px;
+  background:linear-gradient(90deg,color-mix(in srgb, var(--tc) 14%, var(--paper)),transparent 70%);}
 .ppBar .status{font-size:.88em;font-weight:700;color:var(--tc);display:inline-flex;align-items:center;gap:8px;}
 .ppBar .status .ic{width:1.15em;height:1.15em;}
 .ppFrameWrap{position:relative;border:1px solid var(--line);border-top:4px solid var(--tc);border-radius:var(--radius);overflow:hidden;box-shadow:var(--sh-1);background:var(--paper);
@@ -300,13 +339,25 @@ html.dark .liveTag{color:#1a0d00;}
 .ppFrameWrap iframe{width:1px;min-width:100%;max-width:100%;height:100%;border:0;display:block;}
 body.ppTab{overflow-x:hidden;}
 .ppFrameWrap iframe.ppOwn.behind{visibility:hidden;}
+.ppExitBtn{display:none !important;}
+.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:700;color:var(--navy);white-space:nowrap;}
+body.ppFull{overflow:hidden;}
+body.ppFull .ppStage{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--cream);
+  padding:max(6px,env(safe-area-inset-top)) 8px 0 8px;animation:paneIn .26s var(--ease-out);}
+body.ppFull .ppBar{margin:0 0 4px;flex:0 0 auto;}
+body.ppFull .ppFrameWrap{flex:1 1 auto;height:auto !important;min-height:0;border-radius:var(--radius) var(--radius) 0 0;border-bottom:0;}
+body.ppFull .ppExitBtn{display:inline-flex !important;}
+body.ppFull .ppFullBtn{display:none;}
+body.ppTab:not(.ppFull){overscroll-behavior:none;}
+@media (max-width:900px){ body.ppFull .ppLbl{display:none;} body.ppFull .ppBar{font-size:.8em;gap:6px;} }
 /* the presenter's screen, live */
 .mirror{position:absolute;inset:0;background:color-mix(in srgb, var(--tc) 6%, var(--cream));overflow:hidden;z-index:2;}
 .mirrorBox{position:absolute;left:0;top:0;transform-origin:0 0;box-shadow:0 0 0 1px var(--line),var(--sh-2);background:var(--paper);overflow:hidden;}
-.mirrorBox iframe{position:absolute;inset:0;border:0;display:block;pointer-events:none;background:var(--paper);}
+.mirrorZoom{position:absolute;left:0;top:0;width:100%;height:100%;transform-origin:0 0;}
+.mirrorZoom iframe{position:absolute;inset:0;border:0;display:block;pointer-events:none;background:var(--paper);}
 .mirrorWait{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--muted);font-weight:700;pointer-events:none;}
 .mirrorWait:empty{display:none;}
-.gestures{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.gestures{position:absolute;inset:0;pointer-events:none;overflow:visible;}
 .gTouch{position:absolute;left:0;top:0;width:0;height:0;transition:transform 70ms linear;}
 .gTouch span{position:absolute;left:-22px;top:-22px;width:44px;height:44px;border-radius:50%;
   background:radial-gradient(circle, rgba(70,78,92,.30) 0 55%, rgba(70,78,92,.16) 70%, rgba(70,78,92,0) 72%);
@@ -314,36 +365,26 @@ body.ppTab{overflow-x:hidden;}
 .gTouch.lift span{animation:gUp .4s var(--ease) forwards;}
 @keyframes gDown{from{opacity:0;transform:scale(.55)}to{opacity:1;transform:scale(1)}}
 @keyframes gUp{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(1.35)}}
+.gWheel{position:absolute;left:-14px;top:-14px;width:28px;height:28px;border-radius:50%;background:rgba(70,78,92,.22);box-shadow:0 0 0 1.5px rgba(70,78,92,.3);
+  animation:gWheel .55s var(--ease) forwards;}
+@keyframes gWheel{0%{opacity:0;transform:translate(var(--x),var(--y)) scale(.7)}25%{opacity:1}100%{opacity:0;transform:translate(calc(var(--x) + var(--dx)),calc(var(--y) + var(--dy))) scale(1)}}
 .gCursor{position:absolute;left:-7px;top:-7px;width:14px;height:14px;border-radius:50%;background:rgba(70,78,92,.22);box-shadow:0 0 0 1.5px rgba(70,78,92,.35);
   transition:transform 90ms linear, opacity .4s;}
 .gCursor.idle{opacity:0;}
 .gTap{position:absolute;border-radius:8px;background:rgba(47,111,214,.14);box-shadow:0 0 0 2px rgba(47,111,214,.55);
   animation:gTap 1.25s var(--ease) forwards;}
 @keyframes gTap{0%{opacity:0;transform:scale(.98)}12%{opacity:1;transform:scale(1)}70%{opacity:1}100%{opacity:0}}
-/* highlight boxes */
+.gFocus{position:absolute;border-radius:8px;box-shadow:0 0 0 2.5px rgba(232,121,26,.75),0 0 14px rgba(232,121,26,.35);transition:all .15s var(--ease);}
 .hlLayer{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden;}
 .hlLayer.drawing{pointer-events:auto;cursor:crosshair;background:rgba(255,214,0,.04);}
 .hlBox{position:absolute;left:0;top:0;border-radius:8px;background:rgba(255,212,0,.24);box-shadow:0 0 0 2.5px rgba(242,178,0,.9),0 0 18px rgba(255,200,0,.35);}
 .hlLayer.drawing .hlBox:not(.draft){cursor:pointer;}
 .hlBox.draft{background:rgba(255,212,0,.16);box-shadow:0 0 0 2px rgba(242,178,0,.7);}
-.ppExitBtn{display:none !important;}
-.switch{display:inline-flex;align-items:center;gap:8px;cursor:pointer;font-size:.85em;font-weight:700;color:var(--navy);}
-/* Full screen: the practice copy takes the whole screen under a slim bar,
-   and the meeting page behind it cannot scroll. Phones always use it. */
-body.ppFull{overflow:hidden;}
-body.ppFull .ppStage{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:var(--cream);
-  padding:max(6px,env(safe-area-inset-top)) 8px 0 8px;animation:paneIn .26s var(--ease-out);}
-body.ppFull .ppBar{margin:0;padding:4px 2px 6px;flex:0 0 auto;}
-body.ppFull .ppFrameWrap{flex:1 1 auto;height:auto !important;min-height:0;border-radius:var(--radius) var(--radius) 0 0;border-bottom:0;}
-body.ppFull .ppExitBtn{display:inline-flex !important;}
-body.ppFull .ppFullBtn{display:none;}
-body.ppTab:not(.ppFull){overscroll-behavior:none;}
-@media (max-width:900px){ body.ppFull .ppLbl{display:none;} body.ppFull .ppBar{font-size:.8em;gap:6px;} .ppBar .switch{white-space:nowrap;} }
 
-/* modal + toast */
+/* ---- modal + toast ---- */
 .overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;
   animation:fadeIn .18s ease-out;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
-.modal{background:var(--paper);border-radius:var(--radius);box-shadow:var(--sh-2);width:100%;max-width:440px;padding:20px;border-top:5px solid var(--tc);
+.modal{background:linear-gradient(160deg,color-mix(in srgb, var(--tc) 10%, var(--paper)),var(--paper) 50%);border-radius:var(--radius);box-shadow:var(--sh-2);width:100%;max-width:440px;padding:20px;border-top:5px solid var(--tc);
   animation:modalIn .28s var(--ease-out);}
 .modal h2{font-family:var(--f-display);font-weight:400;margin:0 0 12px;color:var(--navy);font-size:1.45em;}
 .modal .msg{margin:0 0 14px;white-space:pre-wrap;}
@@ -368,6 +409,7 @@ html.dark .toast{color:var(--paper);}
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
@@ -376,15 +418,26 @@ html.dark .toast{color:var(--paper);}
   <symbol id="i-eraser" viewBox="0 0 24 24"><path d="M16 3l5 5-10 10H6l-3-3L16 3zM13 18h8" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
   <symbol id="i-sticky" viewBox="0 0 24 24"><path d="M4 4h16v10l-6 6H4V4zM14 20v-6h6" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
   <symbol id="i-undo" viewBox="0 0 24 24"><path d="M9 14L4 9l5-5M4 9h10a6 6 0 010 12h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-redo" viewBox="0 0 24 24"><path d="M15 14l5-5-5-5M20 9H10a6 6 0 000 12h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="13" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 21l4-4 4 4M7 13l3-3 2 2 4-4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-portal" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3 9h18M8 4v5" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
   <symbol id="i-cast" viewBox="0 0 24 24"><path d="M3 8V6a2 2 0 012-2h14a2 2 0 012 2v12a2 2 0 01-2 2h-6M3 12a8 8 0 018 8M3 16a4 4 0 014 4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/><circle cx="3.5" cy="20" r="1" fill="currentColor"/></symbol>
   <symbol id="i-expand" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-highlight" viewBox="0 0 24 24"><rect x="3.5" y="5.5" width="17" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.9" stroke-dasharray="3 2.4"/><path d="M14 14l5 6M17 13l3 1-1 3" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-reset" viewBox="0 0 24 24"><path d="M4 4v6h6M20 20v-6h-6M5.5 15a7 7 0 0012 2.5M18.5 9a7 7 0 00-12-2.5" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-select" viewBox="0 0 24 24"><path d="M5 3l14 8-6 1.6L10 19z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-hand" viewBox="0 0 24 24"><path d="M8 12V5.5a1.5 1.5 0 013 0V11m0-6.5a1.5 1.5 0 013 0V11m0-5a1.5 1.5 0 013 0v7c0 4-2.5 7-6.5 7S6 18 4.5 15.5L3 13a1.5 1.5 0 012.5-1.6L8 14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-rect" viewBox="0 0 24 24"><rect x="4" y="6" width="16" height="12" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
+  <symbol id="i-ellipse" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="8.5" ry="6.5" fill="none" stroke="currentColor" stroke-width="1.9"/></symbol>
+  <symbol id="i-line" viewBox="0 0 24 24"><path d="M5 19L19 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 19L19 5M10 5h9v9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-laser" viewBox="0 0 24 24"><circle cx="17" cy="7" r="3" fill="currentColor" opacity=".9"/><path d="M14.5 9.5L4 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".55"/></symbol>
+  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="9" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M21 16l-5-5-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
+  <symbol id="i-fit" viewBox="0 0 24 24"><path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><rect x="8" y="8" width="8" height="8" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
 </svg>
 
 <header class="top">
@@ -402,31 +455,33 @@ html.dark .toast{color:var(--paper);}
 'use strict';
 /* =========================================================================
    MEETINGS
-   A live workspace for in-person meetings: agenda and shared notes, a
-   whiteboard, action items, and the practice copy of the portal. Every
-   device in the meeting sees the same thing as it changes. It runs on the
-   portal's Firebase project and sign-in, which this page shares because both
-   sites live at the same address.
+   A live workspace for in-person meetings: an agenda with shared notes, a
+   whiteboard, and the practice copy of the portal. Every device in the
+   meeting sees the same thing as it changes. It runs on the portal's
+   Firebase project and sign-in, which this page shares because both sites
+   live at the same address.
 
    Firestore layout, all under gh_portal/meetings/items/{meetingId}:
-     the meeting itself  {title, createdAt, createdBy, status, presenter, view, currentAgenda}
+     the meeting itself  {title, createdAt, createdBy, status, presenter, hl, followLock, bg, currentAgenda}
      agenda/{id}         {text, order, done}
-     notes/{id}          {text, agendaId, by, at}
-     actions/{id}        {text, assignee, due, done}
-     strokes/{id}        {pts:[x,y,x,y...], color, size, tool, by, at}
-     stickies/{id}       {x, y, text, color, by, at}
-     presence/{uid}      {name, at, ink}
-   Board positions are stored as fractions of the board, so every screen size
-   draws the same picture.
+     notes/{id}          {text, agendaId, by, byName, at}
+     strokes/{id}        {v:2, pts:[x,y,pressure,...], color, size, tool, by, at}
+     shapes/{id}         {kind, x1, y1, x2, y2, color, size, by, at}
+     texts/{id}          {x, y, text, color, size, by, at}
+     stickies/{id}       {v:2, x, y, text, color, by, at}
+     presence/{uid}      {name, at, ink, laser, cur}
+     stream/{id}         the presenter's screen, while someone presents
+   Whiteboard items are stored in board units. The first whiteboards stored
+   positions as fractions of a 16:10 board; those are read as 1000 x 625.
 ========================================================================= */
 const PORTAL_URL='../goodandhandyportal/';
 const CFG_KEY='gh_portal_sync_cfg';
 const PORTAL_DB_KEY='gh_portal_db_v1';
-const SUBS=['agenda','notes','actions','strokes','stickies','presence'];
+const SUBS=['agenda','notes','strokes','shapes','texts','stickies','presence'];
+const ALL_SUBS=SUBS.concat(['actions','stream']);
 const COLORS=['#0f2647','#e8791a','#c0392b','#1f8a55','#2f6fd6','#7b4bc4'];
 const PEOPLE=['#e8791a','#2f6fd6','#1f8a55','#c0392b','#7b4bc4','#0e8f9a','#b8860b'];
 const STICKY_COLORS=['#fff27a','#ffc9a8','#bdf0cf','#c9dcff','#ead3ff'];
-const SIZES=[2.5,5,10];
 const PRESENCE_MS=20000, ALIVE_MS=65000;
 const RM=window.matchMedia('(prefers-reduced-motion: reduce)');
 const EASE='cubic-bezier(.2,.8,.2,1)';
@@ -434,7 +489,8 @@ const EASE='cubic-bezier(.2,.8,.2,1)';
 let db=null, ME=null, USERS={};
 let MEETINGS=[], LIST_UNSUB=null;
 let MTG=null, MTG_ID=null, MTG_UNSUBS=[];
-let DATA={agenda:[], notes:[], actions:[], strokes:[], stickies:[], presence:[]};
+let DATA={};
+const emptyData=()=>({agenda:[], notes:[], strokes:[], shapes:[], texts:[], stickies:[], presence:[]});
 let TAB='agenda';
 let presenceTimer=null;
 
@@ -445,9 +501,6 @@ function icon(n){ return `<svg class="ic"><use href="#i-${n}"/></svg>`; }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,8); }
 function fmtDate(ms){ return new Date(ms).toLocaleDateString([], {weekday:'short', month:'short', day:'numeric', year:'numeric'}); }
 function fmtTime(ms){ return new Date(ms).toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}); }
-function fmtShortDate(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString([], {month:'short', day:'numeric'}); }
-function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
-function todayISO(){ return isoOf(new Date()); }
 function colorFor(name){
   const team=Object.values(USERS||{}).map(u=>u.username).filter(Boolean).sort();
   const i=team.indexOf(name);
@@ -501,6 +554,8 @@ const ROOT=()=>db.collection('gh_portal').doc('meetings').collection('items');
 const MREF=()=>ROOT().doc(MTG_ID);
 const SUB=n=>MREF().collection(n);
 const readOnly=()=>!MTG || MTG.status==='ended';
+/* Grows a text box with what is typed in it. */
+function autoGrow(t){ t.style.height='auto'; t.style.height=Math.min(t.scrollHeight+2, 320)+'px'; }
 
 /* ---------- lists that move smoothly ----------
    Lists are updated item by item instead of being redrawn. Items that move
@@ -570,7 +625,7 @@ function boot(){
     const rec=Object.values(USERS).find(u=>u.uid===user.uid);
     ME={uid:user.uid, name:rec ? rec.username : (user.email||'').split('@')[0], isAdmin:!!(rec && rec.isAdmin)};
     showMe();
-    // The portal's user list, for names and action item assignees.
+    // The portal's user list, for names and colours.
     db.collection('gh_portal').doc('main').get().then(s=>{
       const raw=s.exists && s.data().meta;
       if(!raw) return;
@@ -629,7 +684,7 @@ async function newMeeting(){
   if(title===null) return;
   const ref=ROOT().doc();
   try{
-    await ref.set({title:title||'Meeting', createdAt:Date.now(), createdBy:ME.uid, createdByName:ME.name, status:'live', presenter:null, view:null, currentAgenda:null});
+    await ref.set({title:title||'Meeting', createdAt:Date.now(), createdBy:ME.uid, createdByName:ME.name, status:'live', presenter:null, hl:[], followLock:false, bg:'dots', currentAgenda:null});
     location.hash='m='+ref.id;
   }catch(e){ fail(e); }
 }
@@ -639,8 +694,9 @@ function openMeeting(id){
   if(MTG_ID===id) return;
   leaveMeeting();
   MTG_ID=id; MTG=null;
-  DATA={agenda:[], notes:[], actions:[], strokes:[], stickies:[], presence:[]};
+  DATA=emptyData();
   try{ TAB=sessionStorage.getItem('gh_mtg_tab_'+id)||'agenda'; }catch(e){ TAB='agenda'; }
+  if(!['agenda','board','practice'].includes(TAB)) TAB='agenda';
   $('backLink').href='#'; $('backText').textContent='Meetings';
   $('backLink').onclick=e=>{ e.preventDefault(); location.hash=''; };
   $('main').innerHTML='<div class="small" style="padding:20px">Loading…</div>';
@@ -664,9 +720,9 @@ function leaveMeeting(){
   stopPresence();
   if(MTG_ID && db && ME){ try{ SUB('presence').doc(ME.uid).delete().catch(()=>{}); }catch(e){} }
   ppTeardown();
-  INK.remote.clear(); INK.fading=[]; DRAW=null;
+  wbTeardown();
   MTG=null; MTG_ID=null;
-  document.body.classList.remove('ppFull','ppTab');
+  document.body.classList.remove('ppFull','ppTab','wbFull','wbTab');
 }
 function startPresence(){
   stopPresence();
@@ -681,9 +737,24 @@ function livePeople(){
   const now=Date.now();
   return DATA.presence.filter(p=>p.id===ME.uid || (now-(p.at||0))<ALIVE_MS).sort((a,b)=>String(a.name).localeCompare(String(b.name)));
 }
+/* Fast-changing things (a line being drawn, the laser, cursors) go out
+   through one write at a time, always the newest, so a slow connection
+   never builds up a backlog. */
+const LIVE={busy:false, pending:null};
+function liveSend(fields){
+  if(!MTG_ID || !ME) return;
+  LIVE.pending=Object.assign(LIVE.pending||{}, fields);
+  if(!LIVE.busy) liveFlush();
+}
+function liveFlush(){
+  if(!LIVE.pending || !MTG_ID) return;
+  const f=LIVE.pending; LIVE.pending=null; LIVE.busy=true;
+  f.at=Date.now(); f.name=ME.name;
+  SUB('presence').doc(ME.uid).set(f, {merge:true}).catch(()=>{}).then(()=>setTimeout(()=>{ LIVE.busy=false; if(LIVE.pending) liveFlush(); }, 50));
+}
 
 /* ---------- meeting screen ---------- */
-const TABS=[['agenda','list','Agenda & Notes'],['board','board','Whiteboard'],['actions','check','Action Items'],['practice','portal','Practice Portal']];
+const TABS=[['agenda','list','Agenda & Notes'],['board','board','Whiteboard'],['practice','portal','Practice Portal']];
 function render(){
   if(!MTG) return;
   const ro=readOnly();
@@ -697,14 +768,13 @@ function render(){
           :`<button class="btn secondary sm" onclick="endMeeting()">End Meeting</button>`}
       ${(ME.isAdmin || MTG.createdBy===ME.uid)?`<button class="iconBtn" title="Delete meeting" aria-label="Delete meeting" onclick="deleteMeeting()">${icon('trash')}</button>`:''}
     </div>
-    <div class="tabs" id="tabs">${TABS.map(([k,ic,l])=>`<button data-k="${k}" style="--c:var(--c-${k})" onclick="showTab('${k}')">${icon(ic)}${l}<span class="liveDot hidden"></span></button>`).join('')}</div>
+    <div class="tabs" id="tabs">${TABS.map(([k,ic,l])=>`<button data-k="${k}" style="--c:var(--c-${k})" onclick="showTab('${k}')">${icon(ic)}<span>${l}</span><span class="liveDot hidden"></span></button>`).join('')}</div>
     <section id="pane-agenda" class="pane"></section>
     <section id="pane-board" class="pane"></section>
-    <section id="pane-actions" class="pane"></section>
     <section id="pane-practice" class="pane"></section>`;
   $('mtgTitle').onclick=renameMeeting;
   renderPeople();
-  renderAgendaPane(); renderBoardPane(); renderActionsPane(); renderPracticePane();
+  renderAgendaPane(); renderBoardPane(); renderPracticePane();
   showTab(TAB, true);
 }
 function renderTabs(){
@@ -725,14 +795,19 @@ function showTab(k, initial){
     else p.classList.toggle('hidden', !show);
   });
   renderTabs();
-  if(k==='board') requestAnimationFrame(sizeBoard);
+  document.body.classList.toggle('wbTab', k==='board');
+  if(k!=='board') document.body.classList.remove('wbFull');
+  if(k==='board'){
+    if(phoneMQ.matches){ document.body.classList.add('wbFull'); renderWbBar(); }
+    window.scrollTo(0,0); requestAnimationFrame(()=>{ wbFit(); });
+  }
   document.body.classList.toggle('ppTab', k==='practice');
   if(k==='practice'){
     ppEnsure();
     if(phoneMQ.matches) ppSetFull(true);
     else { window.scrollTo(0,0); requestAnimationFrame(()=>{ ppFit(); mirFit(); }); }
   } else {
-    PP_BACK=k;
+    if(k!=='board') PP_BACK=k;
     document.body.classList.remove('ppFull');
   }
 }
@@ -745,17 +820,16 @@ function renderPeople(){
 function onMeetingChange(prev){
   if(prev.status!==MTG.status){ render(); return; }
   if(prev.title!==MTG.title){ const t=$('mtgTitle'); if(t) t.textContent=MTG.title||'Meeting'; }
-  if(prev.currentAgenda!==MTG.currentAgenda){ renderAgendaList(); renderNotes(); }
+  if(prev.currentAgenda!==MTG.currentAgenda) renderAgenda();
+  if(prev.bg!==MTG.bg){ wbApplyBg(); wbRenderMenu(); }
   ppOnMeeting(prev);
   renderTabs();
 }
 function onDataChange(n){
-  if(n==='agenda'){ renderAgendaList(); renderNotes(); }
-  else if(n==='notes') renderNotes();
-  else if(n==='actions') renderActions();
-  else if(n==='strokes') onStrokes();
-  else if(n==='stickies') renderStickies();
-  else if(n==='presence'){ renderPeople(); onPresenceInk(); ppRenderBar(); renderTabs(); ppUpdateMode(); }
+  if(n==='agenda' || n==='notes') renderAgenda();
+  else if(n==='strokes' || n==='shapes' || n==='texts') wbOnItems(n);
+  else if(n==='stickies'){ wbOnItems(); renderStickies(); }
+  else if(n==='presence'){ renderPeople(); wbOnPresence(); ppRenderBar(); renderTabs(); ppUpdateMode(); }
 }
 async function renameMeeting(){
   const t=await askText('Rename Meeting', MTG.title||'', 'Save');
@@ -766,15 +840,15 @@ async function endMeeting(){
 }
 function setStatus(st){
   const upd={status:st};
-  if(st==='ended'){ upd.endedAt=Date.now(); upd.presenter=null; upd.view=null; upd.hl=[]; upd.followLock=false; }
+  if(st==='ended'){ upd.endedAt=Date.now(); upd.presenter=null; upd.hl=[]; upd.followLock=false; }
   MREF().update(upd).catch(fail);
 }
 async function deleteMeeting(){
-  if(!await askYesNo('Delete this meeting?', 'Its agenda, notes, whiteboard and action items are deleted for everyone.', 'Delete', true)) return;
+  if(!await askYesNo('Delete this meeting?', 'Its agenda, notes and whiteboard are deleted for everyone.', 'Delete', true)) return;
   const ref=MREF();
   location.hash='';
   try{
-    for(const n of SUBS){
+    for(const n of ALL_SUBS){
       const s=await ref.collection(n).get();
       for(let i=0;i<s.docs.length;i+=400){
         const b=db.batch(); s.docs.slice(i,i+400).forEach(d=>b.delete(d.ref)); await b.commit();
@@ -785,50 +859,90 @@ async function deleteMeeting(){
   }catch(e){ fail(e); }
 }
 
-/* ---------- agenda + notes ---------- */
+/* ---------- agenda + notes ----------
+   One running page: each agenda item is a raised header, and the notes
+   about it sit under it, indented in a recessed well with the writer's
+   name on the left. Each item has its own box for adding a note. */
 let NOTE_EDIT=null;
 function renderAgendaPane(){
   const ro=readOnly();
-  $('pane-agenda').innerHTML=`<div class="anGrid">
-    <div class="panel"><div class="panelTitle">Agenda <span class="count" id="agCount">0</span></div>
-      <div class="agList" id="agList"></div>
-      ${ro?'':`<div class="addRow"><input type="text" id="agNew" maxlength="200" aria-label="New agenda item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda();}"><button class="btn tc" onclick="addAgenda()" aria-label="Add agenda item">${icon('plus')}Add</button></div>`}
-    </div>
-    <div class="panel"><div class="panelTitle">Notes <span class="count" id="noteCount">0</span></div>
-      <div id="noteList"></div>
-      ${ro?'':`<div class="composer"><div class="addTo" id="addTo"></div>
-        <textarea id="noteNew" aria-label="New note" onkeydown="if(event.key==='Enter'&&(event.metaKey||event.ctrlKey)){event.preventDefault();addNote();}"></textarea>
-        <div class="row" style="justify-content:flex-end;margin-top:8px;"><button class="btn tc" onclick="addNote()">${icon('plus')}Add Note</button></div></div>`}
-    </div></div>`;
-  renderAgendaList(); renderNotes();
+  $('pane-agenda').innerHTML=`<div class="agenda">
+    <div id="agList"></div>
+    ${ro?'':`<div class="addAgenda"><input type="text" id="agNew" maxlength="200" aria-label="New agenda item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda();}"><button class="btn tc" onclick="addAgenda()" aria-label="Add agenda item">${icon('plus')}Add</button></div>`}
+  </div>`;
+  renderAgenda();
 }
 const agSorted=()=>DATA.agenda.slice().sort((a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0));
-function renderAgendaList(){
+function renderAgenda(){
   const el=$('agList'); if(!el) return;
   const ro=readOnly(), list=agSorted();
-  $('agCount').textContent=list.length;
-  keyed(el, list, a=>a.id, a=>`<div class="agItem">
-      <input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="SUB('agenda').doc('${a.id}').update({done:this.checked}).catch(fail)">
-      <div class="txt" onclick="${ro?'':`setCurrentAgenda('${a.id}')`}"><span class="strike"></span></div>
-      ${ro?'':`<div class="tools">
-        <button class="iconBtn up" aria-label="Move up" onclick="moveAgenda('${a.id}',-1)">${icon('up')}</button>
-        <button class="iconBtn down" aria-label="Move down" onclick="moveAgenda('${a.id}',1)">${icon('down')}</button>
-        <button class="iconBtn" aria-label="Edit" onclick="editAgenda('${a.id}')">${icon('pen')}</button>
-        <button class="iconBtn" aria-label="Delete" onclick="deleteAgenda('${a.id}')">${icon('x')}</button></div>`}
-    </div>`, (n,a,i,len)=>{
-      n.classList.toggle('done', !!a.done);
-      n.classList.toggle('current', MTG.currentAgenda===a.id);
-      const c=n.querySelector('input'); if(c.checked!==!!a.done) c.checked=!!a.done;
-      const s=n.querySelector('.strike'); if(s.textContent!==a.text) s.textContent=a.text;
-      const up=n.querySelector('.up'), dn=n.querySelector('.down');
-      if(up) up.disabled=i===0; if(dn) dn.disabled=i===len-1;
-    });
-  emptyState(el, !list.length, 'No agenda items yet.');
-  const addTo=$('addTo');
-  if(addTo){
-    const cur=DATA.agenda.find(a=>a.id===MTG.currentAgenda);
-    addTo.textContent=cur?cur.text:'';
-  }
+  const notes=DATA.notes.slice().sort((a,b)=>(a.at||0)-(b.at||0));
+  const secs=list.map(a=>({id:a.id, a, notes:notes.filter(n=>n.agendaId===a.id)}));
+  const loose=notes.filter(n=>!n.agendaId || !DATA.agenda.some(a=>a.id===n.agendaId));
+  if(loose.length || !list.length) secs.push({id:'_general', a:null, notes:loose});
+  keyed(el, secs, s=>s.id, s=>{
+    const g=!s.a;
+    return `<section class="agSec">
+      <div class="agItem${g?' general':''}">
+        ${g?'':`<input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="SUB('agenda').doc('${s.id}').update({done:this.checked}).catch(fail)">`}
+        <div class="txt" ${(g||ro)?'':`onclick="setCurrentAgenda('${s.id}')"`}><span class="strike">${g?'General':''}</span></div>
+        <span class="nc"></span>
+        ${(g||ro)?'':`<div class="tools">
+          <button class="iconBtn up" aria-label="Move up" onclick="moveAgenda('${s.id}',-1)">${icon('up')}</button>
+          <button class="iconBtn down" aria-label="Move down" onclick="moveAgenda('${s.id}',1)">${icon('down')}</button>
+          <button class="iconBtn" aria-label="Edit" onclick="editAgenda('${s.id}')">${icon('pen')}</button>
+          <button class="iconBtn" aria-label="Delete" onclick="deleteAgenda('${s.id}')">${icon('x')}</button></div>`}
+      </div>
+      <div class="well"><div class="notes" id="nl-${s.id}"></div>
+        ${ro?'':`<div class="compose"><textarea rows="1" aria-label="New note" data-ag="${g?'':s.id}" oninput="autoGrow(this)" onkeydown="noteKey(event,this)"></textarea>
+          <button class="btn tc sm" onclick="addNote(this.previousElementSibling)">${icon('plus')}Add Note</button></div>`}
+      </div></section>`;
+  }, (sec,s,i,len)=>{
+    const item=sec.querySelector('.agItem');
+    if(s.a){
+      item.classList.toggle('done', !!s.a.done);
+      item.classList.toggle('current', MTG.currentAgenda===s.a.id);
+      const c=item.querySelector('input'); if(c && c.checked!==!!s.a.done) c.checked=!!s.a.done;
+      const t=item.querySelector('.strike'); if(t.textContent!==s.a.text) t.textContent=s.a.text;
+      const up=item.querySelector('.up'), dn=item.querySelector('.down');
+      const pos=list.findIndex(x=>x.id===s.id);
+      if(up) up.disabled=pos===0; if(dn) dn.disabled=pos===list.length-1;
+    }
+    item.querySelector('.nc').textContent=s.notes.length ? s.notes.length+(s.notes.length===1?' note':' notes') : '';
+    renderNotesInto(sec.querySelector('.notes'), s.notes, ro);
+  });
+}
+function renderNotesInto(box, list, ro){
+  keyed(box, list, n=>n.id+(NOTE_EDIT===n.id?':e':''), n=>{
+    const mine=n.by===ME.uid;
+    if(NOTE_EDIT===n.id) return `<div class="note editing" style="--pc:${colorFor(n.byName)}"><textarea class="noteEdit" oninput="autoGrow(this)">${esc(n.text)}</textarea>
+      <div class="row" style="justify-content:flex-end;margin-top:6px;"><button class="btn secondary sm" onclick="NOTE_EDIT=null;renderAgenda()">Cancel</button><button class="btn tc sm" onclick="saveNoteEdit('${n.id}', this)">Save</button></div></div>`;
+    return `<div class="note" style="--pc:${colorFor(n.byName)}"><div class="who"><span class="nm"></span><span class="tm"></span></div><div class="body"></div>
+      <div class="tools">${(!ro&&mine)?`<button class="iconBtn" aria-label="Edit note" onclick="editNote('${n.id}')">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button>`:''}</div></div>`;
+  }, (el,n)=>{
+    if(NOTE_EDIT===n.id) return;
+    el.querySelector('.nm').textContent=n.byName||'';
+    el.querySelector('.tm').textContent=fmtTime(n.at||0)+(n.editedAt?', edited':'');
+    const b=el.querySelector('.body'); if(b.textContent!==n.text) b.textContent=n.text;
+  });
+}
+function noteKey(e, t){ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); addNote(t); } }
+function addNote(t){
+  const text=(t.value||'').trim(); if(!text) return;
+  SUB('notes').add({text, agendaId:t.dataset.ag||'', by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
+  t.value=''; autoGrow(t); t.focus();
+}
+function editNote(id){
+  NOTE_EDIT=id; renderAgenda();
+  setTimeout(()=>{ const t=document.querySelector('.noteEdit'); if(t){ autoGrow(t); t.focus(); } }, 20);
+}
+function saveNoteEdit(id, btn){
+  const t=(btn.closest('.note').querySelector('.noteEdit').value||'').trim(); NOTE_EDIT=null;
+  if(t) SUB('notes').doc(id).update({text:t, editedAt:Date.now()}).catch(fail);
+  renderAgenda();
+}
+async function deleteNote(id){
+  if(await askYesNo('Delete this note?', '', 'Delete', true)) SUB('notes').doc(id).delete().catch(fail);
 }
 function addAgenda(){
   const inp=$('agNew'); const text=(inp.value||'').trim(); if(!text) return;
@@ -853,343 +967,795 @@ async function editAgenda(id){
 }
 async function deleteAgenda(id){
   const a=DATA.agenda.find(x=>x.id===id); if(!a) return;
-  if(!await askYesNo('Delete this agenda item?', a.text, 'Delete', true)) return;
+  const n=DATA.notes.filter(x=>x.agendaId===id).length;
+  if(!await askYesNo('Delete this agenda item?', n ? a.text+'\nIts notes move to General.' : a.text, 'Delete', true)) return;
   SUB('agenda').doc(id).delete().catch(fail);
   if(MTG.currentAgenda===id) MREF().update({currentAgenda:null}).catch(()=>{});
 }
-function renderNotes(){
-  const el=$('noteList'); if(!el) return;
-  const ro=readOnly();
-  $('noteCount').textContent=DATA.notes.length;
-  const notes=DATA.notes.slice().sort((a,b)=>(a.at||0)-(b.at||0));
-  const groups=agSorted().map(a=>({id:a.id, title:a.text, list:notes.filter(n=>n.agendaId===a.id)})).filter(g=>g.list.length);
-  const loose=notes.filter(n=>!n.agendaId || !DATA.agenda.some(a=>a.id===n.agendaId));
-  if(loose.length) groups.push({id:'_general', title:'General', list:loose});
-  keyed(el, groups, g=>g.id, g=>`<div class="noteGroup"><h3></h3><div class="notes" id="ng-${g.id}"></div></div>`, (gEl,g)=>{
-    gEl.querySelector('h3').textContent=g.title;
-    keyed(gEl.querySelector('.notes'), g.list, n=>n.id+(NOTE_EDIT===n.id?':e':''), n=>{
-      const mine=n.by===ME.uid;
-      if(NOTE_EDIT===n.id) return `<div class="note" style="--pc:${colorFor(n.byName)}"><textarea id="noteEdit">${esc(n.text)}</textarea>
-        <div class="row" style="justify-content:flex-end;margin-top:6px;"><button class="btn secondary sm" onclick="NOTE_EDIT=null;renderNotes()">Cancel</button><button class="btn tc sm" onclick="saveNoteEdit('${n.id}')">Save</button></div></div>`;
-      return `<div class="note" style="--pc:${colorFor(n.byName)}"><div class="by"><b>${esc(n.byName||'')}</b><span class="tm" style="white-space:nowrap"></span><span class="grow"></span>
-        ${(!ro&&mine)?`<button class="iconBtn" aria-label="Edit note" onclick="NOTE_EDIT='${n.id}';renderNotes();setTimeout(()=>{const t=document.getElementById('noteEdit');if(t){t.focus();}},20)">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button>`:''}</div>
-        <div class="body"></div></div>`;
-    }, (nEl,n)=>{
-      if(NOTE_EDIT===n.id) return;
-      nEl.querySelector('.tm').textContent=fmtTime(n.at||0)+(n.editedAt?', edited':'');
-      const b=nEl.querySelector('.body'); if(b.textContent!==n.text) b.textContent=n.text;
-    });
-  });
-  emptyState(el, !groups.length, 'No notes yet.');
-}
-function addNote(){
-  const inp=$('noteNew'); const text=(inp.value||'').trim(); if(!text) return;
-  SUB('notes').add({text, agendaId:MTG.currentAgenda||'', by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
-  inp.value=''; inp.focus();
-}
-function saveNoteEdit(id){
-  const t=($('noteEdit').value||'').trim(); NOTE_EDIT=null;
-  if(t) SUB('notes').doc(id).update({text:t, editedAt:Date.now()}).catch(fail);
-  renderNotes();
-}
-async function deleteNote(id){
-  if(await askYesNo('Delete this note?', '', 'Delete', true)) SUB('notes').doc(id).delete().catch(fail);
-}
 
-/* ---------- action items ---------- */
-function userNames(){ return Object.values(USERS).map(u=>u.username).filter(Boolean).sort(); }
-function renderActionsPane(){
-  const ro=readOnly();
-  const opts=['<option value="">Unassigned</option>'].concat(userNames().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`)).join('');
-  $('pane-actions').innerHTML=`<div class="panel">
-    ${ro?'':`<div class="aiForm" style="margin-bottom:16px;">
-      <input type="text" class="aiText" id="aiText" maxlength="300" aria-label="Action item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAction();}">
-      <select id="aiWho" aria-label="Assigned to">${opts}</select>
-      <input type="date" id="aiDue" aria-label="Due date">
-      <button class="btn tc" onclick="addAction()">${icon('plus')}Add</button></div>`}
-    <div class="panelTitle">Open <span class="count" id="aiOpenCount">0</span></div><div class="aiList" id="aiOpen"></div>
-    <div class="panelTitle" style="margin-top:20px;">Done <span class="count" id="aiDoneCount">0</span></div><div class="aiList" id="aiDone"></div>
-  </div>`;
-  renderActions();
-}
-function renderActions(){
-  if(!$('aiOpen')) return;
-  const ro=readOnly(), today=todayISO();
-  const soon=(()=>{ const d=new Date(); d.setDate(d.getDate()+2); return isoOf(d); })();
-  const open=DATA.actions.filter(a=>!a.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0));
-  const done=DATA.actions.filter(a=>a.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  const make=a=>`<div class="ai">
-      <input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="toggleAction('${a.id}',this.checked)">
-      <div class="grow"><div class="txt" ${ro?'':`onclick="editAction('${a.id}')"`}><span class="strike"></span></div><div class="sub"></div></div>
-      ${ro?'':`<button class="iconBtn" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`}
-    </div>`;
-  const patch=(el,a)=>{
-    el.classList.toggle('done', !!a.done);
-    const c=el.querySelector('input'); if(c.checked!==!!a.done) c.checked=!!a.done;
-    const s=el.querySelector('.strike'); if(s.textContent!==a.text) s.textContent=a.text;
-    const late=!a.done && a.due && a.due<today, near=!a.done && a.due && !late && a.due<=soon;
-    el.querySelector('.sub').innerHTML=(a.assignee?`<span class="who" style="--pc:${colorFor(a.assignee)}">${esc(a.assignee)}</span>`:'')
-      +(a.due?`<span class="due ${late?'late':near?'soon':''}">${fmtShortDate(a.due)}</span>`:'')
-      +(a.done&&a.doneBy?`<span>${esc(a.doneBy)}</span>`:'');
-  };
-  $('aiOpenCount').textContent=open.length; $('aiDoneCount').textContent=done.length;
-  keyed($('aiOpen'), open, a=>a.id, make, patch);
-  keyed($('aiDone'), done, a=>a.id, make, patch);
-  emptyState($('aiOpen'), !open.length, 'Nothing open.');
-  emptyState($('aiDone'), !done.length, 'Nothing done yet.');
-}
-function addAction(){
-  const t=($('aiText').value||'').trim(); if(!t) return;
-  SUB('actions').add({text:t, assignee:$('aiWho').value||'', due:$('aiDue').value||'', done:false, by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
-  $('aiText').value=''; $('aiText').focus();
-}
-/* A checked item stays in place a moment so the check can be seen, then moves. */
-function toggleAction(id, on){
-  setTimeout(()=>SUB('actions').doc(id).update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail), RM.matches?0:380);
-}
-async function editAction(id){
-  const a=DATA.actions.find(x=>x.id===id); if(!a) return;
-  const t=await askText('Edit Action Item', a.text, 'Save');
-  if(t) SUB('actions').doc(id).update({text:t}).catch(fail);
-}
-async function deleteAction(id){
-  if(await askYesNo('Delete this action item?', '', 'Delete', true)) SUB('actions').doc(id).delete().catch(fail);
-}
+/* =========================================================================
+   WHITEBOARD
+   An endless board: drag with two fingers (or the hand tool, the space bar,
+   or a trackpad) to move around, pinch or ctrl-scroll to zoom. Pen lines are
+   smoothed and, with a stylus, get thinner and thicker with pressure; while
+   a stylus is in use, a resting hand or finger moves the board instead of
+   drawing. There are shapes, text, sticky notes, a laser pointer for
+   pointing things out, and a select tool for moving and recolouring things.
+   Everyone sees lines, shapes and the laser as they are being drawn, and
+   each person's cursor with their name.
+========================================================================= */
+const WB_UNIT_W=1000, WB_UNIT_H=625;      // the first whiteboards' size
+const SIZES=[2.5,5,10];
+const WB={tool:'pen', color:COLORS[0], size:1, sticky:STICKY_COLORS[0], shape:'rect',
+  view:{x:0, y:0, z:1}, w:0, h:0, dpr:1, sel:null, penSeen:false, space:false, menu:false,
+  ptrs:new Map(), gesture:null, act:null, undo:[], redo:[], raf:0, mainDirty:true, ro:null};
+const INK={remote:new Map(), lasers:new Map(), fading:[], myLaser:[]};
 
-/* ---------- whiteboard ----------
-   Lines are drawn as smooth curves through the points the pen or finger
-   reports, including the in-between points browsers collect for fast
-   movement. While someone draws, everyone else sees the line grow as it is
-   drawn, smoothed between updates instead of appearing in chunks. Erased
-   lines fade out. */
-let WB={tool:'pen', color:COLORS[0], size:1, sticky:STICKY_COLORS[0]};
-let DRAW=null, inkSent=0, boardW=0, boardH=0, HOVER=null;
-const INK={remote:new Map(), fading:[], raf:0};
+/* ----- coordinates ----- */
+const K=()=>WB.view.z*WB.w/WB_UNIT_W;                  // screen pixels per board unit
+const toScreen=(x,y)=>[(x-WB.view.x)*K(), (y-WB.view.y)*K()];
+function toWorld(cx,cy){ const r=$('board').getBoundingClientRect(); return [(cx-r.left)/K()+WB.view.x, (cy-r.top)/K()+WB.view.y]; }
+/* Lines from the first whiteboards stored fractions; newer ones store board
+   units with a pressure value per point. Both come out as [x,y,p,...]. */
+function ptsOf(s){
+  if(s._w && s._wsrc===s.pts) return s._w;
+  let out;
+  if(s.v===2) out=s.pts||[];
+  else{ out=[]; const p=s.pts||[]; for(let i=0;i<p.length;i+=2) out.push(p[i]*WB_UNIT_W, p[i+1]*WB_UNIT_H, .5); }
+  s._w=out; s._wsrc=s.pts; return out;
+}
+function stickyPos(s){ return s.v===2 ? [s.x, s.y] : [s.x*WB_UNIT_W, s.y*WB_UNIT_H]; }
+
+/* ----- the board on screen ----- */
 function renderBoardPane(){
   const ro=readOnly();
-  $('pane-board').innerHTML=`
-    ${ro?'':`<div class="wbBar" id="wbBar"></div>`}
-    <div class="board ${ro?'readonly':WB.tool}" id="board">
+  $('pane-board').innerHTML=`<div class="wbWrap" id="wbWrap">
+    <div class="wbBar" id="wbBar"></div>
+    <div class="board" id="board">
       <canvas id="cvMain"></canvas><canvas id="cvLive"></canvas>
-      <div class="stickyLayer" id="stickyLayer"></div></div>`;
-  if(!ro) renderWbBar();
+      <div class="stickyLayer" id="stickyLayer"></div>
+      <div class="cursorLayer" id="cursorLayer"></div>
+      <div class="zoomBox" id="zoomBox">
+        <button onclick="wbZoomBy(1/1.25)" aria-label="Zoom out">${icon('minus')}</button>
+        <button id="zoomPct" onclick="wbZoomTo(1)" aria-label="Zoom to 100%">100%</button>
+        <button onclick="wbZoomBy(1.25)" aria-label="Zoom in">${icon('plus')}</button>
+        <button onclick="wbFitContent()" aria-label="Show everything" title="Show everything">${icon('fit')}</button>
+      </div>
+    </div></div>`;
+  if(ro && !['hand','laser'].includes(WB.tool)) WB.tool='hand';
+  renderWbBar();
   const b=$('board');
-  if(!ro){
-    b.addEventListener('pointerdown', boardDown);
-    b.addEventListener('pointermove', boardMove);
-    b.addEventListener('pointerup', boardUp);
-    b.addEventListener('pointercancel', boardUp);
-    b.addEventListener('pointerleave', ()=>{ HOVER=null; kick(); });
-  }
-  sizeBoard();
+  b.classList.add('t-'+WB.tool);
+  b.addEventListener('pointerdown', wbDown);
+  b.addEventListener('pointermove', wbMove);
+  b.addEventListener('pointerup', wbUp);
+  b.addEventListener('pointercancel', wbUp);
+  b.addEventListener('pointerleave', e=>{ if(!WB.ptrs.has(e.pointerId)){ WB.hover=null; wbKick(); } });
+  b.addEventListener('wheel', wbWheel, {passive:false});
+  b.addEventListener('dblclick', wbDbl);
+  if(WB.ro) WB.ro.disconnect();
+  WB.ro=new ResizeObserver(()=>wbSize()); WB.ro.observe(b);
+  wbApplyBg();
+  wbSize();
 }
-function renderWbBar(){
-  const bar=$('wbBar'); if(!bar) return;
-  const tool=(k,ic,l)=>`<button class="tool ${WB.tool===k?'on':''}" onclick="setTool('${k}')" title="${l}" aria-label="${l}">${icon(ic)}</button>`;
-  const colors = WB.tool==='sticky' ? STICKY_COLORS : COLORS;
-  const cur = WB.tool==='sticky' ? WB.sticky : WB.color;
-  bar.innerHTML=tool('pen','pen','Pen')+tool('marker','marker','Highlighter')+tool('eraser','eraser','Eraser')+tool('sticky','sticky','Sticky note')
-    +(WB.tool==='eraser'?'':'<span class="sep"></span>'+colors.map(c=>`<button class="swatch ${c===cur?'on':''}" style="background:${c}" aria-label="Color" onclick="setColor('${c}')"></button>`).join(''))
-    +(WB.tool==='pen'||WB.tool==='marker'?'<span class="sep"></span>'+SIZES.map((s,i)=>`<button class="tool ${WB.size===i?'on':''}" aria-label="Size ${i+1}" onclick="WB.size=${i};renderWbBar()"><span class="sizeDot" style="width:${4+i*4}px;height:${4+i*4}px"></span></button>`).join(''):'')
-    +'<span class="sep"></span>'
-    +`<button class="tool" onclick="undoBoard()" title="Undo" aria-label="Undo">${icon('undo')}</button>`
-    +`<button class="tool" onclick="clearBoard()" title="Clear board" aria-label="Clear board">${icon('trash')}</button>`;
+function wbTeardown(){
+  if(WB.ro){ WB.ro.disconnect(); WB.ro=null; }
+  WB.ptrs.clear(); WB.gesture=null; WB.act=null; WB.sel=null; WB.undo=[]; WB.redo=[];
+  INK.remote.clear(); INK.lasers.clear(); INK.fading=[]; INK.myLaser=[];
+  WB.view={x:0, y:0, z:1}; WB.fitted=false; WB.autoFit=false; WB.userMoved=false;
 }
-function setTool(k){ WB.tool=k; const b=$('board'); if(b) b.className='board '+k; renderWbBar(); kick(); }
-function setColor(c){ if(WB.tool==='sticky') WB.sticky=c; else WB.color=c; renderWbBar(); }
-function sizeBoard(){
+/* On a computer the board fills the rest of the window, so the page
+   itself never scrolls while you draw. */
+function wbFit(){
+  const b=$('board'); if(!b) return;
+  if(document.body.classList.contains('wbFull')){ b.style.height=''; wbSize(); return; }
+  const top=b.getBoundingClientRect().top+window.scrollY;
+  b.style.height=Math.max(phoneMQ.matches?340:420, window.innerHeight-top-18)+'px';
+  wbSize();
+}
+window.addEventListener('resize', ()=>{ if(MTG && TAB==='board') wbFit(); });
+function wbSetFull(on){
+  if(!on && phoneMQ.matches){ document.body.classList.remove('wbFull'); showTab(PP_BACK && PP_BACK!=='board' ? PP_BACK : 'agenda'); return; }
+  document.body.classList.toggle('wbFull', !!on); WB.menu=false; renderWbBar(); requestAnimationFrame(wbFit);
+}
+function wbSize(){
   const b=$('board'); if(!b) return;
   const r=b.getBoundingClientRect(); if(!r.width) return;
-  const dpr=Math.min(window.devicePixelRatio||1, 3);
-  boardW=r.width; boardH=r.height;
-  ['cvMain','cvLive'].forEach(id=>{ const c=$(id); c.width=Math.round(r.width*dpr); c.height=Math.round(r.height*dpr); c.getContext('2d').setTransform(dpr,0,0,dpr,0,0); });
-  drawBoard(); kick(); renderStickies();
+  const first=!WB.w;
+  WB.w=r.width; WB.h=r.height; WB.dpr=Math.min(window.devicePixelRatio||1, 3);
+  ['cvMain','cvLive'].forEach(id=>{ const c=$(id); c.width=Math.round(r.width*WB.dpr); c.height=Math.round(r.height*WB.dpr); });
+  if(first && !WB.fitted){ WB.fitted=true; wbFitContent(true); }
+  wbViewChanged();
 }
-window.addEventListener('resize', ()=>{ if(MTG && TAB==='board') sizeBoard(); });
-function boardColor(c){
-  // Navy ink is drawn light on the dark board so it stays visible.
-  if(document.documentElement.classList.contains('dark') && c===COLORS[0]) return '#dbe5f5';
+function wbApplyBg(){
+  const b=$('board'); if(!b) return;
+  const bg=(MTG && MTG.bg) || 'dots';
+  b.classList.toggle('bg-dots', bg==='dots'); b.classList.toggle('bg-grid', bg==='grid');
+  wbBgPos();
+}
+function wbBgPos(){
+  const b=$('board'); if(!b) return;
+  if(!WB.w || !(K()>0)) return;
+  const step=25*K(); let s=step; while(s<12) s*=2; while(s>60) s/=2;
+  b.style.backgroundSize=`${s}px ${s}px`;
+  b.style.backgroundPosition=`${-WB.view.x*K()%s}px ${-WB.view.y*K()%s}px`;
+}
+function wbViewChanged(user){
+  if(user) WB.userMoved=true;
+  WB.mainDirty=true; wbBgPos(); renderStickies(); wbCursors(); wbPlaceTextEdit(); wbPlaceSelBar();
+  const z=$('zoomPct'); if(z) z.textContent=Math.round(WB.view.z*100)+'%';
+  wbKick();
+}
+function wbZoomAt(cx, cy, z){
+  z=Math.max(.15, Math.min(6, z));
+  const r=$('board').getBoundingClientRect();
+  const [wx,wy]=toWorld(cx,cy);
+  WB.view.z=z;
+  WB.view.x=wx-(cx-r.left)/K(); WB.view.y=wy-(cy-r.top)/K();
+  wbViewChanged(true);
+}
+function wbZoomBy(f){ const r=$('board').getBoundingClientRect(); wbAnimateView(()=>{ wbZoomAt(r.left+r.width/2, r.top+r.height/2, WB.view.z*f); }); }
+function wbZoomTo(z){ const r=$('board').getBoundingClientRect(); wbAnimateView(()=>wbZoomAt(r.left+r.width/2, r.top+r.height/2, z)); }
+/* Zoom buttons glide to the new view instead of jumping. */
+function wbAnimateView(apply){
+  const from=Object.assign({}, WB.view); apply(); const to=Object.assign({}, WB.view);
+  if(RM.matches) return;
+  const t0=performance.now(), D=260;
+  const step=now=>{
+    const t=Math.min(1,(now-t0)/D), e=1-Math.pow(1-t,3);
+    // zoom changes geometrically so the motion feels even
+    WB.view.z=from.z*Math.pow(to.z/from.z, e);
+    WB.view.x=from.x+(to.x-from.x)*e; WB.view.y=from.y+(to.y-from.y)*e;
+    wbViewChanged();
+    if(t<1) requestAnimationFrame(step);
+  };
+  WB.view=from; requestAnimationFrame(step);
+}
+function wbBounds(){
+  let x1=Infinity,y1=Infinity,x2=-Infinity,y2=-Infinity;
+  const add=(a,b,c,d)=>{ x1=Math.min(x1,a); y1=Math.min(y1,b); x2=Math.max(x2,c); y2=Math.max(y2,d); };
+  DATA.strokes.forEach(s=>{ const p=ptsOf(s); for(let i=0;i<p.length;i+=3) add(p[i],p[i+1],p[i],p[i+1]); });
+  DATA.shapes.forEach(s=>add(Math.min(s.x1,s.x2),Math.min(s.y1,s.y2),Math.max(s.x1,s.x2),Math.max(s.y1,s.y2)));
+  DATA.texts.forEach(t=>{ const b=textBox(t); add(b[0],b[1],b[2],b[3]); });
+  DATA.stickies.forEach(s=>{ const [x,y]=stickyPos(s); add(x,y,x+150,y+120); });
+  return x1===Infinity ? null : [x1,y1,x2,y2];
+}
+function wbFitContent(instant){
+  if(!WB.w) return;
+  const b=wbBounds();
+  const apply=()=>{
+    if(!b){ WB.view={x:0, y:0, z:1}; wbViewChanged(); return; }
+    const pad=40, bw=Math.max(b[2]-b[0], 200), bh=Math.max(b[3]-b[1], 120);
+    const z=Math.max(.15, Math.min(1.25, Math.min((WB.w-pad*2)/(bw*WB.w/WB_UNIT_W), (WB.h-pad*2)/(bh*WB.w/WB_UNIT_W))));
+    WB.view.z=z;
+    const k=K();
+    WB.view.x=b[0]+bw/2-(WB.w/2)/k; WB.view.y=b[1]+bh/2-(WB.h/2)/k;
+    if(b[2]-b[0]<200) WB.view.x=(b[0]+b[2])/2-(WB.w/2)/k;
+    if(b[3]-b[1]<120) WB.view.y=(b[1]+b[3])/2-(WB.h/2)/k;
+    wbViewChanged();
+  };
+  if(instant) apply(); else wbAnimateView(apply);
+}
+
+/* ----- toolbar ----- */
+function renderWbBar(){
+  const bar=$('wbBar'); if(!bar) return;
+  const ro=readOnly();
+  const tool=(k,ic,l)=>`<button class="tool ${WB.tool===k?'on':''}" onclick="setTool('${k}')" title="${l}" aria-label="${l}">${icon(ic)}</button>`;
+  const full=document.body.classList.contains('wbFull');
+  let h=full ? `<button class="tool" onclick="wbSetFull(false)" title="Exit full screen" aria-label="Exit full screen">${icon('x')}</button><span class="sep"></span>` : '';
+  if(ro){
+    h+=tool('hand','hand','Move around')+tool('laser','laser','Laser pointer');
+  } else {
+    h+=tool('select','select','Select')+tool('hand','hand','Move around')+'<span class="sep"></span>'
+      +tool('pen','pen','Pen')+tool('marker','marker','Highlighter')+tool('eraser','eraser','Eraser')
+      +`<button class="tool ${WB.tool==='shape'?'on':''}" onclick="setTool('shape')" title="Shapes" aria-label="Shapes">${icon(WB.shape)}</button>`
+      +tool('text','text','Text')+tool('sticky','sticky','Sticky note')+tool('laser','laser','Laser pointer');
+    if(WB.tool==='shape') h+='<span class="sep"></span>'+['rect','ellipse','line','arrow'].map(k=>`<button class="tool ${WB.shape===k?'on':''}" aria-label="${k}" onclick="WB.shape='${k}';renderWbBar()">${icon(k)}</button>`).join('');
+    const colors = WB.tool==='sticky' ? STICKY_COLORS : COLORS;
+    const cur = WB.tool==='sticky' ? WB.sticky : WB.color;
+    if(['pen','marker','shape','text','sticky'].includes(WB.tool))
+      h+='<span class="sep"></span>'+colors.map(c=>`<button class="swatch ${c===cur?'on':''}" style="background:${c}" aria-label="Color" onclick="setColor('${c}')"></button>`).join('');
+    if(['pen','marker','shape'].includes(WB.tool))
+      h+='<span class="sep"></span>'+SIZES.map((s,i)=>`<button class="tool ${WB.size===i?'on':''}" aria-label="Size ${i+1}" onclick="WB.size=${i};renderWbBar()"><span class="sizeDot" style="width:${4+i*4}px;height:${4+i*4}px"></span></button>`).join('');
+    h+='<span class="grow"></span>'
+      +`<button class="tool" onclick="wbUndo()" title="Undo" aria-label="Undo" ${WB.undo.length?'':'disabled'}>${icon('undo')}</button>`
+      +`<button class="tool" onclick="wbRedo()" title="Redo" aria-label="Redo" ${WB.redo.length?'':'disabled'}>${icon('redo')}</button>`;
+  }
+  if(ro) h+='<span class="grow"></span>';
+  h+=(full?'':`<button class="tool" onclick="wbSetFull(true)" title="Full screen" aria-label="Full screen">${icon('expand')}</button>`)
+    +`<button class="tool ${WB.menu?'on':''}" onclick="WB.menu=!WB.menu;renderWbBar()" title="More" aria-label="More">${icon('more')}</button>`;
+  bar.innerHTML=h+'<div id="wbMenu"></div>';
+  wbRenderMenu();
+}
+function wbRenderMenu(){
+  const m=$('wbMenu'); if(!m) return;
+  if(!WB.menu){ m.innerHTML=''; return; }
+  const bg=(MTG && MTG.bg) || 'dots', ro=readOnly();
+  m.innerHTML=`<div class="menuPop">
+    <div class="lbl">Background</div>
+    <div class="seg">${['dots','grid','plain'].map(k=>`<button class="${bg===k?'on':''}" ${ro?'disabled':''} onclick="WB.menu=false;renderWbBar();MREF().update({bg:'${k}'}).catch(fail)">${k[0].toUpperCase()+k.slice(1)}</button>`).join('')}</div>
+    <button class="mi" onclick="WB.menu=false;renderWbBar();wbExport()">${icon('image')}Save as Image</button>
+    ${ro?'':`<button class="mi" onclick="WB.menu=false;renderWbBar();clearBoard()">${icon('trash')}Clear Board</button>`}
+  </div>`;
+}
+document.addEventListener('pointerdown', e=>{ if(WB.menu && !e.target.closest('#wbBar')){ WB.menu=false; renderWbBar(); } });
+function setTool(k){
+  if(WB.textEdit) wbCommitText();
+  WB.tool=k; WB.menu=false;
+  if(k!=='select') wbSelect(null);
+  const b=$('board'); if(b){ b.className=b.className.replace(/\bt-\w+/g,'').trim()+' t-'+k; }
+  renderWbBar(); wbKick();
+}
+function setColor(c){
+  if(WB.tool==='sticky') WB.sticky=c; else WB.color=c;
+  renderWbBar();
+}
+
+/* ----- drawing ----- */
+function bColor(c){
+  // dark inks are drawn light on the dark board so they stay visible
+  if(document.documentElement.classList.contains('dark') && (c===COLORS[0] || c==='#111111')) return '#dbe5f5';
   return c;
 }
-/* A smooth line: a curve from the middle of each segment to the next. */
-function strokePath(ctx, pts, color, size, tool, upto, alpha){
-  const n=Math.min(pts ? pts.length : 0, upto==null ? Infinity : upto*2);
-  if(n<2) return;
-  const W=boardW, H=boardH, scale=W/1000;
+function setCtx(ctx){ const k=K()*WB.dpr; ctx.setTransform(k,0,0,k,-WB.view.x*k,-WB.view.y*k); }
+/* A smooth line through the points; with pressure, segment widths follow it. */
+function drawStroke(ctx, pts, color, size, tool, upto, alpha){
+  const n=Math.min(pts.length, upto==null?Infinity:upto*3);
+  if(n<3) return;
   ctx.save();
   ctx.lineCap='round'; ctx.lineJoin='round';
-  ctx.strokeStyle=color; ctx.globalAlpha=(tool==='marker'?.35:1)*(alpha==null?1:alpha);
-  ctx.lineWidth=Math.max(1, size*scale*(tool==='marker'?3:1));
-  ctx.beginPath();
-  let x0=pts[0]*W, y0=pts[1]*H;
-  ctx.moveTo(x0, y0);
-  if(n===2){ ctx.lineTo(x0+.01, y0); }
-  else if(n===4){ ctx.lineTo(pts[2]*W, pts[3]*H); }
-  else{
-    for(let i=2;i<n-2;i+=2){
-      const x1=pts[i]*W, y1=pts[i+1]*H, x2=pts[i+2]*W, y2=pts[i+3]*H;
-      ctx.quadraticCurveTo(x1, y1, (x1+x2)/2, (y1+y2)/2);
+  ctx.strokeStyle=bColor(color); ctx.globalAlpha=(tool==='marker'?.35:1)*(alpha==null?1:alpha);
+  const base=size*(tool==='marker'?3:1);
+  let varying=false;
+  if(tool!=='marker') for(let i=5;i<n;i+=3) if(Math.abs(pts[i]-pts[2])>.04){ varying=true; break; }
+  if(!varying){
+    ctx.lineWidth=base;
+    ctx.beginPath(); ctx.moveTo(pts[0],pts[1]);
+    if(n===3) ctx.lineTo(pts[0]+.01,pts[1]);
+    else if(n===6) ctx.lineTo(pts[3],pts[4]);
+    else{
+      for(let i=3;i<n-3;i+=3) ctx.quadraticCurveTo(pts[i],pts[i+1],(pts[i]+pts[i+3])/2,(pts[i+1]+pts[i+4])/2);
+      ctx.lineTo(pts[n-3],pts[n-2]);
     }
-    ctx.lineTo(pts[n-2]*W, pts[n-1]*H);
+    ctx.stroke();
+  } else {
+    let px=pts[0], py=pts[1];
+    for(let i=3;i<n;i+=3){
+      const mx=i+3<n?(pts[i]+pts[i+3])/2:pts[i], my=i+3<n?(pts[i+1]+pts[i+4])/2:pts[i+1];
+      ctx.lineWidth=Math.max(.6, base*(0.35+pts[i+2]*1.3));
+      ctx.beginPath(); ctx.moveTo(px,py); ctx.quadraticCurveTo(pts[i],pts[i+1],mx,my); ctx.stroke();
+      px=mx; py=my;
+    }
   }
-  ctx.stroke();
   ctx.restore();
 }
-function drawBoard(){
-  const c=$('cvMain'); if(!c || !boardW) return;
-  const ctx=c.getContext('2d'); ctx.clearRect(0,0,boardW,boardH);
-  DATA.strokes.slice().sort((a,b)=>(a.at||0)-(b.at||0)).forEach(s=>strokePath(ctx, s.pts, boardColor(s.color), s.size, s.tool));
+function drawShape(ctx, s, alpha){
+  ctx.save();
+  ctx.strokeStyle=bColor(s.color); ctx.lineWidth=s.size; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.globalAlpha=alpha==null?1:alpha;
+  const x=Math.min(s.x1,s.x2), y=Math.min(s.y1,s.y2), w=Math.abs(s.x2-s.x1), h=Math.abs(s.y2-s.y1);
+  ctx.beginPath();
+  if(s.kind==='rect'){ const r=Math.min(10, w/4, h/4); if(ctx.roundRect) ctx.roundRect(x,y,w,h,r); else ctx.rect(x,y,w,h); }
+  else if(s.kind==='ellipse'){ ctx.ellipse(x+w/2, y+h/2, w/2, h/2, 0, 0, Math.PI*2); }
+  else { ctx.moveTo(s.x1,s.y1); ctx.lineTo(s.x2,s.y2); }
+  ctx.stroke();
+  if(s.kind==='arrow'){
+    const a=Math.atan2(s.y2-s.y1, s.x2-s.x1), L=Math.max(12, s.size*4);
+    ctx.beginPath();
+    ctx.moveTo(s.x2-L*Math.cos(a-.45), s.y2-L*Math.sin(a-.45)); ctx.lineTo(s.x2,s.y2); ctx.lineTo(s.x2-L*Math.cos(a+.45), s.y2-L*Math.sin(a+.45));
+    ctx.stroke();
+  }
+  ctx.restore();
 }
-function onStrokes(){
-  // A line someone else just finished is now on the board itself.
-  DATA.strokes.forEach(s=>{ const r=INK.remote.get(s.by); if(r && r.id===s.id) INK.remote.delete(s.by); });
-  drawBoard(); kick();
+const TEXT_FONT=size=>`600 ${size}px 'DM Sans', system-ui, sans-serif`;
+function textBox(t){
+  const lines=String(t.text||'').split('\n'), size=t.size||28;
+  const c=textBox.c||(textBox.c=document.createElement('canvas').getContext('2d'));
+  c.font=TEXT_FONT(size);
+  const w=Math.max(20, ...lines.map(l=>c.measureText(l).width));
+  return [t.x, t.y, t.x+w, t.y+lines.length*size*1.25];
 }
-/* Live layer: your line in progress, other people's lines in progress,
-   erased lines fading, and the eraser's circle. */
-function kick(){ if(!INK.raf) INK.raf=requestAnimationFrame(frame); }
-function frame(){
-  INK.raf=0;
-  const c=$('cvLive'); if(!c || !boardW) return;
-  const ctx=c.getContext('2d'); ctx.clearRect(0,0,boardW,boardH);
+function drawText(ctx, t, alpha){
+  ctx.save();
+  ctx.globalAlpha=alpha==null?1:alpha;
+  ctx.fillStyle=bColor(t.color); ctx.font=TEXT_FONT(t.size||28); ctx.textBaseline='top';
+  String(t.text||'').split('\n').forEach((l,i)=>ctx.fillText(l, t.x, t.y+i*(t.size||28)*1.25));
+  ctx.restore();
+}
+function wbDrawMain(){
+  const c=$('cvMain'); if(!c || !WB.w) return;
+  const ctx=c.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height);
+  setCtx(ctx);
+  const moving=WB.act && WB.act.kind==='move' ? WB.act : null;
+  const all=[...DATA.strokes.map(s=>['s',s]), ...DATA.shapes.map(s=>['h',s]), ...DATA.texts.map(s=>['t',s])].sort((a,b)=>(a[1].at||0)-(b[1].at||0));
+  all.forEach(([k,s])=>{
+    if(moving && moving.id===s.id) return;
+    if(WB.textEdit && WB.textEdit.id===s.id) return;
+    if(k==='s') drawStroke(ctx, ptsOf(s), s.color, s.size, s.tool);
+    else if(k==='h') drawShape(ctx, s);
+    else drawText(ctx, s);
+  });
+  WB.mainDirty=false;
+}
+function wbKick(){ if(!WB.raf) WB.raf=requestAnimationFrame(wbFrame); }
+function wbFrame(){
+  WB.raf=0;
+  if(WB.mainDirty) wbDrawMain();
+  const c=$('cvLive'); if(!c || !WB.w) return;
+  const ctx=c.getContext('2d');
+  ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,c.width,c.height);
+  setCtx(ctx);
   const now=performance.now();
   let again=false;
+  // other people's lines and shapes in progress, revealed smoothly
   INK.remote.forEach((r,u)=>{
-    const total=r.pts.length/2;
-    if(r.shown<total){ r.shown=Math.min(total, r.shown+Math.max(1, (total-r.shown)*0.22)); again=true; }
-    strokePath(ctx, r.pts, boardColor(r.color), r.size, r.tool, Math.floor(r.shown));
-    if(r.ended && r.shown>=total && now-r.ended>1500) INK.remote.delete(u);
-    else if(r.ended) again=true;
+    if(r.shape){ drawShape(ctx, r.shape); }
+    else{
+      const total=r.pts.length/3;
+      if(r.shown<total){ r.shown=Math.min(total, r.shown+Math.max(1,(total-r.shown)*.22)); again=true; }
+      drawStroke(ctx, r.pts, r.color, r.size, r.tool, Math.floor(r.shown));
+    }
+    if(r.ended){ if(now-r.ended>1500) INK.remote.delete(u); else again=true; }
   });
+  // erased or undone things fade out
   INK.fading=INK.fading.filter(f=>{
-    const t=(now-f.t0)/200;
-    if(t>=1) return false;
-    strokePath(ctx, f.s.pts, boardColor(f.s.color), f.s.size, f.s.tool, null, 1-t);
+    const t=(now-f.t0)/220; if(t>=1) return false;
+    if(f.k==='s') drawStroke(ctx, ptsOf(f.s), f.s.color, f.s.size, f.s.tool, null, 1-t);
+    else if(f.k==='h') drawShape(ctx, f.s, 1-t);
+    else drawText(ctx, f.s, 1-t);
     again=true; return true;
   });
-  if(DRAW && DRAW.pts) strokePath(ctx, DRAW.pts, boardColor(DRAW.color), DRAW.size, DRAW.tool);
-  if(HOVER && WB.tool==='eraser' && !readOnly()){
-    ctx.save(); ctx.beginPath(); ctx.arc(HOVER[0]*boardW, HOVER[1]*boardH, 14, 0, Math.PI*2);
-    ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--c-board'); ctx.lineWidth=1.5; ctx.setLineDash([3,3]);
+  // the thing being moved follows the finger
+  const a=WB.act;
+  if(a && a.kind==='move'){
+    const it=a.item;
+    ctx.save(); ctx.translate(a.dx, a.dy);
+    if(a.col==='strokes') drawStroke(ctx, ptsOf(it), it.color, it.size, it.tool);
+    else if(a.col==='shapes') drawShape(ctx, it);
+    else if(a.col==='texts') drawText(ctx, it);
+    ctx.restore();
+  }
+  if(a && a.kind==='draw') drawStroke(ctx, a.pts, a.color, a.size, a.tool);
+  if(a && a.kind==='shape' && a.s) drawShape(ctx, a.s);
+  // laser trails, mine and everyone else's
+  const laser=(pts, color)=>{
+    const life=750;
+    const live=pts.filter(p=>now-p[2]<life);
+    if(live.length<1) return false;
+    ctx.save(); ctx.lineCap='round'; ctx.lineJoin='round';
+    for(let i=1;i<live.length;i++){
+      const age=(now-live[i][2])/life;
+      ctx.strokeStyle=color; ctx.globalAlpha=Math.max(0,1-age)*.85;
+      ctx.lineWidth=(5/K())*(1-age*.6);
+      ctx.shadowColor=color; ctx.shadowBlur=12;
+      ctx.beginPath(); ctx.moveTo(live[i-1][0],live[i-1][1]); ctx.lineTo(live[i][0],live[i][1]); ctx.stroke();
+    }
+    const h=live[live.length-1];
+    if(now-h[2]<life){ ctx.globalAlpha=Math.max(0,1-(now-h[2])/life); ctx.fillStyle=color; ctx.shadowBlur=16; ctx.beginPath(); ctx.arc(h[0],h[1],6/K(),0,Math.PI*2); ctx.fill(); }
+    ctx.restore();
+    return true;
+  };
+  if(laser(INK.myLaser, colorFor(ME.name))) again=true; else INK.myLaser=[];
+  INK.lasers.forEach((l,u)=>{ if(laser(l.pts, l.color)) again=true; else INK.lasers.delete(u); });
+  // selection outline
+  if(WB.sel){
+    const it=findItem(WB.sel.col, WB.sel.id);
+    if(it){
+      const b=itemBox(WB.sel.col, it), d=(a && a.kind==='move')?[a.dx,a.dy]:[0,0], pad=8/K();
+      ctx.save(); ctx.setLineDash([6/K(),4/K()]); ctx.strokeStyle=getComputedStyle(document.documentElement).getPropertyValue('--c-board').trim()||'#2f6fd6';
+      ctx.lineWidth=1.5/K(); ctx.strokeRect(b[0]-pad+d[0], b[1]-pad+d[1], b[2]-b[0]+pad*2, b[3]-b[1]+pad*2); ctx.restore();
+    } else wbSelect(null);
+  }
+  // the eraser's circle
+  if(WB.hover && WB.tool==='eraser' && !readOnly()){
+    ctx.save(); ctx.beginPath(); ctx.arc(WB.hover[0], WB.hover[1], 14/K(), 0, Math.PI*2);
+    ctx.strokeStyle='#2f6fd6'; ctx.lineWidth=1.5/K(); ctx.setLineDash([3/K(),3/K()]);
     ctx.fillStyle='rgba(47,111,214,.08)'; ctx.fill(); ctx.stroke(); ctx.restore();
   }
-  if(again) kick();
+  if(again) wbKick();
 }
-function onPresenceInk(){
+function wbOnItems(){
+  // a board that already has things on it opens showing all of them, once everything has loaded
+  if(!WB.autoFit && !WB.userMoved){
+    clearTimeout(WB.fitT);
+    WB.fitT=setTimeout(()=>{ if(!WB.autoFit && !WB.userMoved && WB.w && wbBounds()){ WB.autoFit=true; wbFitContent(true); } }, 350);
+  }
+  DATA.strokes.forEach(s=>{ const r=INK.remote.get(s.by); if(r && r.id===s.id) INK.remote.delete(s.by); });
+  DATA.shapes.forEach(s=>{ const r=INK.remote.get(s.by); if(r && r.id===s.id) INK.remote.delete(s.by); });
+  WB.mainDirty=true; wbKick(); wbPlaceSelBar();
+}
+
+/* ----- finding things on the board ----- */
+function findItem(col, id){ return (DATA[col]||[]).find(x=>x.id===id); }
+function itemBox(col, it){
+  if(col==='strokes'){ const p=ptsOf(it); let a=[Infinity,Infinity,-Infinity,-Infinity]; for(let i=0;i<p.length;i+=3){ a=[Math.min(a[0],p[i]),Math.min(a[1],p[i+1]),Math.max(a[2],p[i]),Math.max(a[3],p[i+1])]; } const h=it.size*(it.tool==='marker'?1.5:.5); return [a[0]-h,a[1]-h,a[2]+h,a[3]+h]; }
+  if(col==='shapes') return [Math.min(it.x1,it.x2),Math.min(it.y1,it.y2),Math.max(it.x1,it.x2),Math.max(it.y1,it.y2)];
+  return textBox(it);
+}
+function distSeg(px,py,ax,ay,bx,by){ const dx=bx-ax, dy=by-ay, L=dx*dx+dy*dy; let t=L?((px-ax)*dx+(py-ay)*dy)/L:0; t=Math.max(0,Math.min(1,t)); return Math.hypot(px-ax-t*dx, py-ay-t*dy); }
+function hitItem(x,y,r){
+  const cand=[];
+  DATA.texts.forEach(t=>{ const b=textBox(t); if(x>=b[0]-r && x<=b[2]+r && y>=b[1]-r && y<=b[3]+r) cand.push(['texts',t]); });
+  DATA.shapes.forEach(s=>{
+    const x1=Math.min(s.x1,s.x2), y1=Math.min(s.y1,s.y2), x2=Math.max(s.x1,s.x2), y2=Math.max(s.y1,s.y2), rr=r+s.size/2;
+    let hit=false;
+    if(s.kind==='line'||s.kind==='arrow') hit=distSeg(x,y,s.x1,s.y1,s.x2,s.y2)<rr;
+    else if(s.kind==='rect') hit=(x>=x1-rr&&x<=x2+rr&&y>=y1-rr&&y<=y2+rr) && !(x>x1+rr&&x<x2-rr&&y>y1+rr&&y<y2-rr);
+    else { const cx=(x1+x2)/2, cy=(y1+y2)/2, ax=Math.max(1,(x2-x1)/2), ay=Math.max(1,(y2-y1)/2); const d=Math.hypot((x-cx)/ax,(y-cy)/ay); hit=Math.abs(d-1)*Math.min(ax,ay)<rr; }
+    if(hit) cand.push(['shapes',s]);
+  });
+  DATA.strokes.forEach(s=>{
+    const p=ptsOf(s), rr=r+s.size*(s.tool==='marker'?1.5:.5);
+    for(let i=0;i<p.length;i+=3){
+      const d=i+3<p.length ? distSeg(x,y,p[i],p[i+1],p[i+3],p[i+4]) : Math.hypot(x-p[i],y-p[i+1]);
+      if(d<rr){ cand.push(['strokes',s]); break; }
+    }
+  });
+  cand.sort((a,b)=>(b[1].at||0)-(a[1].at||0));   // the newest is on top
+  return cand[0]||null;
+}
+
+/* ----- pointer input ----- */
+function wbDown(e){
+  if(e.target.closest('.stk,.zoomBox,.selBar,.textEdit')) return;
+  if(e.button>0 && e.button!==1) return;
+  const b=$('board');
+  b.setPointerCapture(e.pointerId);
+  if(e.pointerType==='pen') WB.penSeen=true;
+  WB.ptrs.set(e.pointerId, {x:e.clientX, y:e.clientY, type:e.pointerType});
+  // two fingers: move and zoom the board, dropping a line just started
+  if(WB.ptrs.size===2){
+    if(WB.act && (WB.act.kind==='draw' && WB.act.pts.length<30 || WB.act.kind==='shape' || WB.act.kind==='pan')) WB.act=null;
+    if(!WB.act){ wbStartPinch(); wbKick(); return; }
+  }
+  if(WB.ptrs.size>2) return;
+  const [x,y]=toWorld(e.clientX, e.clientY);
+  const touchPan = e.pointerType==='touch' && WB.penSeen;
+  const tool = (e.button===1 || WB.space || touchPan || readOnly() && WB.tool!=='laser') ? 'hand' : WB.tool;
+  if(WB.textEdit && tool!=='text') wbCommitText();
+  e.preventDefault();
+  if(tool==='hand'){ WB.act={kind:'pan', sx:e.clientX, sy:e.clientY, vx:WB.view.x, vy:WB.view.y}; b.classList.add('panning'); return; }
+  if(tool==='pen'||tool==='marker'){
+    WB.act={kind:'draw', id:uid(), pts:[+x.toFixed(1), +y.toFixed(1), pressureOf(e)], color:WB.color, size:SIZES[WB.size], tool};
+    wbKick(); return;
+  }
+  if(tool==='eraser'){ WB.act={kind:'erase', hit:new Set()}; WB.hover=[x,y]; wbEraseAt(x,y); wbKick(); return; }
+  if(tool==='shape'){ WB.act={kind:'shape', id:uid(), x0:x, y0:y, s:null}; return; }
+  if(tool==='laser'){ WB.act={kind:'laser'}; INK.myLaser.push([x,y,performance.now()]); wbSendLaser(); wbKick(); return; }
+  if(tool==='text'){
+    const h=hitItem(x,y,6/K());
+    if(h && h[0]==='texts') wbOpenText(h[1]); else wbOpenText(null, x, y);
+    return;
+  }
+  if(tool==='sticky'){ addSticky(x-75, y-20); return; }
+  if(tool==='select'){
+    const h=hitItem(x,y,8/K());
+    if(h){ wbSelect({col:h[0], id:h[1].id}); WB.act={kind:'move', col:h[0], id:h[1].id, item:h[1], sx:x, sy:y, dx:0, dy:0}; WB.mainDirty=true; }
+    else { wbSelect(null); WB.act={kind:'pan', sx:e.clientX, sy:e.clientY, vx:WB.view.x, vy:WB.view.y}; b.classList.add('panning'); }
+    wbKick();
+  }
+}
+const pressureOf=e=>+((e.pointerType==='pen' && e.pressure>0) ? e.pressure : .5).toFixed(2);
+function wbStartPinch(){
+  const [a,b]=[...WB.ptrs.values()];
+  const r=$('board').getBoundingClientRect();
+  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+  WB.gesture={d:Math.hypot(a.x-b.x,a.y-b.y)||1, z:WB.view.z, world:toWorld(mx,my), mx, my, left:r.left, top:r.top};
+}
+function wbMove(e){
+  const p=WB.ptrs.get(e.pointerId);
+  if(p){ p.x=e.clientX; p.y=e.clientY; }
+  const [x,y]=toWorld(e.clientX, e.clientY);
+  if(e.pointerType!=='touch'){ WB.hover=[x,y]; wbSendCursor(x,y); }
+  if(WB.gesture && WB.ptrs.size>=2){
+    const [a,b]=[...WB.ptrs.values()], g=WB.gesture;
+    const d=Math.hypot(a.x-b.x,a.y-b.y)||1, mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+    WB.view.z=Math.max(.15, Math.min(6, g.z*d/g.d));
+    WB.view.x=g.world[0]-(mx-g.left)/K(); WB.view.y=g.world[1]-(my-g.top)/K();
+    wbViewChanged(true); return;
+  }
+  const a=WB.act;
+  if(!a){ if(WB.tool==='eraser') wbKick(); else if(WB.tool==='select'){ const b=$('board'); b.classList.toggle('overItem', !!hitItem(x,y,8/K())); } return; }
+  if(a.kind==='pan'){ WB.view.x=a.vx-(e.clientX-a.sx)/K(); WB.view.y=a.vy-(e.clientY-a.sy)/K(); wbViewChanged(true); return; }
+  const evs=(e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
+  if(a.kind==='draw'){
+    const min=1.1/K();
+    evs.forEach(ev=>{
+      const [wx,wy]=toWorld(ev.clientX, ev.clientY), n=a.pts.length;
+      if(Math.hypot(a.pts[n-3]-wx, a.pts[n-2]-wy)<min) return;
+      a.pts.push(+wx.toFixed(1), +wy.toFixed(1), pressureOf(ev));
+    });
+    liveSend({ink:{id:a.id, v:2, pts:a.pts.slice(0,4500), color:a.color, size:a.size, tool:a.tool}, cur:{x:+x.toFixed(1), y:+y.toFixed(1)}});
+    wbKick(); return;
+  }
+  if(a.kind==='erase'){ evs.forEach(ev=>{ const w=toWorld(ev.clientX, ev.clientY); WB.hover=w; wbEraseAt(w[0],w[1]); }); wbKick(); return; }
+  if(a.kind==='shape'){
+    let x2=x, y2=y;
+    if(e.shiftKey){
+      if(WB.shape==='line'||WB.shape==='arrow'){ const ang=Math.round(Math.atan2(y-a.y0,x-a.x0)/(Math.PI/4))*(Math.PI/4), L=Math.hypot(x-a.x0,y-a.y0); x2=a.x0+L*Math.cos(ang); y2=a.y0+L*Math.sin(ang); }
+      else{ const s=Math.max(Math.abs(x-a.x0),Math.abs(y-a.y0)); x2=a.x0+Math.sign(x-a.x0||1)*s; y2=a.y0+Math.sign(y-a.y0||1)*s; }
+    }
+    a.s={kind:WB.shape, x1:+a.x0.toFixed(1), y1:+a.y0.toFixed(1), x2:+x2.toFixed(1), y2:+y2.toFixed(1), color:WB.color, size:SIZES[WB.size]};
+    liveSend({ink:{id:a.id, shape:a.s}, cur:{x:+x.toFixed(1), y:+y.toFixed(1)}});
+    wbKick(); return;
+  }
+  if(a.kind==='laser'){ evs.forEach(ev=>{ const w=toWorld(ev.clientX, ev.clientY); INK.myLaser.push([w[0],w[1],performance.now()]); }); wbSendLaser(); wbKick(); return; }
+  if(a.kind==='move'){ a.dx=x-a.sx; a.dy=y-a.sy; wbKick(); wbPlaceSelBar(); }
+}
+function wbUp(e){
+  WB.ptrs.delete(e.pointerId);
+  const b=$('board'); if(b) b.classList.remove('panning');
+  if(WB.gesture){ if(WB.ptrs.size<2){ WB.gesture=null; WB.act=null; } return; }
+  const a=WB.act; WB.act=null;
+  if(!a) return;
+  if(a.kind==='draw'){
+    liveSend({ink:null});
+    if(a.pts.length<3){ wbKick(); return; }
+    const doc={v:2, pts:a.pts, color:a.color, size:a.size, tool:a.tool, by:ME.uid, at:Date.now()};
+    DATA.strokes.push(Object.assign({id:a.id}, doc)); WB.mainDirty=true; wbKick();
+    wbAdd('strokes', a.id, doc);
+  } else if(a.kind==='shape'){
+    liveSend({ink:null});
+    const s=a.s;
+    if(s && Math.hypot(s.x2-s.x1, s.y2-s.y1)>4/K()){
+      const doc=Object.assign({}, s, {by:ME.uid, at:Date.now()});
+      DATA.shapes.push(Object.assign({id:a.id}, doc)); WB.mainDirty=true;
+      wbAdd('shapes', a.id, doc);
+    }
+    wbKick();
+  } else if(a.kind==='laser'){ wbSendLaser(true); }
+  else if(a.kind==='move'){
+    if(Math.abs(a.dx)>.5 || Math.abs(a.dy)>.5) wbMoveItem(a.col, a.item, a.dx, a.dy);
+    WB.mainDirty=true; wbKick(); wbPlaceSelBar();
+  } else wbKick();
+}
+function wbWheel(e){
+  e.preventDefault();
+  if(e.ctrlKey || e.metaKey){
+    wbZoomAt(e.clientX, e.clientY, WB.view.z*Math.exp(-e.deltaY*(e.deltaMode===1?.05:.0025)));
+  } else {
+    const f=e.deltaMode===1?16:1;
+    WB.view.x+=e.deltaX*f/K(); WB.view.y+=e.deltaY*f/K(); wbViewChanged(true);
+  }
+}
+function wbDbl(e){
+  if(readOnly() || WB.tool!=='select') return;
+  const [x,y]=toWorld(e.clientX, e.clientY);
+  const h=hitItem(x,y,6/K());
+  if(h && h[0]==='texts') wbOpenText(h[1]);
+}
+document.addEventListener('keydown', e=>{
+  if(!MTG || TAB!=='board') return;
+  const typing=e.target.closest && e.target.closest('input,textarea,select,[contenteditable]');
+  if(e.code==='Space' && !typing){ if(!WB.space){ WB.space=true; const b=$('board'); if(b) b.classList.add('t-hand'); } e.preventDefault(); return; }
+  if(typing || readOnly()) return;
+  const mod=e.metaKey||e.ctrlKey;
+  if(mod && e.key.toLowerCase()==='z'){ e.preventDefault(); e.shiftKey ? wbRedo() : wbUndo(); }
+  else if(mod && e.key.toLowerCase()==='y'){ e.preventDefault(); wbRedo(); }
+  else if((e.key==='Delete'||e.key==='Backspace') && WB.sel){ e.preventDefault(); wbDeleteSel(); }
+  else if(e.key==='Escape'){ wbSelect(null); if(document.body.classList.contains('wbFull')) wbSetFull(false); }
+});
+document.addEventListener('keyup', e=>{ if(e.code==='Space' && WB.space){ WB.space=false; const b=$('board'); if(b) b.classList.remove('t-hand'); } });
+
+/* ----- saving, with undo and redo ----- */
+function pushUndo(entry){ WB.undo.push(entry); if(WB.undo.length>100) WB.undo.shift(); WB.redo=[]; renderWbBar(); }
+function wbAdd(col, id, doc, noUndo){
+  SUB(col).doc(id).set(doc).catch(fail);
+  if(!noUndo) pushUndo({t:'add', col, id, doc});
+}
+function wbRemove(col, it, noUndo){
+  INK.fading.push({k:col==='strokes'?'s':col==='shapes'?'h':'t', s:it, t0:performance.now()});
+  DATA[col]=DATA[col].filter(x=>x.id!==it.id); WB.mainDirty=true; wbKick();
+  const {id, _w, _wsrc, ...doc}=it;
+  SUB(col).doc(it.id).delete().catch(fail);
+  if(!noUndo) pushUndo({t:'del', col, id:it.id, doc});
+}
+function movedDoc(col, it, dx, dy){
+  if(col==='strokes'){ const p=ptsOf(it).slice(); for(let i=0;i<p.length;i+=3){ p[i]=+(p[i]+dx).toFixed(1); p[i+1]=+(p[i+1]+dy).toFixed(1); } return {v:2, pts:p}; }
+  if(col==='shapes') return {x1:+(it.x1+dx).toFixed(1), y1:+(it.y1+dy).toFixed(1), x2:+(it.x2+dx).toFixed(1), y2:+(it.y2+dy).toFixed(1)};
+  return {x:+(it.x+dx).toFixed(1), y:+(it.y+dy).toFixed(1)};
+}
+function wbMoveItem(col, it, dx, dy){
+  const before=col==='strokes' ? {v:it.v||1, pts:it.pts} : col==='shapes' ? {x1:it.x1,y1:it.y1,x2:it.x2,y2:it.y2} : {x:it.x, y:it.y};
+  const after=movedDoc(col, it, dx, dy);
+  Object.assign(it, after); WB.mainDirty=true;
+  SUB(col).doc(it.id).update(after).catch(fail);
+  pushUndo({t:'upd', col, id:it.id, before, after});
+}
+function wbUndo(){
+  const u=WB.undo.pop(); if(!u) return;
+  wbApplyHistory(u, true); WB.redo.push(u); renderWbBar();
+}
+function wbRedo(){
+  const u=WB.redo.pop(); if(!u) return;
+  wbApplyHistory(u, false); WB.undo.push(u); renderWbBar();
+}
+function wbApplyHistory(u, back){
+  const add=(u.t==='add')!==back;
+  if(u.t==='add' || u.t==='del'){
+    if(add){ SUB(u.col).doc(u.id).set(u.doc).catch(fail); if(u.col!=='stickies'){ DATA[u.col].push(Object.assign({id:u.id}, u.doc)); WB.mainDirty=true; } }
+    else{
+      const it=findItem(u.col, u.id);
+      if(u.col==='stickies'){ SUB('stickies').doc(u.id).delete().catch(fail); }
+      else if(it) wbRemove(u.col, it, true); else SUB(u.col).doc(u.id).delete().catch(fail);
+    }
+  } else if(u.t==='upd'){
+    const it=findItem(u.col, u.id), v=back?u.before:u.after;
+    if(it){ Object.assign(it, v); WB.mainDirty=true; }
+    SUB(u.col).doc(u.id).update(v).catch(fail);
+    if(u.col==='stickies') renderStickies();
+  }
+  if(WB.sel && !findItem(WB.sel.col, WB.sel.id)) wbSelect(null);
+  wbKick(); wbPlaceSelBar();
+}
+function wbEraseAt(x,y){
+  const r=14/K();
+  for(;;){
+    const h=hitItem(x,y,r);
+    if(!h || WB.act.hit.has(h[1].id)) break;
+    WB.act.hit.add(h[1].id); wbRemove(h[0], h[1]);
+  }
+}
+async function clearBoard(){
+  if(!DATA.strokes.length && !DATA.stickies.length && !DATA.shapes.length && !DATA.texts.length) return;
+  if(!await askYesNo('Clear the whiteboard?', 'Everything on it is erased for everyone.', 'Clear', true)) return;
+  const now=performance.now();
+  DATA.strokes.forEach(s=>INK.fading.push({k:'s', s, t0:now})); DATA.shapes.forEach(s=>INK.fading.push({k:'h', s, t0:now})); DATA.texts.forEach(s=>INK.fading.push({k:'t', s, t0:now}));
+  const refs=[...['strokes','shapes','texts','stickies'].flatMap(c=>DATA[c].map(s=>SUB(c).doc(s.id)))];
+  DATA.strokes=[]; DATA.shapes=[]; DATA.texts=[]; WB.mainDirty=true; wbSelect(null); wbKick();
+  WB.undo=[]; WB.redo=[]; renderWbBar();
+  try{ for(let i=0;i<refs.length;i+=400){ const b=db.batch(); refs.slice(i,i+400).forEach(r=>b.delete(r)); await b.commit(); } }catch(e){ fail(e); }
+}
+
+/* ----- selection ----- */
+function wbSelect(sel){
+  WB.sel=sel; wbPlaceSelBar(); wbKick();
+}
+function wbPlaceSelBar(){
+  const board=$('board'); if(!board) return;
+  let bar=$('selBar');
+  const it=WB.sel && findItem(WB.sel.col, WB.sel.id);
+  if(!it || readOnly() || (WB.act && WB.act.kind==='move')){ if(bar) bar.remove(); return; }
+  if(!bar){
+    bar=document.createElement('div'); bar.id='selBar'; bar.className='selBar';
+    bar.innerHTML=COLORS.map(c=>`<button class="swatch" style="background:${c}" aria-label="Color" onclick="wbRecolor('${c}')"></button>`).join('')
+      +`<button class="tool" aria-label="Delete" onclick="wbDeleteSel()">${icon('trash')}</button>`;
+    board.appendChild(bar);
+  }
+  const b=itemBox(WB.sel.col, it), [sx,sy]=toScreen((b[0]+b[2])/2, b[1]);
+  bar.style.left=Math.max(110, Math.min(WB.w-110, sx))+'px'; bar.style.top=Math.max(52, sy-14)+'px';
+  bar.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('on', s.style.backgroundColor && it.color && s.getAttribute('style').includes(it.color)));
+}
+function wbRecolor(c){
+  const it=WB.sel && findItem(WB.sel.col, WB.sel.id); if(!it) return;
+  const before={color:it.color}, after={color:c};
+  it.color=c; WB.mainDirty=true; wbKick();
+  SUB(WB.sel.col).doc(it.id).update(after).catch(fail);
+  pushUndo({t:'upd', col:WB.sel.col, id:it.id, before, after}); wbPlaceSelBar();
+}
+function wbDeleteSel(){
+  const it=WB.sel && findItem(WB.sel.col, WB.sel.id); if(!it) return;
+  const col=WB.sel.col; wbSelect(null); wbRemove(col, it);
+}
+
+/* ----- text ----- */
+function wbOpenText(t, x, y){
+  if(readOnly()) return;
+  wbCommitText();
+  const board=$('board');
+  const ta=document.createElement('textarea');
+  ta.className='textEdit'; ta.spellcheck=true; ta.setAttribute('aria-label','Text');
+  WB.textEdit=t ? {id:t.id, x:t.x, y:t.y, color:t.color, size:t.size||28, el:ta, old:t.text} : {id:null, x, y, color:WB.color, size:28, el:ta};
+  ta.value=t ? t.text : '';
+  board.appendChild(ta);
+  wbPlaceTextEdit();
+  WB.mainDirty=true; wbKick();
+  ta.addEventListener('input', wbPlaceTextEdit);
+  ta.addEventListener('keydown', e=>{ if(e.key==='Escape' || (e.key==='Enter' && (e.metaKey||e.ctrlKey))){ e.preventDefault(); wbCommitText(); } e.stopPropagation(); });
+  ta.addEventListener('blur', ()=>setTimeout(()=>{ if(WB.textEdit && WB.textEdit.el===ta) wbCommitText(); }, 0));
+  setTimeout(()=>ta.focus({preventScroll:true}), 20);
+}
+function wbPlaceTextEdit(){
+  const te=WB.textEdit; if(!te) return;
+  const k=K(), [sx,sy]=toScreen(te.x, te.y), ta=te.el;
+  ta.style.color=bColor(te.color);
+  ta.style.font=TEXT_FONT(te.size);
+  ta.style.transform=`translate(${sx-5*k}px,${sy-3*k}px) scale(${k})`;
+  ta.style.width='10px'; ta.style.height='10px';
+  ta.style.width=(ta.scrollWidth+12)+'px'; ta.style.height=(ta.scrollHeight+4)+'px';
+}
+function wbCommitText(){
+  const te=WB.textEdit; if(!te) return;
+  WB.textEdit=null;
+  const text=te.el.value.replace(/\s+$/,'');
+  te.el.remove();
+  if(te.id){
+    const it=findItem('texts', te.id);
+    if(!text){ if(it) wbRemove('texts', it); }
+    else if(it && text!==te.old){ it.text=text; SUB('texts').doc(te.id).update({text}).catch(fail); pushUndo({t:'upd', col:'texts', id:te.id, before:{text:te.old}, after:{text}}); }
+  } else if(text){
+    const id=uid(), doc={x:+te.x.toFixed(1), y:+te.y.toFixed(1), text, color:te.color, size:te.size, by:ME.uid, at:Date.now()};
+    DATA.texts.push(Object.assign({id}, doc)); wbAdd('texts', id, doc);
+  }
+  WB.mainDirty=true; wbKick();
+}
+
+/* ----- live: lines in progress, laser, cursors ----- */
+function wbSendLaser(end){
+  const now=performance.now();
+  const pts=INK.myLaser.filter(p=>now-p[2]<750).slice(-40).map(p=>[+p[0].toFixed(1), +p[1].toFixed(1)]);
+  liveSend({laser:end?null:{id:LASER_ID, pts:[].concat(...pts)}});
+}
+const LASER_ID=uid();
+function wbSendCursor(x,y){
+  const now=Date.now(); if(now-(wbSendCursor.t||0)<90) return; wbSendCursor.t=now;
+  liveSend({cur:{x:+x.toFixed(1), y:+y.toFixed(1)}});
+}
+function wbOnPresence(){
+  const now=performance.now();
   DATA.presence.forEach(p=>{
     if(p.id===ME.uid) return;
     const cur=INK.remote.get(p.id);
-    if(p.ink && p.ink.pts && p.ink.id){
-      if(!cur || cur.id!==p.ink.id){
-        if(DATA.strokes.some(s=>s.id===p.ink.id)) return;
-        INK.remote.set(p.id, {id:p.ink.id, pts:p.ink.pts, color:p.ink.color, size:p.ink.size, tool:p.ink.tool, shown:0, ended:0});
-      } else if(p.ink.pts.length>cur.pts.length){ cur.pts=p.ink.pts; cur.ended=0; }
-    } else if(cur && !cur.ended){ cur.ended=performance.now(); }
-  });
-  kick();
-}
-function boardPt(e){
-  const r=$('board').getBoundingClientRect();
-  return [Math.min(1,Math.max(0,(e.clientX-r.left)/r.width)), Math.min(1,Math.max(0,(e.clientY-r.top)/r.height))];
-}
-function boardDown(e){
-  if(readOnly()) return;
-  if(e.target.closest('.stk')) return;
-  if(e.button>0) return;
-  e.preventDefault();
-  const [x,y]=boardPt(e);
-  if(WB.tool==='sticky'){ addSticky(x,y); return; }
-  $('board').setPointerCapture(e.pointerId);
-  if(WB.tool==='eraser'){ DRAW={erase:true, hit:new Set()}; HOVER=[x,y]; eraseAt(x,y); kick(); return; }
-  DRAW={id:uid(), pts:[+x.toFixed(4), +y.toFixed(4)], color:WB.color, size:SIZES[WB.size], tool:WB.tool};
-  kick();
-}
-function boardMove(e){
-  if(!DRAW){ if(WB.tool==='eraser'){ HOVER=boardPt(e); kick(); } return; }
-  const evs=(e.getCoalescedEvents && e.getCoalescedEvents().length) ? e.getCoalescedEvents() : [e];
-  if(DRAW.erase){ evs.forEach(ev=>{ const p=boardPt(ev); HOVER=p; eraseAt(p[0],p[1]); }); kick(); return; }
-  const minStep=1.2/Math.max(boardW,1);
-  evs.forEach(ev=>{
-    const [x,y]=boardPt(ev), n=DRAW.pts.length;
-    if(Math.hypot(DRAW.pts[n-2]-x, (DRAW.pts[n-1]-y)*boardH/boardW) < minStep) return;
-    DRAW.pts.push(+x.toFixed(4), +y.toFixed(4));
-  });
-  kick();
-  const now=Date.now();
-  if(now-inkSent>110){ inkSent=now; sendInk(); }
-}
-function sendInk(){
-  if(!DRAW || DRAW.erase) return;
-  SUB('presence').doc(ME.uid).set({ink:{id:DRAW.id, pts:DRAW.pts.slice(0,3000), color:DRAW.color, size:DRAW.size, tool:DRAW.tool}, at:Date.now()}, {merge:true}).catch(()=>{});
-}
-function boardUp(){
-  if(!DRAW) return;
-  const d=DRAW; DRAW=null;
-  if(d.erase){ kick(); return; }
-  SUB('presence').doc(ME.uid).set({ink:null}, {merge:true}).catch(()=>{});
-  if(d.pts.length<2){ kick(); return; }
-  // Kept on screen straight away, before the save comes back.
-  const s={id:d.id, pts:d.pts, color:d.color, size:d.size, tool:d.tool, by:ME.uid, at:Date.now()};
-  DATA.strokes.push(Object.assign({}, s));
-  const c=$('cvMain'); if(c) strokePath(c.getContext('2d'), s.pts, boardColor(s.color), s.size, s.tool);
-  kick();
-  const {id, ...rest}=s;
-  SUB('strokes').doc(id).set(rest).catch(fail);
-}
-function eraseAt(x,y){
-  const rx=14/boardW, ry=14/boardH;
-  let hit=false;
-  DATA.strokes.forEach(s=>{
-    if(DRAW.hit.has(s.id)) return;
-    const p=s.pts||[];
-    for(let i=0;i<p.length;i+=2){
-      // check the point and the middle of the segment to the next one
-      const mx=i+2<p.length?(p[i]+p[i+2])/2:p[i], my=i+3<p.length?(p[i+1]+p[i+3])/2:p[i+1];
-      if((Math.abs(p[i]-x)<rx && Math.abs(p[i+1]-y)<ry) || (Math.abs(mx-x)<rx && Math.abs(my-y)<ry)){
-        DRAW.hit.add(s.id); INK.fading.push({s, t0:performance.now()}); hit=true;
-        SUB('strokes').doc(s.id).delete().catch(fail); break;
+    if(p.ink && p.ink.id){
+      if(p.ink.shape){ INK.remote.set(p.id, {id:p.ink.id, shape:p.ink.shape, ended:0}); }
+      else if(p.ink.pts){
+        const pts=p.ink.v===2 ? p.ink.pts : [];
+        if(!cur || cur.id!==p.ink.id){
+          if(DATA.strokes.some(s=>s.id===p.ink.id)) return;
+          INK.remote.set(p.id, {id:p.ink.id, pts, color:p.ink.color, size:p.ink.size, tool:p.ink.tool, shown:0, ended:0});
+        } else if(pts.length>cur.pts.length){ cur.pts=pts; cur.ended=0; }
       }
+    } else if(cur && !cur.ended){ cur.ended=now; }
+    // laser: newly arrived points get a fresh time so the trail fades here too
+    if(p.laser && p.laser.pts){
+      let l=INK.lasers.get(p.id);
+      if(!l){ l={pts:[], color:colorFor(p.name)}; INK.lasers.set(p.id, l); }
+      const flat=p.laser.pts, last=l.pts[l.pts.length-1];
+      // each update repeats the last few points; only the new ones are added
+      let start=0;
+      if(last) for(let i=flat.length-2;i>=0;i-=2){ if(flat[i]===last[0] && flat[i+1]===last[1]){ start=i+2; break; } }
+      for(let i=start;i<flat.length;i+=2) l.pts.push([flat[i], flat[i+1], now]);
+      if(l.pts.length>120) l.pts=l.pts.slice(-120);
     }
   });
-  if(hit){ DATA.strokes=DATA.strokes.filter(s=>!DRAW.hit.has(s.id)); drawBoard(); }
+  wbCursors(); wbKick();
 }
-function undoBoard(){
-  const mine=[...DATA.strokes.map(s=>({k:'strokes',s})), ...DATA.stickies.map(s=>({k:'stickies',s}))].filter(o=>o.s.by===ME.uid).sort((a,b)=>(b.s.at||0)-(a.s.at||0));
-  if(!mine.length) return;
-  const last=mine[0];
-  SUB(last.k).doc(last.s.id).delete().catch(fail);
-  if(last.k==='strokes'){ INK.fading.push({s:last.s, t0:performance.now()}); DATA.strokes=DATA.strokes.filter(s=>s.id!==last.s.id); drawBoard(); kick(); }
+function wbCursors(){
+  const L=$('cursorLayer'); if(!L) return;
+  const now=Date.now();
+  const list=DATA.presence.filter(p=>p.id!==ME.uid && p.cur && now-(p.at||0)<8000);
+  keyed(L, list, p=>p.id, p=>`<div class="cur" style="--pc:${colorFor(p.name)}"><svg viewBox="0 0 24 24"><path d="M3 2l7 19 2.5-7.5L20 11z" fill="${colorFor(p.name)}" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg><span></span></div>`, (el,p)=>{
+    const [sx,sy]=toScreen(p.cur.x, p.cur.y);
+    el.style.transform=`translate(${sx-3}px,${sy-2}px)`;
+    el.querySelector('span').textContent=p.name;
+    el.classList.toggle('idle', now-(p.at||0)>6000);
+  });
 }
-async function clearBoard(){
-  if(!DATA.strokes.length && !DATA.stickies.length) return;
-  if(!await askYesNo('Clear the whiteboard?', 'Everything on it is erased for everyone.', 'Clear', true)) return;
-  const now=performance.now();
-  DATA.strokes.forEach(s=>INK.fading.push({s, t0:now}));
-  const all=[...DATA.strokes.map(s=>SUB('strokes').doc(s.id)), ...DATA.stickies.map(s=>SUB('stickies').doc(s.id))];
-  DATA.strokes=[]; drawBoard(); kick();
-  try{ for(let i=0;i<all.length;i+=400){ const b=db.batch(); all.slice(i,i+400).forEach(r=>b.delete(r)); await b.commit(); } }catch(e){ fail(e); }
-}
-/* sticky notes */
+setInterval(()=>{ if(MTG && TAB==='board') wbCursors(); }, 2000);
+
+/* ----- sticky notes ----- */
 const STK_TIMERS={};
 function tiltOf(id){ let h=0; for(const c of String(id)) h=(h*33+c.charCodeAt(0))>>>0; return ((h%31)/10-1.5).toFixed(2)+'deg'; }
 function addSticky(x,y){
   const id=uid();
-  const doc={x:Math.min(.85,Math.max(0,x-.05)), y:Math.min(.8,Math.max(0,y-.03)), text:'', color:WB.sticky, by:ME.uid, at:Date.now()};
+  const doc={v:2, x:+x.toFixed(1), y:+y.toFixed(1), text:'', color:WB.sticky, by:ME.uid, at:Date.now()};
   DATA.stickies.push(Object.assign({id}, doc));
   renderStickies();
-  SUB('stickies').doc(id).set(doc).catch(fail);
+  wbAdd('stickies', id, doc);
   setTimeout(()=>{ const t=document.querySelector(`.stk[data-id="${id}"] textarea`); if(t) t.focus({preventScroll:true}); }, 40);
 }
 function renderStickies(){
-  const layer=$('stickyLayer'); if(!layer) return;
-  const ro=readOnly();
+  const layer=$('stickyLayer'); if(!layer || !WB.w) return;
+  const ro=readOnly(), k=K();
   const have=new Set();
   DATA.stickies.forEach(s=>{
     have.add(s.id);
     let el=layer.querySelector(`.stk[data-id="${s.id}"]`);
     if(!el){
       el=document.createElement('div'); el.className='stk'; el.dataset.id=s.id; el.style.setProperty('--rot', tiltOf(s.id));
-      el.innerHTML=`<div class="grip"><span class="by"></span>${ro?'':`<button aria-label="Delete sticky note">&times;</button>`}</div><textarea aria-label="Sticky note" ${ro?'readonly':''}></textarea>`;
+      el.innerHTML=`<div class="in"><div class="grip"><span class="by"></span>${ro?'':`<button aria-label="Delete sticky note">&times;</button>`}</div><textarea aria-label="Sticky note" ${ro?'readonly':''}></textarea></div>`;
       layer.appendChild(el);
       const ta=el.querySelector('textarea');
       ta.addEventListener('input', ()=>{
@@ -1198,12 +1764,22 @@ function renderStickies(){
       });
       ta.addEventListener('blur', ()=>{ clearTimeout(STK_TIMERS[s.id]); const cur=DATA.stickies.find(x=>x.id===s.id); if(cur && cur.text!==ta.value) SUB('stickies').doc(s.id).update({text:ta.value}).catch(fail); });
       if(!ro){
-        el.querySelector('.grip button').addEventListener('click', ev=>{ ev.stopPropagation(); SUB('stickies').doc(s.id).delete().catch(fail); });
+        el.querySelector('.grip button').addEventListener('click', ev=>{
+          ev.stopPropagation();
+          const cur=DATA.stickies.find(x=>x.id===s.id); if(!cur) return;
+          const {id, ...doc}=cur;
+          SUB('stickies').doc(s.id).delete().catch(fail);
+          pushUndo({t:'del', col:'stickies', id:s.id, doc});
+        });
         dragSticky(el, s.id);
       }
     }
-    if(!el.classList.contains('dragging')){ el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%'; }
+    if(!el.classList.contains('dragging')){
+      const [wx,wy]=stickyPos(s), [sx,sy]=toScreen(wx,wy);
+      el.style.transform=`translate(${sx}px,${sy}px) scale(${k})`;
+    }
     el.style.backgroundColor=s.color||STICKY_COLORS[0];
+    el.querySelector('.in').style.backgroundColor=s.color||STICKY_COLORS[0];
     el.querySelector('.by').textContent=nameOfUid(s.by);
     const ta=el.querySelector('textarea');
     if(document.activeElement!==ta && ta.value!==(s.text||'')) ta.value=s.text||'';
@@ -1213,38 +1789,74 @@ function renderStickies(){
     if(RM.matches) el.remove(); else { el.classList.add('leaving'); setTimeout(()=>el.remove(), 240); }
   });
 }
-/* Dragging moves the note with the finger using a transform, which the
-   browser can draw every frame, and sets its real position when let go.
+/* Dragging moves the note with the finger and sets its place when let go.
    Other people see it glide there. */
 function dragSticky(el, id){
   const grip=el.querySelector('.grip');
-  let start=null;
+  let st=null;
   grip.addEventListener('pointerdown', e=>{
     if(e.target.tagName==='BUTTON') return;
     e.preventDefault(); e.stopPropagation();
-    const r=$('board').getBoundingClientRect(), s=DATA.stickies.find(x=>x.id===id); if(!s) return;
-    start={px:e.clientX, py:e.clientY, x:s.x, y:s.y, w:r.width, h:r.height, dx:0, dy:0};
+    const s=DATA.stickies.find(x=>x.id===id); if(!s) return;
+    const [x,y]=stickyPos(s);
+    st={px:e.clientX, py:e.clientY, x, y, before:{v:s.v||1, x:s.x, y:s.y}};
     el.classList.add('dragging');
     grip.setPointerCapture(e.pointerId);
   });
   grip.addEventListener('pointermove', e=>{
-    if(!start) return;
-    const nx=Math.min(.95,Math.max(0,start.x+(e.clientX-start.px)/start.w)), ny=Math.min(.95,Math.max(0,start.y+(e.clientY-start.py)/start.h));
-    start.dx=(nx-start.x)*start.w; start.dy=(ny-start.y)*start.h; start.nx=nx; start.ny=ny;
-    el.style.setProperty('--dx', start.dx+'px'); el.style.setProperty('--dy', start.dy+'px');
+    if(!st) return;
+    const k=K();
+    st.nx=st.x+(e.clientX-st.px)/k; st.ny=st.y+(e.clientY-st.py)/k;
+    const [sx,sy]=toScreen(st.nx, st.ny);
+    el.style.transform=`translate(${sx}px,${sy}px) scale(${k})`;
   });
   const end=()=>{
-    if(!start) return;
-    const st=start; start=null;
-    const s=DATA.stickies.find(x=>x.id===id);
-    el.style.transition='none';
-    el.style.setProperty('--dx','0px'); el.style.setProperty('--dy','0px');
-    if(s && st.nx!=null){ s.x=st.nx; s.y=st.ny; el.style.left=(s.x*100)+'%'; el.style.top=(s.y*100)+'%'; }
-    void el.offsetWidth; el.style.transition='';
+    if(!st) return;
+    const d=st; st=null;
     el.classList.remove('dragging');
-    if(s && st.nx!=null) SUB('stickies').doc(id).update({x:+s.x.toFixed(4), y:+s.y.toFixed(4)}).catch(fail);
+    const s=DATA.stickies.find(x=>x.id===id);
+    if(s && d.nx!=null){
+      const after={v:2, x:+d.nx.toFixed(1), y:+d.ny.toFixed(1)};
+      Object.assign(s, after);
+      SUB('stickies').doc(id).update(after).catch(fail);
+      pushUndo({t:'upd', col:'stickies', id, before:d.before, after});
+    }
   };
   grip.addEventListener('pointerup', end); grip.addEventListener('pointercancel', end);
+}
+
+/* ----- save as image ----- */
+function wbExport(){
+  const b=wbBounds();
+  if(!b){ toast('The whiteboard is empty.'); return; }
+  const pad=40, sc=2, W=Math.ceil((b[2]-b[0]+pad*2)*sc), H=Math.ceil((b[3]-b[1]+pad*2)*sc);
+  const lim=8000, f=Math.min(1, lim/W, lim/H);
+  const c=document.createElement('canvas'); c.width=Math.ceil(W*f); c.height=Math.ceil(H*f);
+  const ctx=c.getContext('2d');
+  ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,c.width,c.height);
+  ctx.setTransform(sc*f,0,0,sc*f,(pad-b[0])*sc*f,(pad-b[1])*sc*f);
+  const dark=document.documentElement.classList.contains('dark');
+  if(dark) document.documentElement.classList.remove('dark');
+  [...DATA.strokes.map(s=>['s',s]), ...DATA.shapes.map(s=>['h',s]), ...DATA.texts.map(s=>['t',s])].sort((a,b)=>(a[1].at||0)-(b[1].at||0))
+    .forEach(([k,s])=>{ if(k==='s') drawStroke(ctx, ptsOf(s), s.color, s.size, s.tool); else if(k==='h') drawShape(ctx, s); else drawText(ctx, s); });
+  DATA.stickies.forEach(s=>{
+    const [x,y]=stickyPos(s);
+    ctx.save(); ctx.fillStyle=s.color||STICKY_COLORS[0]; ctx.shadowColor='rgba(0,0,0,.18)'; ctx.shadowBlur=10; ctx.shadowOffsetY=3;
+    ctx.fillRect(x,y,150,120); ctx.restore();
+    ctx.save(); ctx.fillStyle='#1d1a00'; ctx.font="500 14px 'DM Sans', system-ui, sans-serif"; ctx.textBaseline='top';
+    let line='', yy=y+26; const words=String(s.text||'').split(/(\s+)/);
+    words.forEach(w=>{ if(w.includes('\n')){ ctx.fillText(line,x+10,yy); yy+=19; line=''; return; } const t=line+w; if(ctx.measureText(t).width>130 && line){ ctx.fillText(line,x+10,yy); yy+=19; line=w.trimStart(); } else line=t; });
+    if(line) ctx.fillText(line,x+10,yy);
+    ctx.restore();
+  });
+  if(dark) document.documentElement.classList.add('dark');
+  c.toBlob(blob=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=((MTG && MTG.title) || 'Whiteboard').replace(/[^\w ,.-]+/g,'')+' whiteboard.png';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  }, 'image/png');
 }
 
 /* ---------- practice portal ----------
@@ -1271,7 +1883,7 @@ function iFollow(){ const p=presenterLive(); return !!(p && p.uid!==ME.uid && (P
 function renderPracticePane(){
   $('pane-practice').innerHTML=`<div class="ppStage" id="ppStage"><div class="ppBar" id="ppBar"></div>
     <div class="ppFrameWrap" id="ppWrap">
-      <div class="mirror hidden" id="ppMirror"><div class="mirrorBox" id="mirrorBox"><iframe id="mirrorFrame" title="Presenter's screen" sandbox="allow-same-origin" tabindex="-1"></iframe><div class="gestures" id="gestures"></div></div>
+      <div class="mirror hidden" id="ppMirror"><div class="mirrorBox" id="mirrorBox"><div class="mirrorZoom" id="mirrorZoom"><iframe id="mirrorFrame" title="Presenter's screen" sandbox="allow-same-origin" tabindex="-1"></iframe><div class="gestures" id="gestures"></div></div></div>
         <div class="mirrorWait" id="mirrorWait"></div></div>
       <div class="hlLayer" id="hlLayer"></div>
     </div></div>`;
@@ -1403,6 +2015,19 @@ function mirStopSending(){
     MIR.chain=MIR.chain.then(()=>mirPrune(Infinity)).catch(()=>{});
   }
 }
+/* Pinching to zoom on a phone or tablet zooms this page, not the practice
+   copy inside it, so the presenter's zoom is read here and sent as the part
+   of the practice copy that is in view. */
+function mirOuterZoom(){
+  if(!MIR.epoch || !iPresent() || !PP.frame || !window.visualViewport) return;
+  const v=visualViewport, r=PP.frame.getBoundingClientRect();
+  let vv=[+v.scale.toFixed(3), Math.round(v.offsetLeft-r.left), Math.round(v.offsetTop-r.top)];
+  if(v.scale<=1.01) vv=[1,0,0];
+  const key=vv.join(',');
+  if(key===MIR.vvKey) return;
+  MIR.vvKey=key; mirQueue([{vv}]);
+}
+if(window.visualViewport){ visualViewport.addEventListener('resize', mirOuterZoom); visualViewport.addEventListener('scroll', mirOuterZoom); }
 function mirRequestSnap(){ clearTimeout(MIR.reqTimer); MIR.reqTimer=setTimeout(()=>ppPost({type:'snap'}), 250); }
 function mirSnap(snap){
   const epoch=Date.now(), json=JSON.stringify(snap);
@@ -1415,6 +2040,7 @@ function mirSnap(snap){
     await b.commit();
     // pieces that follow are numbered after the snapshot's parts
     if(MIR.epoch===epoch) MIR.seq=parts;
+    MIR.vvKey=''; mirOuterZoom();
     mirPrune(epoch).catch(()=>{});
   }).catch(e=>console.error('mirror snapshot', e));
 }
@@ -1472,7 +2098,7 @@ function repStop(){
   clearTimeout(REP.waitTimer);
   REP.docs.clear(); REP.epoch=0; REP.nodes.clear();
   const g=$('gestures'); if(g) g.innerHTML='';
-  REP.touches.clear(); REP.cursor=null;
+  REP.touches.clear(); REP.cursor=null; REP.focus=null; REP.vv=[1,0,0];
   const f=$('mirrorFrame'); if(f){ f.removeAttribute('srcdoc'); f.dataset.ready=''; }
 }
 async function repProcess(){
@@ -1509,7 +2135,7 @@ async function repBuild(snap){
   const f=$('mirrorFrame'); if(!f) return;
   if(f.dataset.ready!=='1'){
     const head=await portalHead();
-    await new Promise(res=>{ f.onload=()=>res(); f.srcdoc='<!DOCTYPE html><html><head>'+head+'</head><body></body></html>'; });
+    await new Promise(res=>{ f.onload=()=>res(); f.srcdoc='<!DOCTYPE html><html><head>'+head+'<style>html,body,*{scroll-behavior:auto!important}</style></head><body></body></html>'; });
     f.dataset.ready='1';
   }
   const doc=f.contentDocument;
@@ -1523,6 +2149,25 @@ async function repBuild(snap){
   repAfterBuild(doc.body);
   repViewport(snap.vw, snap.vh);
   doc.scrollingElement.scrollTop=snap.sy[0]; doc.scrollingElement.scrollLeft=snap.sy[1];
+  repZoom(snap.vv||[1,0,0]);
+  REP.focus=snap.fo||null; repFocusRing();
+}
+/* Pinch zoom on the presenter's phone zooms the copy here the same way. */
+function repZoom(vv){
+  REP.vv=vv;
+  const z=$('mirrorZoom'); if(!z) return;
+  z.style.transition=RM.matches?'':'transform .12s linear';
+  z.style.transform=vv[0]===1 && !vv[1] && !vv[2] ? '' : `scale(${vv[0]}) translate(${-vv[1]}px,${-vv[2]}px)`;
+}
+/* The field the presenter is typing in gets a soft ring. */
+function repFocusRing(){
+  const layer=$('gestures'); if(!layer) return;
+  let ring=layer.querySelector('.gFocus');
+  const el=REP.focus ? REP.nodes.get(REP.focus) : null;
+  if(!el || !el.isConnected || !el.getBoundingClientRect){ if(ring) ring.remove(); return; }
+  const r=el.getBoundingClientRect();
+  if(!ring){ ring=document.createElement('div'); ring.className='gFocus'; layer.appendChild(ring); }
+  ring.style.left=(r.left-2)+'px'; ring.style.top=(r.top-2)+'px'; ring.style.width=(r.width+4)+'px'; ring.style.height=(r.height+4)+'px';
 }
 function syncAttrs(el, a){
   if(!el || !a) return;
@@ -1578,10 +2223,15 @@ function repApply(ops){
       if(el){ REP.scroll.set(el, [t,l]); repTick(); }
     } else if(op.vp){
       repViewport(op.vp[0], op.vp[1]);
+    } else if(op.vv){
+      repZoom(op.vv);
+    } else if('fo' in op){
+      REP.focus=op.fo;
     } else if(op.p){
       gesture(op.p);
     }
   });
+  repFocusRing();
 }
 /* Scrolling glides to where the presenter is rather than jumping. */
 function repTick(){ if(!REP.raf) REP.raf=requestAnimationFrame(repFrame); }
@@ -1595,6 +2245,7 @@ function repFrame(){
     el.scrollTop+=dt*0.35; el.scrollLeft+=dl*0.35; again=true;
   });
   if(HL_RENDER_NEEDED()) renderHighlights();
+  repFocusRing();
   if(again) repTick();
 }
 function repViewport(w,h){ REP.vw=w; REP.vh=h; mirFit(); }
@@ -1614,6 +2265,14 @@ function mirFit(){
 /* ----- gestures drawn on the follower's screen ----- */
 function gesture(p){
   const layer=$('gestures'); if(!layer) return;
+  if(p.k==='w'){
+    // a mouse wheel or trackpad scroll: a dot that glides the way the page moved
+    const w=document.createElement('div'); w.className='gWheel';
+    w.style.setProperty('--x', p.x+'px'); w.style.setProperty('--y', p.y+'px');
+    w.style.setProperty('--dx', (-(p.dx||0)*36)+'px'); w.style.setProperty('--dy', (-(p.dy||0)*36)+'px');
+    layer.appendChild(w); setTimeout(()=>w.remove(), 600);
+    return;
+  }
   if(p.k==='h'){
     // mouse moving without a click: a small ring follows it
     let c=REP.cursor;
