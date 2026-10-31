@@ -209,10 +209,15 @@ html.dark .liveTag{color:#1a0d00;}
 .addRow{display:flex;gap:8px;align-items:stretch;}
 .addRow .btn{flex:0 0 auto;}
 .dgrip{display:inline-flex;align-items:center;justify-content:center;width:1.5em;align-self:stretch;margin:-6px 0 -6px -8px;color:color-mix(in srgb, var(--tc) 60%, var(--muted));
-  cursor:grab;touch-action:none;border-radius:8px;flex:0 0 auto;transition:background-color .15s,color .15s;}
+  cursor:grab;touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;border-radius:8px;flex:0 0 auto;transition:background-color .15s,color .15s;}
 .dgrip:hover{background:color-mix(in srgb, var(--tc) 12%, transparent);color:var(--tc);}
 .dgrip .ic{width:1.1em;height:1.1em;}
 .topicSec{margin:0 0 26px;}
+.looseHead{display:none;}
+.looseSec.movable{position:relative;margin:0 0 26px;padding-left:1.6em;}
+.looseSec.movable .looseHead{display:flex;position:absolute;left:0;top:0;bottom:0;width:1.5em;}
+.looseSec.movable .looseHead .dgrip{margin:0;align-self:stretch;border-radius:10px;background:color-mix(in srgb, var(--tc) 7%, transparent);}
+.looseSec.dragSrc .looseHead .dgrip{background:color-mix(in srgb, var(--tc) 18%, transparent);}
 .topicHead{display:flex;align-items:center;gap:12px;padding:14px 16px 14px 18px;border-radius:18px;margin-bottom:14px;
   background:linear-gradient(95deg,color-mix(in srgb, var(--tc) 30%, var(--paper)),color-mix(in srgb, var(--tc) 8%, var(--paper)) 55%,var(--paper) 85%);
   border:1px solid color-mix(in srgb, var(--tc) 35%, var(--line));
@@ -942,7 +947,7 @@ function renderPeople(){
 function onMeetingChange(prev){
   if(prev.status!==MTG.status){ render(); return; }
   if(prev.title!==MTG.title){ const t=$('mtgTitle'); if(t) t.textContent=MTG.title||'Meeting'; }
-  if(prev.currentAgenda!==MTG.currentAgenda) renderAgenda();
+  if(prev.currentAgenda!==MTG.currentAgenda || prev.looseOrder!==MTG.looseOrder) renderAgenda();
   if(prev.bg!==MTG.bg){ wbApplyBg(); wbRenderMenu(); }
   if(JSON.stringify(prev.boardPins||[])!==JSON.stringify(MTG.boardPins||[])){ wbRenderPins(); wbRenderPinMenu(); }
   if(JSON.stringify(prev.boardPresenter||null)!==JSON.stringify(MTG.boardPresenter||null)) wbOnBoardPresenter(prev);
@@ -1001,16 +1006,24 @@ function renderAgendaPane(){
 }
 const tpSorted=()=>DATA.topics.slice().sort((a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0));
 const agSorted=()=>DATA.agenda.slice().sort((a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0));
+/* The agenda items not filed under a topic form one block that can be placed
+   above, between or below the topics. With none, it stays at the top. */
+function agBlocks(){
+  const loose={id:'_loose', loose:true, order:(MTG && MTG.looseOrder!=null) ? MTG.looseOrder : 0};
+  const list=tpSorted().map(t=>({id:t.id, t, order:t.order||0}));
+  if(!agIn('').length) return [loose].concat(list);
+  return list.concat([loose]).sort((a,b)=>a.order-b.order || (a.loose?-1:b.loose?1:0));
+}
 const topicOf=a=>(a.topicId && DATA.topics.some(t=>t.id===a.topicId)) ? a.topicId : '';
 function agIn(tid){ return agSorted().filter(a=>topicOf(a)===tid); }
 function renderAgenda(){
   const el=$('agList'); if(!el) return;
   const ro=readOnly();
-  const blocks=[{id:'_loose', loose:true}].concat(tpSorted().map(t=>({id:t.id, t})));
+  const blocks=agBlocks();
   keyed(el, blocks, b=>b.id, b=>{
     const add=ro?'':`<div class="addAg"><label class="fieldLbl">Agenda item</label>
       <div class="addRow"><input type="text" maxlength="200" aria-label="New agenda item" data-topic="${b.loose?'':b.id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda(this);}"><button class="btn tc sm" onclick="addAgenda(this.previousElementSibling)">${icon('plus')}Add</button></div></div>`;
-    if(b.loose) return `<div class="looseSec"><div class="items" data-topic=""></div>${add}</div>`;
+    if(b.loose) return `<div class="looseSec">${ro?'':`<div class="looseHead"><span class="dgrip" aria-label="Drag" onpointerdown="dragStart(event,'topic','_loose')">${icon('grip')}</span></div>`}<div class="items" data-topic=""></div>${add}</div>`;
     return `<section class="topicSec">
       <div class="topicHead">
         ${ro?'':`<span class="dgrip" aria-label="Drag topic" onpointerdown="dragStart(event,'topic','${b.id}')">${icon('grip')}</span>`}
@@ -1026,6 +1039,7 @@ function renderAgenda(){
     } else {
       // with no topics yet, the agenda can still be built here; once there are topics, items are added under them
       const ad=blk.querySelector('.addAg'); if(ad) ad.classList.toggle('hidden', DATA.topics.length>0);
+      blk.classList.toggle('movable', DATA.topics.length>0 && list.length>0);
     }
     renderItemsInto(blk.querySelector('.items'), list, ro);
   });
@@ -1137,7 +1151,7 @@ async function deleteNote(id){
 }
 function addTopic(){
   const inp=$('topicNew'); const text=(inp.value||'').trim(); if(!text) return;
-  const max=DATA.topics.reduce((m,t)=>Math.max(m,t.order||0),0);
+  const max=DATA.topics.reduce((m,t)=>Math.max(m,t.order||0), (MTG && MTG.looseOrder) || 0);
   SUB('topics').add({text, order:max+1, by:ME.uid, at:Date.now()}).catch(fail);
   inp.value=''; inp.focus();
 }
@@ -1189,17 +1203,17 @@ let DRAG=null;
 function dragStart(e, kind, id){
   if(readOnly() || e.button>0) return;
   e.preventDefault(); e.stopPropagation();
-  const src=document.querySelector(kind==='agenda' ? `.items > .agSec[data-k="${id}"]` : `#agList > .topicSec[data-k="${id}"]`);
+  if(DRAG) dragEnd();
+  const src=document.querySelector(kind==='agenda' ? `.items > .agSec[data-k="${id}"]` : `#agList > [data-k="${id}"]`);
   if(!src) return;
-  const grip=e.currentTarget;
-  try{ grip.setPointerCapture(e.pointerId); }catch(err){}
-  DRAG={kind, id, src, sx:e.clientX, sy:e.clientY, started:false, pid:e.pointerId, grip};
-  grip.addEventListener('pointermove', dragMove);
-  grip.addEventListener('pointerup', dragEnd);
-  grip.addEventListener('pointercancel', dragEnd);
+  DRAG={kind, id, src, sx:e.clientX, sy:e.clientY, started:false, pid:e.pointerId};
+  window.addEventListener('pointermove', dragMove, true);
+  window.addEventListener('pointerup', dragEnd, true);
+  window.addEventListener('pointercancel', dragEnd, true);
+  window.addEventListener('blur', dragEnd);
 }
 function dragBegin(){
-  const d=DRAG, head=d.src.querySelector(d.kind==='agenda'?'.agItem':'.topicHead'), r=head.getBoundingClientRect();
+  const d=DRAG, head=d.src.querySelector(d.kind==='agenda'?'.agItem':(d.id==='_loose'?'.items':'.topicHead')), r=head.getBoundingClientRect();
   d.ox=d.sx-r.left; d.oy=d.sy-r.top;
   const g=head.cloneNode(true); g.classList.add('dragGhost'); g.style.width=r.width+'px';
   // the ghost needs the tool's colour, which comes from the page
@@ -1210,7 +1224,8 @@ function dragBegin(){
   if(!RM.matches) g.animate([{transform:'scale(1)'},{transform:'scale(1.02)'}], {duration:150, fill:'forwards', easing:EASE});
 }
 function dragMove(e){
-  const d=DRAG; if(!d) return;
+  const d=DRAG; if(!d || (e.pointerId!==d.pid)) return;
+  if(d.started) e.preventDefault();
   d.x=e.clientX; d.y=e.clientY;
   if(!d.started){ if(Math.hypot(d.x-d.sx, d.y-d.sy)<4) return; dragBegin(); }
   d.ghost.style.left=(d.x-d.ox)+'px'; d.ghost.style.top=(d.y-d.oy)+'px';
@@ -1237,7 +1252,7 @@ function dragTarget(){
     list=[...cont.children].filter(x=>x.dataset.k && x!==d.src && !x._leaving);
   } else {
     cont=$('agList');
-    list=[...cont.children].filter(x=>x.classList.contains('topicSec') && x!==d.src && !x._leaving);
+    list=[...cont.children].filter(x=>(x.classList.contains('topicSec') || x.classList.contains('movable')) && x!==d.src && !x._leaving);
   }
   idx=list.length;
   for(let i=0;i<list.length;i++){ const r=list[i].getBoundingClientRect(); if(d.y < r.top+r.height/2){ idx=i; break; } }
@@ -1248,14 +1263,21 @@ function dragTarget(){
   d.cont=cont; d.idx=idx; d.list=list;
   d.line.style.top=lineAt+'px'; d.line.style.left=cr.left+'px'; d.line.style.width=Math.max(60, cr.width)+'px';
 }
-function dragEnd(){
+function dragEnd(e){
   const d=DRAG; if(!d) return;
+  if(e && e.pointerId!=null && e.pointerId!==d.pid) return;
   DRAG=null;
   cancelAnimationFrame(d.scrollRaf);
-  d.grip.removeEventListener('pointermove', dragMove);
-  d.grip.removeEventListener('pointerup', dragEnd);
-  d.grip.removeEventListener('pointercancel', dragEnd);
+  window.removeEventListener('pointermove', dragMove, true);
+  window.removeEventListener('pointerup', dragEnd, true);
+  window.removeEventListener('pointercancel', dragEnd, true);
+  window.removeEventListener('blur', dragEnd);
   document.body.classList.remove('dragging');
+  if(!e || e.type==='blur' || e.type==='pointercancel'){
+    // the drag was interrupted: put everything back as it was
+    if(d.started){ d.src.classList.remove('dragSrc'); if(d.line) d.line.remove(); if(d.ghost) d.ghost.remove(); }
+    return;
+  }
   if(!d.started) return;
   d.src.classList.remove('dragSrc');
   if(d.line) d.line.remove();
@@ -1274,7 +1296,12 @@ function dragEnd(){
       if(Object.keys(upd).length){ Object.assign(a, upd); b.update(SUB('agenda').doc(id), upd); }
     });
   } else {
-    ids.forEach((id,i)=>{ const t=DATA.topics.find(x=>x.id===id); if(t && (t.order||0)!==i+1){ t.order=i+1; b.update(SUB('topics').doc(id), {order:i+1}); } });
+    ids.forEach((id,i)=>{
+      if(id==='_loose'){ if(MTG.looseOrder!==i+1){ MTG.looseOrder=i+1; MREF().update({looseOrder:i+1}).catch(fail); } return; }
+      const t=DATA.topics.find(x=>x.id===id); if(t && (t.order||0)!==i+1){ t.order=i+1; b.update(SUB('topics').doc(id), {order:i+1}); }
+    });
+    // the unfiled block, when it is empty, keeps its place at the top
+    if(!ids.includes('_loose') && MTG.looseOrder!=null && MTG.looseOrder!==0){ MTG.looseOrder=0; MREF().update({looseOrder:0}).catch(fail); }
   }
   renderAgenda();
   b.commit().catch(fail);
