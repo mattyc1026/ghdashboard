@@ -283,17 +283,17 @@ html.dark .liveTag{color:#1a0d00;}
 .replies:empty{display:none;}
 .replies .note{font-size:.95em;padding-top:6px;}
 @media (max-width:560px){ .replies{margin-left:10px;} }
-.replyBox{margin:4px 0 6px calc(4.5em + 14px);}
+.replyBox{margin:6px 0 4px calc(4.5em + 14px);}
 .replyBox:empty{display:none;}
 @media (max-width:560px){ .replyBox{margin-left:10px;} }
 .note.editing{grid-template-columns:1fr;}
 .note textarea{background:var(--paper);}
-.compose{padding:8px 0 4px;}
+.compose{padding-top:10px;}
 .compose textarea,.replyBox textarea{min-height:42px;height:42px;resize:none;background:color-mix(in srgb, var(--paper) 75%, var(--well));box-shadow:inset 0 1px 3px rgba(15,38,71,.08);overflow:hidden;}
-.addAg{margin:0 0 14px 2.4em;max-width:760px;}
+.addAg{margin:2px 0 0 2.4em;max-width:760px;}
 @media (max-width:900px){ .addAg{margin-left:1.1em;} }
 .addAg input{border-radius:var(--radius-sm);font-weight:600;}
-.addTopic{margin:0 0 22px;max-width:1000px;}
+.addTopic{margin-top:8px;max-width:1000px;}
 .addTopic input{font-size:1.15em;font-weight:700;border-radius:var(--radius);min-height:52px;
   background:linear-gradient(90deg,color-mix(in srgb, var(--tc) 10%, var(--paper)),var(--paper) 70%);box-shadow:inset 0 1px 0 var(--raise-hi),var(--sh-1);}
 .addTopic .btn{min-height:52px;border-radius:var(--radius);}
@@ -998,9 +998,9 @@ let NOTE_EDIT=null, REPLY_TO=null;
 function renderAgendaPane(){
   const ro=readOnly();
   $('pane-agenda').innerHTML=`<div class="agenda">
+    <div id="agList"></div>
     ${ro?'':`<div class="addTopic"><label class="fieldLbl" for="topicNew">Topic</label>
       <div class="addRow"><input type="text" id="topicNew" maxlength="200" onkeydown="if(event.key==='Enter'){event.preventDefault();addTopic();}"><button class="btn tc" onclick="addTopic()">${icon('plus')}Add Topic</button></div></div>`}
-    <div id="agList"></div>
   </div>`;
   renderAgenda();
 }
@@ -1023,14 +1023,14 @@ function renderAgenda(){
   keyed(el, blocks, b=>b.id, b=>{
     const add=ro?'':`<div class="addAg"><label class="fieldLbl">Agenda item</label>
       <div class="addRow"><input type="text" maxlength="200" aria-label="New agenda item" data-topic="${b.loose?'':b.id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda(this);}"><button class="btn tc sm" onclick="addAgenda(this.previousElementSibling)">${icon('plus')}Add</button></div></div>`;
-    if(b.loose) return `<div class="looseSec">${ro?'':`<div class="looseHead"><span class="dgrip" aria-label="Drag" onpointerdown="dragStart(event,'topic','_loose')">${icon('grip')}</span></div>`}${add}<div class="items" data-topic=""></div></div>`;
+    if(b.loose) return `<div class="looseSec">${ro?'':`<div class="looseHead"><span class="dgrip" aria-label="Drag" onpointerdown="dragStart(event,'topic','_loose')">${icon('grip')}</span></div>`}<div class="items" data-topic=""></div>${add}</div>`;
     return `<section class="topicSec">
       <div class="topicHead">
         ${ro?'':`<span class="dgrip" aria-label="Drag topic" onpointerdown="dragStart(event,'topic','${b.id}')">${icon('grip')}</span>`}
         <div class="ttx"></div><span class="nc"></span>
         ${ro?'':`<div class="tools"><button class="iconBtn" aria-label="Edit topic" onclick="editTopic('${b.id}')">${icon('pen')}</button><button class="iconBtn" aria-label="Delete topic" onclick="deleteTopic('${b.id}')">${icon('x')}</button></div>`}
       </div>
-      <div class="topicBody">${add}<div class="items" data-topic="${b.id}"></div></div></section>`;
+      <div class="topicBody"><div class="items" data-topic="${b.id}"></div>${add}</div></section>`;
   }, (blk,b)=>{
     const tid=b.loose?'':b.id, list=agIn(tid);
     if(!b.loose){
@@ -1057,10 +1057,9 @@ function renderItemsInto(box, list, ro){
           <button class="iconBtn" aria-label="Edit" onclick="editAgenda('${a.id}')">${icon('pen')}</button>
           <button class="iconBtn" aria-label="Delete" onclick="deleteAgenda('${a.id}')">${icon('x')}</button></div>`}
       </div>
-      <div class="well">
+      <div class="well"><div class="notes"></div>
         ${ro?'':`<div class="compose"><label class="fieldLbl">Note</label><div class="addRow"><textarea rows="1" aria-label="New note" data-ag="${a.id}" oninput="autoGrow(this)" onkeydown="noteKey(event,this)"></textarea>
           <button class="btn tc sm" onclick="addNote(this.previousElementSibling)">${icon('plus')}Add Note</button></div></div>`}
-        <div class="notes"></div>
       </div></div>`, (sec,a)=>{
     const item=sec.querySelector('.agItem');
     item.classList.toggle('done', !!a.done);
@@ -1082,7 +1081,7 @@ function noteMake(n, ro, isReply){
       ${(ro||isReply)?'':`<button class="replyBtn" onclick="openReply('${n.id}')">Reply</button>`}
       <span class="sp"></span>
       ${(!ro&&mine)?`<span class="own"><button class="iconBtn" aria-label="Edit note" onclick="editNote('${n.id}')">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button></span>`:''}
-    </div></div>${isReply?'':`<div class="replyBox" data-for="${n.id}"></div><div class="replies"></div>`}</div>`;
+    </div></div>${isReply?'':`<div class="replies"></div><div class="replyBox" data-for="${n.id}"></div>`}</div>`;
 }
 function notePatch(el, n){
   if(NOTE_EDIT===n.id) return;
