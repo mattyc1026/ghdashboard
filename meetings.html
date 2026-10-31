@@ -302,11 +302,17 @@ body.dragging,body.dragging *{cursor:grabbing!important;user-select:none!importa
 
 /* ---- whiteboard ---- */
 .wbWrap{position:relative;}
-.wbBar{position:relative;display:flex;flex-wrap:wrap;align-items:center;gap:2px;margin-bottom:10px;
+.wbBar{position:relative;display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;align-items:center;gap:2px;margin-bottom:10px;
   background:linear-gradient(90deg,color-mix(in srgb, var(--c-board) 14%, var(--paper)),var(--paper) 55%);border:1px solid var(--line);
   border-radius:16px;padding:6px;box-shadow:inset 0 1px 0 var(--raise-hi),var(--raise-sh);}
 .wbBar .sep{width:1px;height:1.9em;background:var(--line);margin:0 3px;flex:0 0 auto;}
-#wbMenu,#wbPinMenu{display:contents;}
+/* one row always, so picking a tool never moves the board; the menus open just below it */
+.wbBar::-webkit-scrollbar{display:none;}
+.wbMenus{position:relative;height:0;z-index:30;}
+.wbMenus .menuPop{top:-4px;}
+.shapePop{display:flex;gap:2px;min-width:0;padding:5px;}
+.wbRight{display:flex;align-items:center;gap:2px;margin-left:auto;padding-left:6px;position:sticky;right:0;flex:0 0 auto;
+  background:linear-gradient(90deg,transparent,var(--paper) 6px);border-left:1px solid var(--line);}
 @media (max-width:900px){
   .wbBar{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;font-size:.78em;border-radius:14px;}
   .wbBar::-webkit-scrollbar{display:none;}
@@ -824,6 +830,7 @@ function openMeeting(id){
   SUBS.forEach(n=>{
     MTG_UNSUBS.push(SUB(n).onSnapshot(s=>{
       DATA[n]=s.docs.map(d=>Object.assign({id:d.id}, d.data()));
+      if(WB.act && WB.act.kind==='aerase' && (n==='strokes' || n==='shapes')) wbAreaOverlay(WB.act, n);
       if(MTG) onDataChange(n);
     }, e=>console.error(n, e)));
   });
@@ -1285,8 +1292,9 @@ function dragEnd(){
 ========================================================================= */
 const WB_UNIT_W=1000, WB_UNIT_H=625;      // the first whiteboards' size
 const SIZES=[2.5,5,10];
-const WB={tool:'pen', color:COLORS[0], size:1, sticky:STICKY_COLORS[0], shape:'rect',
-  view:{x:0, y:0, z:1}, w:0, h:0, dpr:1, sel:null, penSeen:false, space:false, menu:false, pinMenu:false, follow:null, followRaf:0,
+const ERASE_R=[6,14,30];                     // the area eraser's sizes, in screen pixels
+const WB={shapeMenu:false, tool:'pen', color:COLORS[0], size:1, sticky:STICKY_COLORS[0], shape:'rect',
+  view:{x:0, y:0, z:1}, w:0, h:0, dpr:1, sel:null, penSeen:false, space:false, menu:false, pinMenu:false, follow:null, followRaf:0, eraseMode:'object', eSize:1,
   ptrs:new Map(), gesture:null, act:null, undo:[], redo:[], raf:0, mainDirty:true, ro:null};
 const INK={remote:new Map(), lasers:new Map(), fading:[], myLaser:[]};
 
@@ -1310,6 +1318,7 @@ function renderBoardPane(){
   const ro=readOnly();
   $('pane-board').innerHTML=`<div class="wbWrap" id="wbWrap">
     <div class="wbBar" id="wbBar"></div>
+    <div class="wbMenus"><div id="wbMenu"></div><div id="wbPinMenu"></div><div id="wbShapeMenu"></div></div>
     <div class="pinBar" id="pinBar"></div>
     <div class="board" id="board">
       <canvas id="cvMain"></canvas><canvas id="cvLive"></canvas>
@@ -1451,35 +1460,40 @@ function renderWbBar(){
   const full=document.body.classList.contains('wbFull');
   const bp=boardPresenterLive(), mine=bp && bp.uid===ME.uid, locked=wbLocked();
   let h=full ? `<button class="tool" onclick="wbSetFull(false)" title="Exit full screen" aria-label="Exit full screen">${icon('x')}</button><span class="sep"></span>` : '';
-  const pinBtn=`<button class="tool ${WB.pinMenu?'on':''}" onclick="WB.pinMenu=!WB.pinMenu;WB.menu=false;renderWbBar()" title="Agenda" aria-label="Agenda">${icon('pin')}</button>`;
+  const pinBtn=`<button class="tool ${WB.pinMenu?'on':''}" onclick="WB.pinMenu=!WB.pinMenu;WB.menu=false;WB.shapeMenu=false;renderWbBar()" title="Agenda" aria-label="Agenda">${icon('pin')}</button>`;
   const presBtn=ro?'':(mine ? `<button class="tool present live" onclick="stopBoardPresenting()" title="Stop presenting" aria-label="Stop Presenting">${icon('cast')}<span>Stop</span></button>`
     : `<button class="tool" onclick="startBoardPresenting()" title="Present" aria-label="Present">${icon('cast')}</button>`);
+  let right=pinBtn;
   if(locked){
-    h+=`<span class="wbStatus">${icon('cast')}Following ${esc(bp.name)}</span><span class="grow"></span>`+pinBtn;
+    h+=`<span class="wbStatus">${icon('cast')}Following ${esc(bp.name)}</span>`;
   } else if(ro){
     h+=tool('hand','hand','Move around')+tool('laser','laser','Laser pointer');
   } else {
     h+=tool('select','select','Select')+tool('hand','hand','Move around')+'<span class="sep"></span>'
       +tool('pen','pen','Pen')+tool('marker','marker','Highlighter')+tool('eraser','eraser','Eraser')
-      +`<button class="tool ${WB.tool==='shape'?'on':''}" onclick="setTool('shape')" title="Shapes" aria-label="Shapes">${icon(WB.shape)}</button>`
+      +`<button class="tool ${WB.tool==='shape'?'on':''}" id="wbShapeBtn" onclick="wbShapeBtn()" title="Shapes" aria-label="Shapes">${icon(WB.shape)}</button>`
       +tool('text','text','Text')+tool('sticky','sticky','Sticky note')+tool('laser','laser','Laser pointer');
-    if(WB.tool==='shape') h+='<span class="sep"></span>'+['rect','ellipse','line','arrow'].map(k=>`<button class="tool ${WB.shape===k?'on':''}" aria-label="${k}" onclick="WB.shape='${k}';renderWbBar()">${icon(k)}</button>`).join('');
+    if(WB.tool==='eraser'){
+      h+='<span class="sep"></span>'+[['object','Object','Erase whole objects'],['area','Area','Erase only where you rub']].map(([k,l,t])=>`<button class="tool present ${WB.eraseMode===k?'on':''}" title="${t}" aria-label="${t}" onclick="WB.eraseMode='${k}';renderWbBar();wbKick()">${l}</button>`).join('');
+      if(WB.eraseMode==='area') h+='<span class="sep"></span>'+ERASE_R.map((r,i)=>`<button class="tool ${WB.eSize===i?'on':''}" aria-label="Eraser size ${i+1}" onclick="WB.eSize=${i};renderWbBar()"><span class="sizeDot" style="width:${5+i*5}px;height:${5+i*5}px;background:none;border:1.5px solid currentColor"></span></button>`).join('');
+    }
     const colors = WB.tool==='sticky' ? STICKY_COLORS : COLORS;
     const cur = WB.tool==='sticky' ? WB.sticky : WB.color;
     if(['pen','marker','shape','text','sticky'].includes(WB.tool))
       h+='<span class="sep"></span>'+colors.map(c=>`<button class="swatch ${c===cur?'on':''}" style="background:${c}" aria-label="Color" onclick="setColor('${c}')"></button>`).join('');
     if(['pen','marker','shape'].includes(WB.tool))
       h+='<span class="sep"></span>'+SIZES.map((s,i)=>`<button class="tool ${WB.size===i?'on':''}" aria-label="Size ${i+1}" onclick="WB.size=${i};renderWbBar()"><span class="sizeDot" style="width:${4+i*4}px;height:${4+i*4}px"></span></button>`).join('');
-    h+='<span class="grow"></span>'
+    h+='<span class="sep"></span>'
       +`<button class="tool" onclick="wbUndo()" title="Undo" aria-label="Undo" ${WB.undo.length?'':'disabled'}>${icon('undo')}</button>`
-      +`<button class="tool" onclick="wbRedo()" title="Redo" aria-label="Redo" ${WB.redo.length?'':'disabled'}>${icon('redo')}</button>`
-      +'<span class="sep"></span>'+pinBtn+presBtn;
+      +`<button class="tool" onclick="wbRedo()" title="Redo" aria-label="Redo" ${WB.redo.length?'':'disabled'}>${icon('redo')}</button>`;
+    right+=presBtn;
   }
-  if(ro) h+='<span class="grow"></span>'+pinBtn;
-  h+=(full?'':`<button class="tool" onclick="wbSetFull(true)" title="Full screen" aria-label="Full screen">${icon('expand')}</button>`)
-    +`<button class="tool ${WB.menu?'on':''}" onclick="WB.menu=!WB.menu;renderWbBar()" title="More" aria-label="More">${icon('more')}</button>`;
-  bar.innerHTML=h+'<div id="wbMenu"></div><div id="wbPinMenu"></div>';
-  wbRenderMenu(); wbRenderPinMenu();
+  right+=(full?'':`<button class="tool" onclick="wbSetFull(true)" title="Full screen" aria-label="Full screen">${icon('expand')}</button>`)
+    +`<button class="tool ${WB.menu?'on':''}" onclick="WB.menu=!WB.menu;WB.pinMenu=false;WB.shapeMenu=false;renderWbBar()" title="More" aria-label="More">${icon('more')}</button>`;
+  const sl=bar.scrollLeft;
+  bar.innerHTML=h+`<span class="wbRight">${right}</span>`;
+  bar.scrollLeft=sl;
+  wbRenderMenu(); wbRenderPinMenu(); wbRenderShapeMenu();
   const b=$('board');
   if(b){ b.classList.toggle('locked', locked); b.classList.toggle('presenting', !!mine); }
 }
@@ -1596,10 +1610,24 @@ function wbRenderMenu(){
     ${ro?'':`<button class="mi" onclick="WB.menu=false;renderWbBar();clearBoard()">${icon('trash')}Clear Board</button>`}
   </div>`;
 }
-document.addEventListener('pointerdown', e=>{ if((WB.menu || WB.pinMenu) && !e.target.closest('#wbBar')){ WB.menu=false; WB.pinMenu=false; renderWbBar(); } });
+document.addEventListener('pointerdown', e=>{ if((WB.menu || WB.pinMenu || WB.shapeMenu) && !e.target.closest('#wbBar,.wbMenus')){ WB.menu=false; WB.pinMenu=false; WB.shapeMenu=false; renderWbBar(); } });
+/* The shape button opens a small menu of shapes just below it. */
+function wbShapeBtn(){
+  const open=!(WB.tool==='shape' && WB.shapeMenu);
+  if(WB.tool!=='shape') setTool('shape');
+  WB.shapeMenu=open; WB.menu=false; WB.pinMenu=false; renderWbBar();
+}
+function wbRenderShapeMenu(){
+  const m=$('wbShapeMenu'); if(!m) return;
+  const btn=$('wbShapeBtn');
+  if(!WB.shapeMenu || !btn || WB.tool!=='shape'){ m.innerHTML=''; return; }
+  const wrap=$('wbWrap').getBoundingClientRect(), r=btn.getBoundingClientRect();
+  m.innerHTML=`<div class="menuPop shapePop" style="left:${Math.max(0, r.left-wrap.left-6)}px;right:auto">${['rect','ellipse','line','arrow'].map(k=>
+    `<button class="tool ${WB.shape===k?'on':''}" aria-label="${k}" onclick="WB.shape='${k}';WB.shapeMenu=false;renderWbBar()">${icon(k)}</button>`).join('')}</div>`;
+}
 function setTool(k){
   if(WB.textEdit) wbCommitText();
-  WB.tool=k; WB.menu=false;
+  WB.tool=k; WB.menu=false; if(k!=='shape') WB.shapeMenu=false;
   if(k!=='select') wbSelect(null);
   const b=$('board'); if(b){ b.className=b.className.replace(/\bt-\w+/g,'').trim()+' t-'+k; }
   renderWbBar(); wbKick();
@@ -1767,7 +1795,8 @@ function wbFrame(){
   }
   // the eraser's circle
   if(WB.hover && WB.tool==='eraser' && !readOnly()){
-    ctx.save(); ctx.beginPath(); ctx.arc(WB.hover[0], WB.hover[1], 14/K(), 0, Math.PI*2);
+    const er=(WB.eraseMode==='area' ? ERASE_R[WB.eSize] : 14)/K();
+    ctx.save(); ctx.beginPath(); ctx.arc(WB.hover[0], WB.hover[1], er, 0, Math.PI*2);
     ctx.strokeStyle='#2f6fd6'; ctx.lineWidth=1.5/K(); ctx.setLineDash([3/K(),3/K()]);
     ctx.fillStyle='rgba(47,111,214,.08)'; ctx.fill(); ctx.stroke(); ctx.restore();
   }
@@ -1839,6 +1868,10 @@ function wbDown(e){
     WB.act={kind:'draw', id:uid(), pts:[+x.toFixed(1), +y.toFixed(1), pressureOf(e)], color:WB.color, size:SIZES[WB.size], tool};
     wbKick(); return;
   }
+  if(tool==='eraser' && WB.eraseMode==='area'){
+    WB.act={kind:'aerase', last:[x,y], orig:new Map(), created:new Set(), pendAdd:new Map(), pendDel:{strokes:new Set(), shapes:new Set()}, flushT:0};
+    WB.hover=[x,y]; wbAreaErase(x,y,x,y); wbKick(); return;
+  }
   if(tool==='eraser'){ WB.act={kind:'erase', hit:new Set()}; WB.hover=[x,y]; wbEraseAt(x,y); wbKick(); return; }
   if(tool==='shape'){ WB.act={kind:'shape', id:uid(), x0:x, y0:y, s:null}; return; }
   if(tool==='laser'){ WB.act={kind:'laser'}; INK.myLaser.push([x,y,performance.now()]); wbSendLaser(); wbKick(); return; }
@@ -1889,6 +1922,7 @@ function wbMove(e){
     wbKick(); return;
   }
   if(a.kind==='erase'){ evs.forEach(ev=>{ const w=toWorld(ev.clientX, ev.clientY); WB.hover=w; wbEraseAt(w[0],w[1]); }); wbKick(); return; }
+  if(a.kind==='aerase'){ evs.forEach(ev=>{ const w=toWorld(ev.clientX, ev.clientY); wbAreaErase(a.last[0], a.last[1], w[0], w[1]); a.last=w; WB.hover=w; }); wbKick(); return; }
   if(a.kind==='shape'){
     let x2=x, y2=y;
     if(e.shiftKey){
@@ -1924,6 +1958,7 @@ function wbUp(e){
     }
     wbKick();
   } else if(a.kind==='laser'){ wbSendLaser(true); }
+  else if(a.kind==='aerase'){ wbAreaFlush(a, true); wbKick(); }
   else if(a.kind==='move'){
     if(Math.abs(a.dx)>.5 || Math.abs(a.dy)>.5) wbMoveItem(a.col, a.item, a.dx, a.dy);
     WB.mainDirty=true; wbKick(); wbPlaceSelBar();
@@ -2000,6 +2035,15 @@ function wbApplyHistory(u, back){
       if(u.col==='stickies'){ SUB('stickies').doc(u.id).delete().catch(fail); }
       else if(it) wbRemove(u.col, it, true); else SUB(u.col).doc(u.id).delete().catch(fail);
     }
+  } else if(u.t==='multi'){
+    const put=back?u.del:u.add, drop=back?u.add:u.del, ops=[];
+    drop.forEach(x=>{
+      ops.push(b=>b.delete(SUB(x.col).doc(x.id)));
+      const it=findItem(x.col, x.id);
+      if(it){ INK.fading.push({k:x.col==='strokes'?'s':'h', s:it, t0:performance.now()}); DATA[x.col]=DATA[x.col].filter(y=>y.id!==x.id); }
+    });
+    put.forEach(x=>{ ops.push(b=>b.set(SUB(x.col).doc(x.id), x.doc)); if(!findItem(x.col, x.id)) DATA[x.col].push(Object.assign({id:x.id}, x.doc)); });
+    wbBatch(ops); WB.mainDirty=true;
   } else if(u.t==='upd'){
     const it=findItem(u.col, u.id), v=back?u.before:u.after;
     if(it){ Object.assign(it, v); WB.mainDirty=true; }
@@ -2015,6 +2059,117 @@ function wbEraseAt(x,y){
     const h=hitItem(x,y,r);
     if(!h || WB.act.hit.has(h[1].id)) break;
     WB.act.hit.add(h[1].id); wbRemove(h[0], h[1]);
+  }
+}
+/* ----- the area eraser -----
+   Rubbing removes only the part of a line under the eraser, splitting it into
+   pieces. A shape it touches becomes lines so only the rubbed part goes too.
+   Changes are shown at once and saved in small bundles while you rub. */
+function wbBatch(ops){
+  for(let i=0;i<ops.length;i+=400){ const b=db.batch(); ops.slice(i,i+400).forEach(f=>f(b)); b.commit().catch(fail); }
+}
+function splitPts(p, ax, ay, bx, by, R, closed){
+  const n=p.length; if(n<3) return null;
+  const ex1=Math.min(ax,bx)-R, ey1=Math.min(ay,by)-R, ex2=Math.max(ax,bx)+R, ey2=Math.max(ay,by)+R;
+  let x1=Infinity, y1=Infinity, x2=-Infinity, y2=-Infinity;
+  for(let i=0;i<n;i+=3){ if(p[i]<x1) x1=p[i]; if(p[i]>x2) x2=p[i]; if(p[i+1]<y1) y1=p[i+1]; if(p[i+1]>y2) y2=p[i+1]; }
+  if(x2<ex1 || x1>ex2 || y2<ey1 || y1>ey2) return null;
+  // points are added along any part of the line near the eraser, so the cut lands where it was rubbed
+  const step=Math.max(.4, R/3), q=[];
+  for(let i=0;i<n;i+=3){
+    if(i>0){
+      const px=p[i-3], py=p[i-2], pp=p[i-1], dx=p[i]-px, dy=p[i+1]-py;
+      if(!(Math.max(px,p[i])<ex1 || Math.min(px,p[i])>ex2 || Math.max(py,p[i+1])<ey1 || Math.min(py,p[i+1])>ey2)){
+        const k=Math.floor(Math.hypot(dx,dy)/step);
+        for(let j=1;j<k;j++){ const t=j/k; q.push(px+dx*t, py+dy*t, pp+(p[i+2]-pp)*t); }
+      }
+    }
+    q.push(p[i], p[i+1], p[i+2]);
+  }
+  const keep=[]; let hit=false;
+  for(let i=0;i<q.length;i+=3){ const k=distSeg(q[i],q[i+1],ax,ay,bx,by)>R; keep.push(k); if(!k) hit=true; }
+  if(!hit) return null;
+  const out=[]; let cur=[];
+  keep.forEach((k,j)=>{
+    if(k) cur.push(+q[j*3].toFixed(1), +q[j*3+1].toFixed(1), +(+q[j*3+2]).toFixed(2));
+    else { if(cur.length>=6) out.push(cur); cur=[]; }
+  });
+  if(cur.length>=6) out.push(cur);
+  // an outline that goes all the way round joins up again where it started
+  if(closed && keep[0] && keep[keep.length-1] && out.length>=2) out[0]=out.pop().concat(out[0].slice(3));
+  return out;
+}
+function densePoly(pts, closed){
+  const out=[], step=2, list=closed ? pts.concat([pts[0]]) : pts;
+  for(let i=0;i<list.length;i++){
+    const [x,y]=list[i];
+    if(i>0){
+      const [px,py]=list[i-1], k=Math.max(1, Math.floor(Math.hypot(x-px,y-py)/step));
+      for(let j=1;j<k;j++) out.push(px+(x-px)*j/k, py+(y-py)*j/k, .5);
+    }
+    out.push(x, y, .5);
+  }
+  return out;
+}
+function shapePolys(h){
+  const x=Math.min(h.x1,h.x2), y=Math.min(h.y1,h.y2), w=Math.abs(h.x2-h.x1), hh=Math.abs(h.y2-h.y1);
+  const closed=p=>(p.closed=true, p);
+  if(h.kind==='rect') return [closed(densePoly([[x,y],[x+w,y],[x+w,y+hh],[x,y+hh]], true))];
+  if(h.kind==='ellipse'){ const c=[], N=96; for(let i=0;i<N;i++){ const t=i/N*Math.PI*2; c.push([x+w/2+Math.cos(t)*w/2, y+hh/2+Math.sin(t)*hh/2]); } return [closed(densePoly(c, true))]; }
+  const out=[densePoly([[h.x1,h.y1],[h.x2,h.y2]])];
+  if(h.kind==='arrow'){
+    const a=Math.atan2(h.y2-h.y1, h.x2-h.x1), L=Math.max(12, h.size*4);
+    out.push(densePoly([[h.x2-L*Math.cos(a-.45), h.y2-L*Math.sin(a-.45)],[h.x2,h.y2],[h.x2-L*Math.cos(a+.45), h.y2-L*Math.sin(a+.45)]]));
+  }
+  return out;
+}
+function wbAreaErase(ax, ay, bx, by){
+  const a=WB.act; if(!a) return;
+  const r=ERASE_R[WB.eSize]/K();
+  let changed=false;
+  const drop=(col, it)=>{
+    if(a.pendAdd.has(it.id)) a.pendAdd.delete(it.id); else a.pendDel[col].add(it.id);
+    if(!a.created.has(it.id)){ const {id, _w, _wsrc, ...doc}=it; a.orig.set(it.id, {col, id:it.id, doc}); }
+    DATA[col]=DATA[col].filter(x=>x.id!==it.id);
+  };
+  const add=(base, pts)=>{
+    const id=uid(), doc={v:2, pts, color:base.color, size:base.size, tool:base.tool, by:base.by||ME.uid, at:base.at||Date.now()};
+    a.created.add(id); a.pendAdd.set(id, doc); DATA.strokes.push(Object.assign({id}, doc));
+  };
+  DATA.strokes.slice().forEach(s=>{
+    const pieces=splitPts(ptsOf(s), ax, ay, bx, by, r+s.size*(s.tool==='marker'?1.5:.5));
+    if(!pieces) return;
+    drop('strokes', s); pieces.forEach(pts=>add(s, pts)); changed=true;
+  });
+  DATA.shapes.slice().forEach(h=>{
+    const polys=shapePolys(h), out=[]; let any=false;
+    polys.forEach(pl=>{ const sp=splitPts(pl, ax, ay, bx, by, r+h.size/2, pl.closed); if(sp){ any=true; out.push(...sp); } else out.push(pl); });
+    if(!any) return;
+    drop('shapes', h);
+    out.forEach(pts=>add({color:h.color, size:h.size, tool:'pen', by:h.by, at:h.at}, pts.map((v,i)=>i%3===2?v:+v.toFixed(1))));
+    changed=true;
+  });
+  if(changed){
+    WB.mainDirty=true; wbKick();
+    if(!a.flushT) a.flushT=setTimeout(()=>wbAreaFlush(a), 160);
+  }
+}
+/* Anything not yet saved stays as it is on screen while new copies of the
+   board arrive. */
+function wbAreaOverlay(a, n){
+  DATA[n]=DATA[n].filter(x=>!a.pendDel[n].has(x.id));
+  if(n==='strokes') a.pendAdd.forEach((doc,id)=>{ if(!DATA.strokes.some(x=>x.id===id)) DATA.strokes.push(Object.assign({id}, doc)); });
+}
+function wbAreaFlush(a, final){
+  clearTimeout(a.flushT); a.flushT=0;
+  const ops=[];
+  ['strokes','shapes'].forEach(col=>{ a.pendDel[col].forEach(id=>ops.push(b=>b.delete(SUB(col).doc(id)))); a.pendDel[col].clear(); });
+  a.pendAdd.forEach((doc,id)=>ops.push(b=>b.set(SUB('strokes').doc(id), doc))); a.pendAdd.clear();
+  if(ops.length) wbBatch(ops);
+  if(final){
+    const add=[...a.created].map(id=>findItem('strokes', id)).filter(Boolean).map(it=>{ const {id, _w, _wsrc, ...doc}=it; return {col:'strokes', id, doc}; });
+    const del=[...a.orig.values()];
+    if(add.length || del.length) pushUndo({t:'multi', add, del});
   }
 }
 async function clearBoard(){
