@@ -303,6 +303,12 @@ html.dark .liveTag{color:#1a0d00;}
   box-shadow:inset 0 1px 0 var(--raise-hi),inset 0 -1px 0 var(--raise-lo),0 2px 4px rgba(15,38,71,.08),0 10px 24px rgba(15,38,71,.10);}
 .topicHead .ttx{flex:1 1 auto;min-width:0;font-family:var(--f-display);font-weight:400;font-size:1.95em;line-height:1.15;color:var(--navy);overflow-wrap:break-word;}
 .topicHead .nc{font-size:.8em;font-weight:700;color:var(--tc);white-space:nowrap;}
+.topicHead .ttx[onclick]{cursor:pointer;}
+.topicHead.current{border:3px solid var(--tc);padding:12px 14px 12px 22px;
+  background:linear-gradient(95deg,color-mix(in srgb, var(--tc) 48%, var(--paper)),color-mix(in srgb, var(--tc) 18%, var(--paper)) 60%,color-mix(in srgb, var(--tc) 8%, var(--paper)));
+  box-shadow:inset 8px 0 0 var(--tc),0 0 0 5px color-mix(in srgb, var(--tc) 20%, transparent),0 14px 32px color-mix(in srgb, var(--tc) 30%, transparent);}
+.topicHead.current .ttx{font-weight:700;font-size:2.15em;color:color-mix(in srgb, var(--tc) 25%, var(--navy));}
+@media (max-width:900px){ .topicHead.current .ttx{font-size:1.6em;} .topicHead.current{padding:10px 10px 10px 18px;} }
 .topicHead .tools{display:flex;opacity:0;pointer-events:none;transition:opacity .18s;}
 .topicHead:hover .tools,.topicHead:focus-within .tools{opacity:1;pointer-events:auto;}
 .topicBody{margin-left:1.4em;}
@@ -1278,7 +1284,7 @@ function renderPeople(){
 function onMeetingChange(prev){
   if(prev.status!==MTG.status){ render(); return; }
   if(prev.title!==MTG.title){ const t=$('mtgTitle'); if(t) t.textContent=MTG.title||'Meeting'; }
-  if(prev.currentAgenda!==MTG.currentAgenda || prev.looseOrder!==MTG.looseOrder) renderAgenda();
+  if(prev.currentAgenda!==MTG.currentAgenda || prev.looseOrder!==MTG.looseOrder || prev.currentTopic!==MTG.currentTopic) renderAgenda();
   if(prev.bg!==MTG.bg){ wbApplyBg(); wbRenderMenu(); }
   if(JSON.stringify(prev.boardPins||[])!==JSON.stringify(MTG.boardPins||[])){ wbRenderPins(); wbRenderPinMenu(); }
   if(JSON.stringify(prev.boardPresenter||null)!==JSON.stringify(MTG.boardPresenter||null)) wbOnBoardPresenter(prev);
@@ -1352,7 +1358,10 @@ function agIn(tid){ return agSorted().filter(a=>topicOf(a)===tid); }
 function renderAgenda(){
   const el=$('agList'); if(!el) return;
   const ro=readOnly();
-  const blocks=agBlocks();
+  /* A selected topic is shown on its own, at the top, for everyone. */
+  const focus=curTopic();
+  const blocks=focus ? agBlocks().filter(b=>b.id===focus) : agBlocks();
+  const at=$('pane-agenda') && $('pane-agenda').querySelector('.addTopic'); if(at) at.classList.toggle('hidden', !!focus);
   keyed(el, blocks, b=>b.id, b=>{
     const add=ro?'':`<div class="addAg"><label class="fieldLbl">Agenda item</label>
       <div class="addRow"><input type="text" maxlength="200" aria-label="New agenda item" data-topic="${b.loose?'':b.id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda(this);}"><button class="btn tc sm" onclick="addAgenda(this.previousElementSibling)">${icon('plus')}Add</button></div></div>`;
@@ -1360,7 +1369,7 @@ function renderAgenda(){
     return `<section class="topicSec">
       <div class="topicHead">
         ${ro?'':`<span class="dgrip" aria-label="Drag topic" onpointerdown="dragStart(event,'topic','${b.id}')">${icon('grip')}</span>`}
-        <div class="ttx"></div><span class="nc"></span>
+        <div class="ttx" ${ro?'':`onclick="setCurrentTopic('${b.id}')"`}></div><span class="nc"></span>
         ${ro?'':`<div class="tools"><button class="iconBtn" aria-label="Edit topic" onclick="editTopic('${b.id}')">${icon('pen')}</button><button class="iconBtn" aria-label="Delete topic" onclick="deleteTopic('${b.id}')">${icon('x')}</button></div>`}
       </div>
       <div class="topicBody"><div class="items" data-topic="${b.id}"></div>${add}</div></section>`;
@@ -1368,6 +1377,7 @@ function renderAgenda(){
     const tid=b.loose?'':b.id, list=agIn(tid);
     if(!b.loose){
       blk.querySelector('.ttx').textContent=b.t.text;
+      blk.querySelector('.topicHead').classList.toggle('current', focus===b.id);
       blk.querySelector('.nc').textContent=list.length ? list.length+(list.length===1?' item':' items') : '';
     } else {
       // with no topics yet, the agenda can still be built here; once there are topics, items are added under them
@@ -1501,6 +1511,7 @@ async function deleteTopic(id){
   b.delete(SUB('topics').doc(id));
   agIn(id).forEach(a=>b.update(SUB('agenda').doc(a.id), {topicId:''}));
   b.commit().catch(fail);
+  if(MTG.currentTopic===id) MREF().update({currentTopic:null}).catch(()=>{});
 }
 function addAgenda(inp){
   const text=(inp.value||'').trim(); if(!text) return;
@@ -1510,6 +1521,13 @@ function addAgenda(inp){
   ref.set({text, order:max+1, done:false, topicId:tid, by:ME.uid, at:Date.now()}).catch(fail);
   if(!MTG.currentAgenda) MREF().update({currentAgenda:ref.id}).catch(()=>{});
   inp.value=''; inp.focus();
+}
+const curTopic=()=>(MTG && MTG.currentTopic && DATA.topics.some(t=>t.id===MTG.currentTopic)) ? MTG.currentTopic : null;
+function setCurrentTopic(id){
+  const on=curTopic()!==id;
+  MTG.currentTopic=on ? id : null; renderAgenda();
+  if(on) window.scrollTo({top:0, behavior:RM.matches?'auto':'smooth'});
+  MREF().update({currentTopic: on ? id : null}).catch(fail);
 }
 function setCurrentAgenda(id){ MREF().update({currentAgenda: MTG.currentAgenda===id ? null : id}).catch(fail); }
 async function editAgenda(id){
