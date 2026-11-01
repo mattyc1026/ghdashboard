@@ -3713,6 +3713,7 @@ const tkDigits=v=>String(v||'').replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'');
 const tkIsoOff=off=>{ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+off); return isoOf(d); };
 /* where to point a nudge, inside the practice copy */
 const tkTab=k=>S=>S.d.querySelector(`nav.tabs button[data-tab="${k}"]`);
+const tkSec=k=>S=>S.d.querySelector(`.fieldSecHead[onclick*="'${k}'"]`);
 const tkCard=id=>S=>S.d.querySelector(`#mainArea .woRow[data-wo-id="${id}"]`);
 const tkAct=(id, fn)=>S=>S.d.querySelector(`.actBtn[onclick*="${fn}(${id}"]`);
 const tkSel=sel=>S=>S.d.querySelector(sel);
@@ -3739,7 +3740,7 @@ const TASKS=[
     check:S=>{ const w=S.wo(TJ.tom); return !!w && tkDigits(w.customer.phone)==='6195550123' && /^tom\.b@example\.com$/i.test(String(w.customer.email||'').trim()); },
     steps:[S=>S.opened(TJ.tom), S=>S.called('startHeaderCustEdit', a=>a[0]==TJ.tom)],
     hints:[{t:'Open Tom Becker\'s work order first.', g:tkCard(TJ.tom)},
-      {t:'Tap the customer\'s name at the top of the work order.', g:tkSel('.mhNameBtn')},
+      {t:'Tap the customer\'s name at the top of the work order.', g:tkSel('[onclick*="openNameAction"]')},
       {t:'Choose Edit Customer Info, change the phone and email, then tap Save.'}],
     answer:['Open Tom Becker\'s work order.','Tap his name at the top.','Tap Edit Customer Info.','Change Primary Phone Number to (619) 555-0123 and Email to tom.b@example.com.','Tap Save.']},
   {id:'alt_phone', area:'wo', title:'Add an alternate contact',
@@ -3747,7 +3748,7 @@ const TASKS=[
     check:S=>{ const w=S.wo(TJ.greg); return !!w && tkDigits(w.customer.altPhone)==='6195550177' && /sue/i.test(String(w.customer.altPhoneName||'')+' '+String(w.customer.altPhoneNote||'')); },
     steps:[S=>S.opened(TJ.greg), S=>S.called('startHeaderCustEdit', a=>a[0]==TJ.greg)],
     hints:[{t:'This is part of the customer\'s info on Greg Holt\'s work order.', g:tkCard(TJ.greg)},
-      {t:'Tap his name at the top, then Edit Customer Info.', g:tkSel('.mhNameBtn')},
+      {t:'Tap his name at the top, then Edit Customer Info.', g:tkSel('[onclick*="openNameAction"]')},
       {t:'Fill in Alternate Phone Number and the name for it, then tap Save.'}],
     answer:['Open Greg Holt\'s work order.','Tap his name at the top, then Edit Customer Info.','Enter (619) 555-0177 as the Alternate Phone Number and Sue as the contact name.','Tap Save.']},
   {id:'note_followup', area:'wo', title:'Note with a follow-up',
@@ -3779,17 +3780,17 @@ const TASKS=[
     check:S=>{ const w=S.wo(TJ.kim); return !!w && (w.jobDetails.labor||[]).some(l=>/sink\s+drain/i.test(l.item||'') && /150/.test(String(l.price||''))); },
     steps:[S=>S.opened(TJ.kim), S=>S.called('openJobDetailsEdit', a=>a[0]==TJ.kim)],
     hints:[{t:'Line items are part of the Job Details on Kim Nguyen\'s work order.', g:tkCard(TJ.kim)},
-      {t:'Tap Edit Job Details.', g:tkSel('[onclick*="openJobDetailsEdit"]')},
+      {t:'Open Job Details on her work order, then tap Edit Job Details.', g:S=>S.d.querySelector('[onclick*="openJobDetailsEdit"]')||tkSec('job')(S)},
       {t:'Under Labor Line Items, add the item with its price, then Save.'}],
-    answer:['Open Kim Nguyen\'s work order.','Tap Edit Job Details.','Under Labor Line Items, tap + Add Item.','Type Replace sink drain and $150.','Tap Save.']},
+    answer:['Open Kim Nguyen\'s work order.','Tap Job Details, then Edit Job Details.','Under Labor Line Items, tap + Add Item.','Type Replace sink drain and $150.','Tap Save.']},
   {id:'bulk_exclusions', area:'wo', title:'Add several items at once',
     text:'Add these exclusions to Greg Holt\'s job in one go: permits, haul away, paint touch-ups.',
     check:S=>{ const w=S.wo(TJ.greg); if(!w) return false; const ex=(w.jobDetails.exclusions||[]).map(x=>String(x).toLowerCase()); return ['permits','haul away','paint touch-ups'].every(k=>ex.some(x=>x.replace(/\s+/g,' ').trim()===k)); },
     steps:[S=>S.opened(TJ.greg), S=>S.called('openJobDetailsEdit', a=>a[0]==TJ.greg), S=>S.called('addJDBulk', a=>a[1]==='exclusions')],
     hints:[{t:'Exclusions are in the Job Details on Greg Holt\'s work order.', g:tkCard(TJ.greg)},
-      {t:'In Edit Job Details, the Exclusions list takes several items at once.'},
+      {t:'Open Job Details and tap Edit Job Details. The Exclusions list takes several items at once.', g:S=>S.d.querySelector('[onclick*="openJobDetailsEdit"]')||tkSec('job')(S)},
       {t:'Type them in the Exclusions field separated by commas, tap Submit, then Save.'}],
-    answer:['Open Greg Holt\'s work order.','Tap Edit Job Details.','In Exclusions, type permits, haul away, paint touch-ups.','Tap Submit.','Tap Save.']},
+    answer:['Open Greg Holt\'s work order.','Tap Job Details, then Edit Job Details.','In Exclusions, type permits, haul away, paint touch-ups.','Tap Submit.','Tap Save.']},
   {id:'upload_doc', area:'wo', title:'Upload a photo',
     text:'Upload any photo to Jen Walker\'s job documents.',
     check:S=>{ const w=S.wo(TJ.jen); return !!w && (w.docs||[]).length>0; },
@@ -3798,23 +3799,15 @@ const TASKS=[
       {t:'Photos and files go under Docs at the top of the work order.', g:tkSel('.headerTab[onclick*="toggleDocsView"]')},
       {t:'In Docs, choose a photo to upload.'}],
     answer:['Open Jen Walker\'s work order.','Tap Docs at the top.','Tap the upload button and pick any photo.']},
-  {id:'field_view', area:'wo', title:'Switch to Field view',
-    text:'Open Rob Silva\'s work order in Field view.',
-    check:S=>S.state('OPEN_WO_ID')==TJ.rob && !!S.d.querySelector('#woOverlay .fieldNav'),
-    steps:[S=>S.opened(TJ.rob)],
-    hints:[{t:'Open Rob Silva\'s work order.', g:tkCard(TJ.rob)},
-      {t:'The view buttons are at the top of the work order.'},
-      {t:'Tap Field at the top of the work order.', g:tkSel('.headerTab[onclick*="setFieldView"]')}],
-    answer:['Open Rob Silva\'s work order.','Tap Field at the top.']},
 
   {id:'schd_presite', area:'presite', title:'Schedule a walkthrough', job:TJ.lisa, moves:true,
     text:'Schedule Lisa Moreno\'s pre-site walkthrough for two days from today, 10:00 to 11:00 AM, then add a SCHD PRESITE note so the job moves to Pre-Site Scheduled.',
     check:S=>{ const w=S.wo(TJ.lisa); return !!w && w.presiteScheduled && (w.scheduleDates||[]).some(d=>d.type==='presite' && d.startDate===tkIsoOff(2)); },
     steps:[S=>S.opened(TJ.lisa), S=>S.called('openScheduleWidget'), S=>{ const w=S.wo(TJ.lisa); return !!w && (w.scheduleDates||[]).some(d=>d.type==='presite'); }],
     hints:[{t:'Lisa Moreno is on the Pre-Site Inspections tab.', g:tkTab('presite')},
-      {t:'On her work order, use + Add next to Schedule Date(s).', g:tkSel('[onclick*="openScheduleWidget"]')},
-      {t:'Pick Pre-Site Inspection, two days from today, 10:00 AM to 11:00 AM, tap Add This Date and Add to Calendar. Then add a SCHD PRESITE note.'}],
-    answer:['Open Lisa Moreno\'s work order.','Tap + Add next to Schedule Date(s).','Choose Pre-Site Inspection, set Start Date to two days from today, Start Time to 10:00 AM and End Time to 11:00 AM.','Tap Add This Date, then Add to Calendar.','Tap Add Note, set Note Type to SCHD PRESITE, type a short note and tap Add Note.']},
+      {t:'On her work order, open Schedule Date(s) and tap + Add Date.', g:S=>S.d.querySelector('[onclick*="openScheduleWidget"]')||tkSec('sched')(S)},
+      {t:'Pick Pre-Site, two days from today, 10:00 AM to 11:00 AM, tap Add This Date, then Save. Then add a SCHD PRESITE note.'}],
+    answer:['Open Lisa Moreno\'s work order.','Tap Schedule Date(s), then + Add Date.','Choose Pre-Site, set Start Date to two days from today, Start Time to 10:00 AM and End Time to 11:00 AM.','Tap Add This Date, then Save.','Tap Add Note, set Note Type to SCHD PRESITE, type a short note and tap Add Note.']},
   {id:'presite_checkout', area:'presite', title:'Check in to a walkthrough', job:TJ.tom, moves:true,
     text:'Tom Becker\'s walkthrough is today. Check in, check out, and mark the inspection complete.',
     check:S=>{ const w=S.wo(TJ.tom); if(!w || !w.presiteComplete) return false; const f=S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in && s.out); },
@@ -3870,17 +3863,17 @@ const TASKS=[
     check:S=>{ const w=S.wo(TJ.kim); return !!w && !!w.jobScheduled && (w.scheduleDates||[]).some(d=>d.type==='full'); },
     steps:[S=>S.opened(TJ.kim), S=>S.called('openScheduleWidget'), S=>{ const w=S.wo(TJ.kim); return !!w && (w.scheduleDates||[]).some(d=>d.type==='full'); }],
     hints:[{t:'Kim Nguyen is on the Scheduling tab under Schedule Job.', g:tkTab('inprogress')},
-      {t:'On her work order, use + Add next to Schedule Date(s).', g:tkSel('[onclick*="openScheduleWidget"]')},
-      {t:'Pick Whole Job, a week from today, a start and end time, tap Add This Date and Add to Calendar. Then add a SCHD note.'}],
-    answer:['Open Kim Nguyen\'s work order.','Tap + Add next to Schedule Date(s).','Choose Whole Job, set Start Date to a week from today and fill in Start Time and End Time.','Tap Add This Date, then Add to Calendar.','Tap Add Note, set Note Type to SCHD, type a short note and tap Add Note.']},
+      {t:'On her work order, open Schedule Date(s) and tap + Add Date.', g:S=>S.d.querySelector('[onclick*="openScheduleWidget"]')||tkSec('sched')(S)},
+      {t:'Pick Whole Job, a week from today, a start and end time, tap Add This Date, then Save. Then add a SCHD note.'}],
+    answer:['Open Kim Nguyen\'s work order.','Tap Schedule Date(s), then + Add Date.','Choose Whole Job, set Start Date to a week from today and fill in Start Time and End Time.','Tap Add This Date, then Save.','Tap Add Note, set Note Type to SCHD, type a short note and tap Add Note.']},
   {id:'reschedule', area:'sched', title:'Reschedule a job',
     text:'Rob Silva needs his job to start one day later. Move his scheduled dates back one day and add a RESCHD note.',
     check:S=>{ const w=S.wo(TJ.rob); return !!w && (w.scheduleDates||[]).some(d=>d.type==='full' && d.startDate===tkIsoOff(4)) && (w.notes||[]).some(n=>n.type==='RESCHD'); },
     steps:[S=>S.opened(TJ.rob), S=>S.called('openScheduleEdit'), S=>{ const w=S.wo(TJ.rob); return !!w && (w.scheduleDates||[]).some(d=>d.startDate===tkIsoOff(4)); }],
     hints:[{t:'Rob Silva is on the Scheduling tab under Scheduled.', g:tkTab('inprogress')},
-      {t:'Tap his scheduled date on the work order to edit it.', g:tkSel('[onclick*="openScheduleEdit"]')},
+      {t:'Open Schedule Date(s) on his work order and tap Edit next to his date.', g:S=>S.d.querySelector('[onclick*="openScheduleEdit"]')||tkSec('sched')(S)},
       {t:'Move the start and end dates one day later, tap Save Changes, then add a RESCHD note.'}],
-    answer:['Open Rob Silva\'s work order.','Tap his Whole Job date under Schedule Date(s).','Move Start Date and End Date one day later.','Tap Save Changes, then choose whether to send the updated appointment email.','Tap Add Note, set Note Type to RESCHD, type a short note and tap Add Note.']},
+    answer:['Open Rob Silva\'s work order.','Tap Schedule Date(s), then Edit next to his Whole Job date.','Move Start Date and End Date one day later.','Tap Save Changes, then choose whether to send the updated appointment email.','Tap Add Note, set Note Type to RESCHD, type a short note and tap Add Note.']},
   {id:'checkin_job', area:'sched', title:'Check in and out',
     text:'Check in to Jen Walker\'s job for today, then check out.',
     check:S=>{ const w=S.wo(TJ.jen), f=w && S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in && s.out); },
@@ -3956,6 +3949,8 @@ const myTasks=()=>DATA.tasks.find(t=>t.id===(ME && ME.uid));
 function tkDismissKey(){ return 'gh_mtg_tasks_closed_'+MTG_ID; }
 function tkDismissed(d){ try{ return sessionStorage.getItem(tkDismissKey())===String(d.at); }catch(e){ return false; } }
 function taskOnData(){
+  // tasks that no longer exist are dropped from anything already assigned
+  DATA.tasks.forEach(x=>{ x.tasks=(x.tasks||[]).filter(id=>taskById(id)); });
   const d=myTasks();
   TK.doc=d||null;
   if(!d || d.status==='cancelled'){ tkHidePop(); if(TK.active) tkExit(); renderTaskProgress(); return; }
