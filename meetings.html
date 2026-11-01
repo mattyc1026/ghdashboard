@@ -273,6 +273,9 @@ html.dark .liveTag{color:#1a0d00;}
 .aiAll .sectionLabel .count{--tc:var(--c-actions);}
 .aiAll .sectionLabel .switch{margin-left:auto;font-size:.82em;--tc:var(--c-actions);}
 .mtgRow .dl{flex:0 0 auto;}
+.aiEdit input,.aiEdit select{width:100%;margin-bottom:12px;}
+.aeRow{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;}
+@media (max-width:420px){ .aeRow{grid-template-columns:minmax(0,1fr);} }
 @keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ---- topics, agenda + notes ----
@@ -369,6 +372,11 @@ html.dark .liveTag{color:#1a0d00;}
 .note.editing{grid-template-columns:1fr;}
 .note textarea{background:var(--paper);}
 .compose{padding-top:10px;}
+@media (max-width:600px){
+  .compose .addRow,.replyBox .addRow{flex-wrap:wrap;}
+  .compose .addRow textarea,.replyBox .addRow textarea{flex:1 1 100%;width:100%;}
+  .compose .addRow .btn,.replyBox .addRow .btn{margin-left:auto;}
+}
 .compose textarea,.replyBox textarea{min-height:42px;height:42px;resize:none;background:color-mix(in srgb, var(--paper) 75%, var(--well));box-shadow:inset 0 1px 3px rgba(15,38,71,.08);overflow:hidden;}
 .addAg{margin:2px 0 0 2.4em;max-width:760px;}
 @media (max-width:900px){ .addAg{margin-left:1.1em;} }
@@ -581,6 +589,7 @@ html.dark .tkHint{color:#ffd76a;}
 .tkDoneIc{width:2.4em;height:2.4em;border-radius:50%;background:var(--c-actions);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
 .tkDoneIc .ic{width:1.3em;height:1.3em;}
 @media (max-width:900px){ .tkPanel{right:8px;left:8px;width:auto;bottom:max(8px,env(safe-area-inset-bottom));max-height:55vh;} }
+body.tkBottom.ppFull .ppStage{padding-bottom:var(--tkH,0px);}
 body.tkSide .ppStage{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto minmax(0,1fr);column-gap:14px;}
 body.tkSide .ppStage > .ppBar{grid-column:1 / -1;}
 body.tkSide .ppStage > #ppWrap{grid-column:1;grid-row:2;}
@@ -1068,7 +1077,7 @@ function startPresence(){
   presenceTimer=setInterval(beat, PRESENCE_MS);
 }
 function stopPresence(){ clearInterval(presenceTimer); presenceTimer=null; }
-window.addEventListener('pagehide', ()=>{ if(MTG_ID && ME && db){ try{ SUB('presence').doc(ME.uid).delete(); }catch(e){} } });
+window.addEventListener('pagehide', ()=>{ if(MTG_ID && ME && db){ try{ SUB('presence').doc(ME.uid).delete(); if(MTG && MTG.boardPresenter && MTG.boardPresenter.uid===ME.uid) MREF().update({boardPresenter:null}); }catch(e){} } });
 document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible' && MTG_ID) startPresence(); });
 function livePeople(){
   const now=Date.now();
@@ -1078,6 +1087,7 @@ function livePeople(){
    through one write at a time, always the newest, so a slow connection
    never builds up a backlog. */
 const LIVE={busy:false, pending:null};
+const LIVE_GAP_MS=230;
 function liveSend(fields){
   if(!MTG_ID || !ME) return;
   LIVE.pending=Object.assign(LIVE.pending||{}, fields);
@@ -1087,7 +1097,8 @@ function liveFlush(){
   if(!LIVE.pending || !MTG_ID) return;
   const f=LIVE.pending; LIVE.pending=null; LIVE.busy=true;
   f.at=Date.now(); f.name=ME.name;
-  SUB('presence').doc(ME.uid).set(f, {merge:true}).catch(()=>{}).then(()=>setTimeout(()=>{ LIVE.busy=false; if(LIVE.pending) liveFlush(); }, 50));
+  // live updates go out at most about four times a second; each is the newest
+  SUB('presence').doc(ME.uid).set(f, {merge:true}).catch(()=>{}).then(()=>setTimeout(()=>{ LIVE.busy=false; if(LIVE.pending) liveFlush(); }, LIVE_GAP_MS));
 }
 
 /* ---------- meeting screen ---------- */
@@ -1124,6 +1135,7 @@ function renderTabs(){
 }
 function showTab(k, initial){
   const changed=k!==TAB;
+  if(changed && TAB==='board' && MTG && MTG.boardPresenter && MTG.boardPresenter.uid===ME.uid) stopBoardPresenting();
   TAB=k;
   try{ sessionStorage.setItem('gh_mtg_tab_'+MTG_ID, k); }catch(e){}
   document.body.dataset.tab=k;
@@ -1294,7 +1306,7 @@ function noteMake(n, ro, isReply){
     <div class="nActs"><button class="likeBtn" onclick="toggleLike('${n.id}')"><span class="li"></span><span class="lc"></span></button>
       ${(ro||isReply)?'':`<button class="replyBtn" onclick="openReply('${n.id}')">Reply</button>`}
       <span class="sp"></span>
-      ${(!ro&&mine)?`<span class="own"><button class="iconBtn" aria-label="Edit note" onclick="editNote('${n.id}')">${icon('pen')}</button><button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button></span>`:''}
+      ${(!ro&&(mine||ME.isAdmin))?`<span class="own">${mine?`<button class="iconBtn" aria-label="Edit note" onclick="editNote('${n.id}')">${icon('pen')}</button>`:''}<button class="iconBtn" aria-label="Delete note" onclick="deleteNote('${n.id}')">${icon('x')}</button></span>`:''}
     </div></div>${isReply?'':`<div class="replies"></div><div class="replyBox" data-for="${n.id}"></div>`}</div>`;
 }
 function notePatch(el, n){
@@ -1555,7 +1567,7 @@ function aiDueInfo(a){
 function aiMake(a, o){
   return `<div class="ai">
     <button class="aiCheck" aria-label="Done" onclick="aiTap(this, '${o.mid}', '${a.id}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7.2 12.4l3.3 3.3 6.4-6.6"/></svg></button>
-    <div class="aiBody"><div class="txt ${o.edit?'edit':''}" ${o.edit?`onclick="editAction('${a.id}')"`:''}></div><div class="sub"></div></div>
+    <div class="aiBody" ${o.edit?`onclick="editAction('${a.id}')" style="cursor:pointer"`:''}><div class="txt ${o.edit?'edit':''}"></div><div class="sub"></div></div>
     ${o.edit?`<button class="iconBtn del" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`:''}
   </div>`;
 }
@@ -1613,10 +1625,26 @@ function aiTap(btn, mid, id){
   const ref=ROOT().doc(mid).collection('actions').doc(id);
   setTimeout(()=>{ el._tapping=false; ref.update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail); }, RM.matches?0:520);
 }
-async function editAction(id){
-  const a=DATA.actions.find(x=>x.id===id); if(!a) return;
-  const t=await askText('Edit Action Item', a.text, 'Save');
-  if(t) SUB('actions').doc(id).update({text:t}).catch(fail);
+function editAction(id){
+  const a=DATA.actions.find(x=>x.id===id); if(!a || readOnly()) return;
+  const names=userNames(); if(a.assignee && !names.includes(a.assignee)) names.push(a.assignee);
+  const opts=['<option value="">Unassigned</option>'].concat(names.map(n=>`<option value="${esc(n)}" ${n===a.assignee?'selected':''}>${esc(n)}</option>`)).join('');
+  $('modalRoot').innerHTML=`<div class="overlay"><div class="modal aiEdit" style="--tc:var(--c-actions)"><h2>Edit Action Item</h2>
+    <label class="fieldLbl" for="aeText">Action item</label><input type="text" id="aeText" maxlength="300" value="${esc(a.text||'')}">
+    <div class="aeRow"><div><label class="fieldLbl" for="aeWho">Assigned to</label><select id="aeWho">${opts}</select></div>
+      <div><label class="fieldLbl" for="aeDue">Due</label><input type="date" id="aeDue" value="${esc(a.due||'')}"></div></div>
+    <div class="acts"><button class="btn secondary" id="mNo">Cancel</button><button class="btn tc" id="mYes">Save</button></div></div></div>`;
+  const done=save=>{
+    if(save){
+      const text=($('aeText').value||'').trim();
+      if(!text){ $('aeText').focus(); return; }
+      SUB('actions').doc(id).update({text, assignee:$('aeWho').value||'', due:$('aeDue').value||''}).catch(fail);
+    }
+    closeModalAnimated();
+  };
+  $('mNo').onclick=()=>done(false); $('mYes').onclick=()=>done(true);
+  $('aeText').onkeydown=e=>{ if(e.key==='Enter'){ e.preventDefault(); done(true); } if(e.key==='Escape') done(false); };
+  setTimeout(()=>$('aeText').focus(), 30);
 }
 async function deleteAction(id){
   if(await askYesNo('Delete this action item?', '', 'Delete', true)) SUB('actions').doc(id).delete().catch(fail);
@@ -3145,7 +3173,8 @@ function ppFit(){
   const w=$('ppWrap'); if(!w) return;
   if(document.body.classList.contains('ppFull') || TAB!=='practice'){ w.style.height=''; return; }
   const top=w.getBoundingClientRect().top+window.scrollY;
-  w.style.height=Math.max(360, window.innerHeight-top-24)+'px';
+  const under=document.body.classList.contains('tkBottom') ? (parseFloat(getComputedStyle(document.body).getPropertyValue('--tkH'))||0) : 0;
+  w.style.height=Math.max(260, window.innerHeight-top-24-under)+'px';
 }
 window.addEventListener('resize', ()=>{ if(MTG && TAB==='practice'){ ppFit(); mirFit(); } });
 function ppEnsure(){
@@ -3281,7 +3310,7 @@ function mirSnap(snap){
 function mirQueue(ops){
   if(!MIR.epoch) return;
   MIR.buf.push(...ops);
-  if(!MIR.timer) MIR.timer=setTimeout(mirFlush, 110);
+  if(!MIR.timer) MIR.timer=setTimeout(mirFlush, 280);
 }
 function mirFlush(){
   MIR.timer=0;
@@ -3987,7 +4016,7 @@ function tkStart(){
   tkEnter(true);
 }
 function tkEnter(fresh){
-  TK.active=true; TK.log=[]; TK.seen={}; TK.level={}; TK.hint=null; TK.msg=''; TK.answer=!!(TK.doc && (TK.doc.answers||[]).length); TK.lastHead=Date.now(); TK.collapsed=!tkWideMQ.matches;
+  TK.active=true; TK.log=[]; TK.seen={}; TK.level={}; TK.hint=null; TK.msg=''; TK.answer=!!(TK.doc && (TK.doc.answers||[]).length); TK.lastHead=Date.now(); TK.collapsed=false;
   if(TAB!=='practice') showTab('practice');
   ppSetPrivate(true, fresh);
   clearInterval(TK.timer); TK.timer=setInterval(tkTick, 1000);
@@ -4061,6 +4090,7 @@ function tkTick(){
   tkHook();
   const S=tkRun(); if(!S) return;
   if(d.status!=='active') return;
+  if(TAB!=='practice' || document.visibilityState!=='visible'){ TK.lastHead=Date.now(); return; }
   // a nudge when no headway has been made for a while
   if(Date.now()-TK.lastHead>TK_STALL_MS){
     const id=d.tasks.find(x=>!(d.done||{})[x]), t=taskById(id);
@@ -4119,8 +4149,14 @@ function renderTaskPanel(celebrate){
   /* On a wide screen the card sits beside the practice portal instead of over it. */
   const side=show && tkWideMQ.matches && !!$('ppStage');
   if(document.body.classList.contains('tkSide')!==side){ document.body.classList.toggle('tkSide', side); requestAnimationFrame(()=>{ ppFit(); mirFit(); }); }
+  const bottom=show && !side;
+  if(document.body.classList.contains('tkBottom')!==bottom){ document.body.classList.toggle('tkBottom', bottom); if(!bottom) document.body.style.removeProperty('--tkH'); requestAnimationFrame(()=>{ ppFit(); mirFit(); }); }
   if(!show){ if(p) p.remove(); return; }
-  if(!p){ p=document.createElement('div'); p.id='tkPanel'; p.className='tkPanel'; }
+  if(!p){
+    p=document.createElement('div'); p.id='tkPanel'; p.className='tkPanel';
+    // the practice portal ends where the card begins, so nothing is covered
+    new ResizeObserver(()=>{ if(document.body.classList.contains('tkBottom') && p.isConnected){ document.body.style.setProperty('--tkH', (p.offsetHeight+16)+'px'); ppFit(); mirFit(); } }).observe(p);
+  }
   const parent=side ? $('ppStage') : document.body;
   if(p.parentNode!==parent) parent.appendChild(p);
   p.classList.toggle('collapsed', TK.collapsed);
