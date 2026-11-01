@@ -36,7 +36,7 @@
   --cream:#e9edf3; --paper:#ffffff; --ink:#141f33; --muted:#5f6e87;
   --line:#dbe2ec; --line-soft:#eaeef4; --grid-line:rgba(15,38,71,.045);
   --red:#c0392b; --green:#1f8a55; --blue:#2f6fd6;
-  --c-agenda:#e8791a; --c-board:#2f6fd6; --c-practice:#c0392b;
+  --c-agenda:#e8791a; --c-board:#2f6fd6; --c-actions:#1f8a55; --c-practice:#c0392b;
   --on-c:#ffffff;
   --board:#fbfcfe; --board-mark:rgba(47,111,214,.18);
   /* raised and recessed surfaces */
@@ -57,7 +57,7 @@ html.dark{
   --cream:#0e1522; --paper:#161f30; --ink:#e7edf7; --muted:#94a3bb;
   --line:#2b3a54; --line-soft:#1f2c42; --grid-line:rgba(219,229,245,.04);
   --red:#ff8f7d; --green:#4fd48a; --blue:#7aa8ff;
-  --c-agenda:#ff9a45; --c-board:#7aa8ff; --c-practice:#ff8f7d;
+  --c-agenda:#ff9a45; --c-board:#7aa8ff; --c-actions:#4fd48a; --c-practice:#ff8f7d;
   --on-c:#0e1522;
   --board:#121b2b; --board-mark:rgba(122,168,255,.18);
   --raise-hi:rgba(255,255,255,.07); --raise-lo:rgba(0,0,0,.35);
@@ -69,6 +69,7 @@ html.hc{ --line:#0f2647; --muted:#2b3a54; --ink:#000; }
 html.dark.hc{ --line:#dbe5f5; --muted:#c9d4e6; --ink:#fff; }
 body[data-tab=agenda]{--tc:var(--c-agenda);}
 body[data-tab=board]{--tc:var(--c-board);}
+body[data-tab=actions]{--tc:var(--c-actions);}
 body[data-tab=practice]{--tc:var(--c-practice);}
 
 *{box-sizing:border-box;}
@@ -91,7 +92,7 @@ header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;gap:
   padding:10px 18px;padding-top:max(10px,env(safe-area-inset-top));
   background:var(--navy);color:#fff;}
 header.top::after{content:"";position:absolute;left:0;right:0;bottom:-4px;height:4px;
-  background:linear-gradient(90deg,var(--c-agenda),var(--c-board) 50%,var(--c-practice));}
+  background:linear-gradient(90deg,var(--c-agenda),var(--c-board) 35%,var(--c-actions) 65%,var(--c-practice));}
 html.dark header.top{background:#0b1220;color:var(--ink);}
 header.top a.back{color:inherit;text-decoration:none;display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:.9em;opacity:.92;
   padding:4px 8px 4px 2px;border-radius:8px;transition:background .15s;}
@@ -193,10 +194,31 @@ html.dark .liveTag{color:#1a0d00;}
 .tabs .liveDot{width:.55em;height:.55em;border-radius:50%;background:var(--c-practice);display:inline-block;animation:breathe 1.6s ease-in-out infinite;}
 .tabs button.on .liveDot{background:var(--on-c);}
 @media (max-width:900px){
-  .tabs{display:grid;grid-template-columns:repeat(3,1fr);overflow:visible;}
-  .tabs button{border-radius:var(--radius-sm);padding:9px 6px;justify-content:center;font-size:.8em;white-space:normal;text-align:center;line-height:1.2;flex-direction:column;gap:3px;}
+  .tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));overflow:visible;gap:6px;}
+  .tabs button{border-radius:var(--radius-sm);padding:8px 6px;justify-content:center;font-size:.76em;white-space:normal;text-align:left;line-height:1.15;gap:6px;min-width:0;}
+  .tabs button .ic{flex:0 0 auto;}
 }
 .pane{animation:paneIn .26s var(--ease-out);}
+/* action items */
+.panelTitle{font-size:1.02em;font-weight:700;color:var(--tc);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
+.aiForm{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr) minmax(0,.9fr) auto;gap:8px;align-items:center;}
+@media (max-width:900px){ .aiForm{grid-template-columns:minmax(0,1fr);} }
+.aiList{display:flex;flex-direction:column;}
+.ai{display:flex;align-items:flex-start;gap:12px;padding:11px 6px;border-bottom:1px solid var(--line-soft);transition:background-color .2s;border-radius:var(--radius-sm);}
+.ai:hover{background:color-mix(in srgb, var(--tc) 5%, transparent);}
+.ai:last-child{border-bottom:0;}
+.ai .txt{overflow-wrap:anywhere;cursor:text;font-weight:600;}
+.ai.done .txt{color:var(--muted);text-decoration:line-through;font-weight:500;}
+.ai .sub{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:5px;font-size:.78em;color:var(--muted);align-items:center;}
+.ai .sub:empty{display:none;}
+.ai .who{font-weight:700;color:var(--pc);background:color-mix(in srgb, var(--pc) 12%, var(--paper));border-radius:999px;padding:1px 9px;}
+.ai .due{border-radius:999px;padding:1px 9px;background:var(--line-soft);}
+.ai .due.soon{background:color-mix(in srgb, var(--orange) 16%, var(--paper));color:var(--orange);font-weight:700;}
+.ai .due.late{background:color-mix(in srgb, var(--red) 14%, var(--paper));color:var(--red);font-weight:700;}
+.ai.done .due{background:var(--line-soft);color:var(--muted);font-weight:400;}
+.ai .iconBtn{opacity:.55;transition:opacity .15s;}
+.ai:hover .iconBtn{opacity:1;}
+.mtgRow .dl{flex:0 0 auto;}
 @keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
 /* ---- topics, agenda + notes ----
@@ -234,8 +256,12 @@ html.dark .liveTag{color:#1a0d00;}
   background:linear-gradient(90deg,var(--ib),var(--paper) 72%);border:1px solid color-mix(in srgb, var(--tc) 22%, var(--line));
   box-shadow:inset 0 1px 0 var(--raise-hi),inset 0 -1px 0 var(--raise-lo),var(--raise-sh);
   transition:box-shadow .25s var(--ease),border-color .25s var(--ease),transform .2s var(--ease);}
-.agItem.current{--ib:color-mix(in srgb, var(--tc) 30%, var(--paper));border-color:var(--tc);
-  box-shadow:inset 0 1px 0 var(--raise-hi),inset 0 -1px 0 var(--raise-lo),var(--raise-sh),0 0 0 3px color-mix(in srgb, var(--tc) 20%, transparent);}
+.agItem.current{--ib:color-mix(in srgb, var(--tc) 42%, var(--paper));border:2.5px solid var(--tc);padding:11.5px 12.5px 11.5px 22px;
+  background:linear-gradient(90deg,var(--ib),color-mix(in srgb, var(--tc) 12%, var(--paper)) 78%);
+  box-shadow:inset 7px 0 0 var(--tc),inset 0 1px 0 var(--raise-hi),0 0 0 4px color-mix(in srgb, var(--tc) 22%, transparent),0 10px 26px color-mix(in srgb, var(--tc) 30%, transparent);
+  transform:scale(1.012);}
+.agItem.current .txt{color:color-mix(in srgb, var(--tc) 30%, var(--navy));}
+@media (max-width:900px){ .agItem.current{padding:9.5px 10.5px 9.5px 18px;transform:none;} }
 .agItem .txt{flex:1 1 auto;min-width:0;cursor:pointer;overflow-wrap:break-word;font-size:1.45em;font-weight:700;line-height:1.22;color:var(--navy);letter-spacing:-.005em;}
 .agItem .nc{font-size:.8em;font-weight:700;color:var(--tc);white-space:nowrap;}
 .agItem .tools{display:flex;opacity:0;pointer-events:none;transition:opacity .18s;}
@@ -554,6 +580,8 @@ html.dark .toast{color:var(--paper);}
   <symbol id="i-text" viewBox="0 0 24 24"><path d="M5 6V4h14v2M12 4v16M9 20h6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-laser" viewBox="0 0 24 24"><circle cx="17" cy="7" r="3" fill="currentColor" opacity=".9"/><path d="M14.5 9.5L4 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity=".55"/></symbol>
   <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="9" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M21 16l-5-5-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
  <symbol id="i-thumb" viewBox="0 0 24 24"><path d="M7 11v9H4v-9h3zm0 0l4-8c1.4 0 2.3 1.1 2 2.4L12.4 9H19a2 2 0 012 2.3l-1.2 7A2 2 0 0117.8 20H7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
   <symbol id="i-thumbf" viewBox="0 0 24 24"><path d="M3.5 10.5h4v10h-4zM8.5 20.5V10.6l3.6-7.4c1.6 0 2.7 1.3 2.3 2.8l-.9 3.5H19a2.2 2.2 0 012.2 2.6l-1.3 7.2a2.2 2.2 0 01-2.2 1.8z" fill="currentColor"/></symbol>
@@ -602,8 +630,8 @@ html.dark .toast{color:var(--paper);}
 const PORTAL_URL='../goodandhandyportal/';
 const CFG_KEY='gh_portal_sync_cfg';
 const PORTAL_DB_KEY='gh_portal_db_v1';
-const SUBS=['topics','agenda','notes','likes','strokes','shapes','texts','stickies','presence'];
-const ALL_SUBS=SUBS.concat(['actions','stream']);
+const SUBS=['topics','agenda','notes','likes','actions','strokes','shapes','texts','stickies','presence'];
+const ALL_SUBS=SUBS.concat(['stream']);
 const COLORS=['#0f2647','#e8791a','#c0392b','#1f8a55','#2f6fd6','#7b4bc4'];
 const PEOPLE=['#e8791a','#2f6fd6','#1f8a55','#c0392b','#7b4bc4','#0e8f9a','#b8860b'];
 const STICKY_COLORS=['#fff27a','#ffc9a8','#bdf0cf','#c9dcff','#ead3ff'];
@@ -615,7 +643,7 @@ let db=null, ME=null, USERS={};
 let MEETINGS=[], LIST_UNSUB=null;
 let MTG=null, MTG_ID=null, MTG_UNSUBS=[];
 let DATA={};
-const emptyData=()=>({topics:[], agenda:[], notes:[], likes:[], strokes:[], shapes:[], texts:[], stickies:[], presence:[]});
+const emptyData=()=>({topics:[], agenda:[], notes:[], likes:[], actions:[], strokes:[], shapes:[], texts:[], stickies:[], presence:[]});
 let TAB='agenda';
 let presenceTimer=null;
 
@@ -790,7 +818,7 @@ function showList(){
 function renderList(){
   if(!$('liveList')) return;
   const live=MEETINGS.filter(m=>m.status!=='ended'), past=MEETINGS.filter(m=>m.status==='ended');
-  const make=m=>`<div class="mtgRow" onclick="location.hash='m=${m.id}'"><div class="grow"><div class="name"></div><div class="meta"></div></div><span class="tag"></span></div>`;
+  const make=m=>`<div class="mtgRow" onclick="location.hash='m=${m.id}'"><div class="grow"><div class="name"></div><div class="meta"></div></div><span class="tag"></span>${m.status==='ended'?`<button class="iconBtn dl" title="Download" aria-label="Download summary" onclick="event.stopPropagation();downloadSummary('${m.id}', this)">${icon('download')}</button>`:''}</div>`;
   const patch=(el,m)=>{
     el.classList.toggle('live', m.status!=='ended');
     el.querySelector('.name').textContent=m.title||'Meeting';
@@ -821,7 +849,7 @@ function openMeeting(id){
   MTG_ID=id; MTG=null;
   DATA=emptyData();
   try{ TAB=sessionStorage.getItem('gh_mtg_tab_'+id)||'agenda'; }catch(e){ TAB='agenda'; }
-  if(!['agenda','board','practice'].includes(TAB)) TAB='agenda';
+  if(!['agenda','board','actions','practice'].includes(TAB)) TAB='agenda';
   $('backLink').href='#'; $('backText').textContent='Meetings';
   $('backLink').onclick=e=>{ e.preventDefault(); location.hash=''; };
   $('main').innerHTML='<div class="small" style="padding:20px">Loading…</div>';
@@ -831,6 +859,7 @@ function openMeeting(id){
     MTG=Object.assign({id:s.id}, s.data());
     document.title=(MTG.title||'Meeting')+', Good & Handy';
     if(!prev) render(); else onMeetingChange(prev);
+    noteAttendance();
   }, e=>{ console.error(e); gate('This meeting could not load.', e && (e.code||e.message)); }));
   SUBS.forEach(n=>{
     MTG_UNSUBS.push(SUB(n).onSnapshot(s=>{
@@ -850,6 +879,11 @@ function leaveMeeting(){
   wbTeardown();
   MTG=null; MTG_ID=null;
   document.body.classList.remove('ppFull','ppTab','wbFull','wbTab');
+}
+function noteAttendance(){
+  if(!MTG_ID || !ME || !MTG || MTG.status==='ended') return;
+  if(MTG.attendees && MTG.attendees[ME.uid]===ME.name) return;
+  MREF().set({attendees:{[ME.uid]:ME.name}}, {merge:true}).catch(()=>{});
 }
 function startPresence(){
   stopPresence();
@@ -881,7 +915,7 @@ function liveFlush(){
 }
 
 /* ---------- meeting screen ---------- */
-const TABS=[['agenda','list','Agenda & Notes'],['board','board','Whiteboard'],['practice','portal','Practice Portal']];
+const TABS=[['agenda','list','Agenda & Notes'],['board','board','Whiteboard'],['actions','check','Action Items'],['practice','portal','Practice Portal']];
 function render(){
   if(!MTG) return;
   const ro=readOnly();
@@ -891,17 +925,18 @@ function render(){
       <div class="when">${fmtDate(MTG.createdAt||Date.now())}, ${fmtTime(MTG.createdAt||Date.now())}</div></div>
       <div class="spacer"></div>
       <div class="people" id="people"></div>
-      ${ro?`<button class="btn secondary sm" onclick="setStatus('live')">Reopen</button>`
+      ${ro?`<button class="btn tc sm" onclick="downloadSummary(MTG_ID, this)">${icon('download')}Download</button><button class="btn secondary sm" onclick="setStatus('live')">Reopen</button>`
           :`<button class="btn secondary sm" onclick="endMeeting()">End Meeting</button>`}
       ${(ME.isAdmin || MTG.createdBy===ME.uid)?`<button class="iconBtn" title="Delete meeting" aria-label="Delete meeting" onclick="deleteMeeting()">${icon('trash')}</button>`:''}
     </div>
     <div class="tabs" id="tabs">${TABS.map(([k,ic,l])=>`<button data-k="${k}" style="--c:var(--c-${k})" onclick="showTab('${k}')">${icon(ic)}<span>${l}</span><span class="liveDot hidden"></span></button>`).join('')}</div>
     <section id="pane-agenda" class="pane"></section>
     <section id="pane-board" class="pane"></section>
+    <section id="pane-actions" class="pane"></section>
     <section id="pane-practice" class="pane"></section>`;
   $('mtgTitle').onclick=renameMeeting;
   renderPeople();
-  renderAgendaPane(); renderBoardPane(); renderPracticePane();
+  renderAgendaPane(); renderBoardPane(); renderActionsPane(); renderPracticePane();
   showTab(TAB, true);
 }
 function renderTabs(){
@@ -956,6 +991,7 @@ function onMeetingChange(prev){
 }
 function onDataChange(n){
   if(n==='agenda' || n==='notes' || n==='topics' || n==='likes'){ renderAgenda(); wbRenderPins(); if(WB.pinMenu) wbRenderPinMenu(); }
+  else if(n==='actions') renderActions();
   else if(n==='strokes' || n==='shapes' || n==='texts') wbOnItems(n);
   else if(n==='stickies'){ wbOnItems(); renderStickies(); }
   else if(n==='presence'){ renderPeople(); wbOnPresence(); ppRenderBar(); renderTabs(); ppUpdateMode(); }
@@ -973,7 +1009,7 @@ function setStatus(st){
   MREF().update(upd).catch(fail);
 }
 async function deleteMeeting(){
-  if(!await askYesNo('Delete this meeting?', 'Its agenda, notes and whiteboard are deleted for everyone.', 'Delete', true)) return;
+  if(!await askYesNo('Delete this meeting?', 'Its agenda, notes, whiteboard and action items are deleted for everyone.', 'Delete', true)) return;
   const ref=MREF();
   location.hash='';
   try{
@@ -1306,6 +1342,327 @@ function dragEnd(e){
   renderAgenda();
   b.commit().catch(fail);
 }
+/* ---------- action items ---------- */
+function fmtShortDate(iso){ if(!iso) return ''; const [y,m,d]=iso.split('-').map(Number); return new Date(y,m-1,d).toLocaleDateString([], {month:'short', day:'numeric'}); }
+function isoOf(d){ return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function todayISO(){ return isoOf(new Date()); }
+function userNames(){ return Object.values(USERS||{}).map(u=>u.username).filter(Boolean).sort(); }
+function renderActionsPane(){
+  const ro=readOnly();
+  const opts=['<option value="">Unassigned</option>'].concat(userNames().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`)).join('');
+  $('pane-actions').innerHTML=`<div class="panel">
+    ${ro?'':`<div class="aiForm" style="margin-bottom:16px;">
+      <input type="text" class="aiText" id="aiText" maxlength="300" aria-label="Action item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAction();}">
+      <select id="aiWho" aria-label="Assigned to">${opts}</select>
+      <input type="date" id="aiDue" aria-label="Due date">
+      <button class="btn tc" onclick="addAction()">${icon('plus')}Add</button></div>`}
+    <div class="panelTitle">Open <span class="count" id="aiOpenCount">0</span></div><div class="aiList" id="aiOpen"></div>
+    <div class="panelTitle" style="margin-top:20px;">Done <span class="count" id="aiDoneCount">0</span></div><div class="aiList" id="aiDone"></div>
+  </div>`;
+  renderActions();
+}
+function renderActions(){
+  if(!$('aiOpen')) return;
+  const ro=readOnly(), today=todayISO();
+  const soon=(()=>{ const d=new Date(); d.setDate(d.getDate()+2); return isoOf(d); })();
+  const open=DATA.actions.filter(a=>!a.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0));
+  const done=DATA.actions.filter(a=>a.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
+  const make=a=>`<div class="ai">
+      <input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="toggleAction('${a.id}',this.checked)">
+      <div class="grow"><div class="txt" ${ro?'':`onclick="editAction('${a.id}')"`}></div><div class="sub"></div></div>
+      ${ro?'':`<button class="iconBtn" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`}
+    </div>`;
+  const patch=(el,a)=>{
+    el.classList.toggle('done', !!a.done);
+    const c=el.querySelector('input'); if(c.checked!==!!a.done) c.checked=!!a.done;
+    const t=el.querySelector('.txt'); if(t.textContent!==a.text) t.textContent=a.text;
+    const late=!a.done && a.due && a.due<today, near=!a.done && a.due && !late && a.due<=soon;
+    el.querySelector('.sub').innerHTML=(a.assignee?`<span class="who" style="--pc:${colorFor(a.assignee)}">${esc(a.assignee)}</span>`:'')
+      +(a.due?`<span class="due ${late?'late':near?'soon':''}">${fmtShortDate(a.due)}</span>`:'')
+      +(a.done&&a.doneBy?`<span>${esc(a.doneBy)}</span>`:'');
+  };
+  $('aiOpenCount').textContent=open.length; $('aiDoneCount').textContent=done.length;
+  keyed($('aiOpen'), open, a=>a.id, make, patch);
+  keyed($('aiDone'), done, a=>a.id, make, patch);
+  emptyState($('aiOpen'), !open.length, 'Nothing open.');
+  emptyState($('aiDone'), !done.length, 'Nothing done yet.');
+}
+function addAction(){
+  const t=($('aiText').value||'').trim(); if(!t) return;
+  SUB('actions').add({text:t, assignee:$('aiWho').value||'', due:$('aiDue').value||'', done:false, by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
+  $('aiText').value=''; $('aiText').focus();
+}
+/* A checked item stays in place a moment so the check can be seen, then moves. */
+function toggleAction(id, on){
+  setTimeout(()=>SUB('actions').doc(id).update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail), RM.matches?0:380);
+}
+async function editAction(id){
+  const a=DATA.actions.find(x=>x.id===id); if(!a) return;
+  const t=await askText('Edit Action Item', a.text, 'Save');
+  if(t) SUB('actions').doc(id).update({text:t}).catch(fail);
+}
+async function deleteAction(id){
+  if(await askYesNo('Delete this action item?', '', 'Delete', true)) SUB('actions').doc(id).delete().catch(fail);
+}
+
+/* ---------- meeting summary (PDF) ----------
+   Builds the PDF right here, with no outside tools: the agenda with every
+   note, reply and like, the action items, and a picture of the whiteboard. */
+function pdfWin(str){
+  // the PDF's built-in fonts cover Western characters only
+  const hi={'€':128,'‚':130,'ƒ':131,'„':132,'…':133,'†':134,'‡':135,'ˆ':136,'‰':137,'Š':138,'‹':139,'Œ':140,'Ž':142,'‘':145,'’':146,'“':147,'”':148,'•':149,'–':150,'—':151,'˜':152,'™':153,'š':154,'›':155,'œ':156,'ž':158,'Ÿ':159};
+  let out='';
+  for(const ch of String(str==null?'':str).replace(/\t/g,' ').replace(/\r/g,'')){
+    const c=ch.codePointAt(0);
+    if(c>=32 && c<127) out+=ch;
+    else if(c>=160 && c<256) out+=ch;
+    else if(hi[ch]) out+=String.fromCharCode(hi[ch]);
+    else if(c===10) out+='\n';
+  }
+  return out;
+}
+function PdfDoc(){
+  this.W=612; this.H=792; this.pages=[]; this.images=[];
+  this.mc=document.createElement('canvas').getContext('2d');
+}
+PdfDoc.prototype.page=function(){ this.cur=[]; this.pages.push(this.cur); return this; };
+PdfDoc.prototype.rgb=function(c){
+  this.mc.fillStyle='#000'; this.mc.fillStyle=c||'#000'; const h=this.mc.fillStyle;
+  if(h[0]==='#') return [1,3,5].map(i=>(parseInt(h.substr(i,2),16)/255).toFixed(3)).join(' ');
+  const m=h.match(/[\d.]+/g)||[0,0,0]; return m.slice(0,3).map(v=>(v/255).toFixed(3)).join(' ');
+};
+PdfDoc.prototype.width=function(str, font, size){
+  this.mc.font=(font==='B'?'bold ':font==='I'?'italic ':'')+'100px Helvetica, Arial, sans-serif';
+  return this.mc.measureText(str).width*size/100;
+};
+PdfDoc.prototype.text=function(str, x, y, o){
+  o=o||{}; const f={R:'F1',B:'F2',I:'F3'}[o.font||'R'], sz=o.size||11;
+  const t=pdfWin(str).replace(/\\/g,'\\\\').replace(/\(/g,'\\(').replace(/\)/g,'\\)');
+  this.cur.push(`BT /${f} ${sz} Tf ${this.rgb(o.color||'#141f33')} rg ${x.toFixed(2)} ${(this.H-y).toFixed(2)} Td (${t}) Tj ET`);
+};
+PdfDoc.prototype.line=function(x1,y1,x2,y2,o){
+  o=o||{}; this.cur.push(`${(o.w||1).toFixed(2)} w ${this.rgb(o.color||'#dbe2ec')} RG ${x1.toFixed(2)} ${(this.H-y1).toFixed(2)} m ${x2.toFixed(2)} ${(this.H-y2).toFixed(2)} l S`);
+};
+PdfDoc.prototype.rect=function(x,y,w,h,fill){ this.cur.push(`${this.rgb(fill)} rg ${x.toFixed(2)} ${(this.H-y-h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re f`); };
+PdfDoc.prototype.box=function(x,y,w,h,color,lw){ this.cur.push(`${(lw||1).toFixed(2)} w ${this.rgb(color)} RG ${x.toFixed(2)} ${(this.H-y-h).toFixed(2)} ${w.toFixed(2)} ${h.toFixed(2)} re S`); };
+PdfDoc.prototype.image=function(jpeg, pw, ph, x, y, w, h){
+  const n=this.images.length+1; this.images.push({jpeg, pw, ph});
+  this.cur.push(`q ${w.toFixed(2)} 0 0 ${h.toFixed(2)} ${x.toFixed(2)} ${(this.H-y-h).toFixed(2)} cm /Im${n} Do Q`);
+};
+PdfDoc.prototype.wrap=function(str, font, size, maxW){
+  const out=[];
+  pdfWin(str).split('\n').forEach(par=>{
+    const words=par.split(/ +/); let line='';
+    words.forEach(w=>{
+      const t=line?line+' '+w:w;
+      if(this.width(t, font, size)<=maxW || !line){
+        if(!line && this.width(w, font, size)>maxW){
+          // a single very long word is broken up
+          let part=''; for(const ch of w){ if(this.width(part+ch, font, size)>maxW && part){ out.push(part); part=''; } part+=ch; } line=part;
+        } else line=t;
+      } else { out.push(line); line=w; }
+    });
+    out.push(line);
+  });
+  return out;
+};
+PdfDoc.prototype.blob=function(){
+  const parts=[], offs=[]; let len=0;
+  const bytes=str=>{ const u=new Uint8Array(str.length); for(let i=0;i<str.length;i++) u[i]=str.charCodeAt(i)&255; return u; };
+  const add=u=>{ if(typeof u==='string') u=bytes(u); parts.push(u); len+=u.length; };
+  const obj=(n, body)=>{ offs[n]=len; add(n+' 0 obj\n'); (Array.isArray(body)?body:[body]).forEach(add); add('\nendobj\n'); };
+  const nP=this.pages.length, nI=this.images.length;
+  // 1 catalog, 2 pages, 3-5 fonts, then images, then a page and its contents for each page
+  const imgBase=6, pageBase=imgBase+nI;
+  add('%PDF-1.4\n%\xE2\xE3\xCF\xD3\n');
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>');
+  obj(2, `<< /Type /Pages /Count ${nP} /Kids [${this.pages.map((p,i)=>(pageBase+i*2)+' 0 R').join(' ')}] >>`);
+  ['Helvetica','Helvetica-Bold','Helvetica-Oblique'].forEach((f,i)=>obj(3+i, `<< /Type /Font /Subtype /Type1 /BaseFont /${f} /Encoding /WinAnsiEncoding >>`));
+  this.images.forEach((im,i)=>obj(imgBase+i, [`<< /Type /XObject /Subtype /Image /Width ${im.pw} /Height ${im.ph} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${im.jpeg.length} >>\nstream\n`, im.jpeg, '\nendstream']));
+  const xo=nI ? `/XObject << ${this.images.map((im,i)=>`/Im${i+1} ${imgBase+i} 0 R`).join(' ')} >>` : '';
+  this.pages.forEach((ops,i)=>{
+    const pn=pageBase+i*2, cn=pn+1, content=ops.join('\n');
+    obj(pn, `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Resources << /Font << /F1 3 0 R /F2 4 0 R /F3 5 0 R >> ${xo} >> /Contents ${cn} 0 R >>`);
+    obj(cn, [`<< /Length ${content.length} >>\nstream\n`, content, '\nendstream']);
+  });
+  const total=pageBase+nP*2, xref=len;
+  let x=`xref\n0 ${total}\n0000000000 65535 f \n`;
+  for(let i=1;i<total;i++) x+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  add(x+`trailer\n<< /Size ${total} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`);
+  return new Blob(parts, {type:'application/pdf'});
+};
+async function loadMeetingAll(id){
+  const ref=ROOT().doc(id), snap=await ref.get();
+  if(!snap.exists) throw new Error('This meeting could not be found.');
+  const names=['topics','agenda','notes','likes','actions','strokes','shapes','texts','stickies'];
+  const res=await Promise.all(names.map(n=>ref.collection(n).get()));
+  const d={}; names.forEach((n,i)=>{ d[n]=res[i].docs.map(x=>Object.assign({id:x.id}, x.data())); });
+  return {m:Object.assign({id}, snap.data()), d};
+}
+/* the whiteboard as a picture, drawn the same way Save as Image draws it */
+function boardJpeg(d){
+  const saved=DATA; DATA=Object.assign(emptyData(), d);
+  try{
+    const b=wbBounds(); if(!b) return null;
+    const pad=40, W=b[2]-b[0]+pad*2, H=b[3]-b[1]+pad*2, sc=Math.min(2, 2200/W, 2200/H);
+    const c=document.createElement('canvas'); c.width=Math.max(1,Math.ceil(W*sc)); c.height=Math.max(1,Math.ceil(H*sc));
+    const ctx=c.getContext('2d');
+    ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,c.width,c.height);
+    ctx.setTransform(sc,0,0,sc,(pad-b[0])*sc,(pad-b[1])*sc);
+    const dark=document.documentElement.classList.contains('dark');
+    if(dark) document.documentElement.classList.remove('dark');
+    [...DATA.strokes.map(s=>['s',s]), ...DATA.shapes.map(s=>['h',s]), ...DATA.texts.map(s=>['t',s])].sort((a,b)=>(a[1].at||0)-(b[1].at||0))
+      .forEach(([k,s])=>{ if(k==='s') drawStroke(ctx, ptsOf(s), s.color, s.size, s.tool); else if(k==='h') drawShape(ctx, s); else drawText(ctx, s); });
+    DATA.stickies.forEach(s=>{
+      const [x,y]=stickyPos(s);
+      ctx.save(); ctx.fillStyle=s.color||STICKY_COLORS[0]; ctx.shadowColor='rgba(0,0,0,.18)'; ctx.shadowBlur=10; ctx.shadowOffsetY=3; ctx.fillRect(x,y,150,120); ctx.restore();
+      ctx.save(); ctx.fillStyle='#1d1a00'; ctx.font="500 14px 'DM Sans', system-ui, sans-serif"; ctx.textBaseline='top';
+      let line='', yy=y+26; String(s.text||'').split(/(\s+)/).forEach(w=>{ if(w.includes('\n')){ ctx.fillText(line,x+10,yy); yy+=19; line=''; return; } const t=line+w; if(ctx.measureText(t).width>130 && line){ ctx.fillText(line,x+10,yy); yy+=19; line=w.trimStart(); } else line=t; });
+      if(line) ctx.fillText(line,x+10,yy); ctx.restore();
+    });
+    if(dark) document.documentElement.classList.add('dark');
+    const url=c.toDataURL('image/jpeg', .88), bin=atob(url.split(',')[1]), u=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++) u[i]=bin.charCodeAt(i);
+    return {jpeg:u, w:c.width, h:c.height};
+  } finally { DATA=saved; }
+}
+function summaryPdf(m, d){
+  const P=new PdfDoc(), M=54, CW=P.W-M*2, BOTTOM=P.H-54;
+  const NAVY='#0f2647', ORANGE='#e8791a', MUTED='#5f6e87', LINE='#dbe2ec', GREEN='#1f8a55';
+  let y=0;
+  P.page();
+  const room=h=>{ if(y+h>BOTTOM){ P.page(); y=M; } };
+  const para=(str, x, w, font, size, color, lh)=>{
+    const lines=P.wrap(str, font, size, w); lh=lh||size*1.35;
+    lines.forEach(l=>{ room(lh); P.text(l, x, y+size, {font, size, color}); y+=lh; });
+  };
+  const section=(title, color)=>{
+    room(46); y+=14;
+    P.text(title.toUpperCase(), M, y+11, {font:'B', size:10.5, color});
+    y+=17; P.line(M, y, M+CW, y, {w:1.2, color}); y+=12;
+  };
+  // header band
+  P.rect(0, 0, P.W, 96, NAVY);
+  P.rect(0, 96, P.W*.25, 4, ORANGE); P.rect(P.W*.25, 96, P.W*.25, 4, '#2f6fd6'); P.rect(P.W*.5, 96, P.W*.25, 4, GREEN); P.rect(P.W*.75, 96, P.W*.25, 4, '#c0392b');
+  const tl=P.wrap(m.title||'Meeting', 'B', 22, CW).slice(0,2);
+  tl.forEach((l,i)=>P.text(l, M, 40+i*25, {font:'B', size:22, color:'#ffffff'}));
+  const when=fmtDate(m.createdAt||Date.now())+', '+fmtTime(m.createdAt||Date.now())+(m.endedAt?'  to  '+fmtTime(m.endedAt):'');
+  P.text(when, M, tl.length>1?88:68, {size:10.5, color:'#c9d4e6'});
+  P.text('Good & Handy', P.W-M-P.width('Good & Handy','B',10), 30, {font:'B', size:10, color:'#ff9a45'});
+  y=122;
+  // who attended
+  const who=new Set(Object.values(m.attendees||{}));
+  if(m.createdByName) who.add(m.createdByName);
+  d.notes.forEach(n=>n.byName && who.add(n.byName)); d.likes.forEach(l=>l.name && who.add(l.name)); d.actions.forEach(a=>a.byName && who.add(a.byName));
+  if(who.size){ P.text('ATTENDED', M, y+9, {font:'B', size:8.5, color:MUTED}); y+=14; para([...who].sort().join(', '), M, CW, 'R', 11, NAVY); y+=4; }
+
+  // agenda, in the order it was shown
+  section('Agenda & Notes', ORANGE);
+  const bySort=(a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0);
+  const topics=d.topics.slice().sort(bySort), ag=d.agenda.slice().sort(bySort);
+  const tOf=a=>(a.topicId && topics.some(t=>t.id===a.topicId)) ? a.topicId : '';
+  const loose=ag.filter(a=>!tOf(a));
+  let blocks=topics.map(t=>({t, order:t.order||0}));
+  if(loose.length) blocks.push({loose:true, order:m.looseOrder!=null?m.looseOrder:0});
+  blocks.sort((a,b)=>a.order-b.order || (a.loose?-1:b.loose?1:0));
+  const notesAll=d.notes.slice().sort((a,b)=>(a.at||0)-(b.at||0));
+  const likeLine=id=>{ const L=d.likes.filter(l=>l.noteId===id); return L.length ? 'Liked by '+L.map(l=>l.name).join(', ') : ''; };
+  const note=(n, x)=>{
+    const w=CW-(x-M), head=(n.byName||'')+'   '+fmtTime(n.at||0);
+    room(30);
+    P.text(n.byName||'', x, y+9, {font:'B', size:9, color:colorFor(n.byName)});
+    P.text(fmtTime(n.at||0), x+P.width((n.byName||'')+'  ','B',9), y+9, {size:8.5, color:MUTED});
+    y+=13;
+    para(n.text, x, w, 'R', 10.5, '#141f33');
+    const lk=likeLine(n.id); if(lk) para(lk, x, w, 'I', 8.5, MUTED);
+    y+=5;
+  };
+  const item=a=>{
+    room(40); y+=4;
+    const bx=M+2, by=y+2;
+    P.box(bx, by, 10, 10, a.done?GREEN:'#9aa7bb', 1.2);
+    if(a.done){ P.line(bx+2, by+5.2, bx+4.3, by+7.6, {w:1.6, color:GREEN}); P.line(bx+4.3, by+7.6, bx+8.2, by+2.6, {w:1.6, color:GREEN}); }
+    const lines=P.wrap(a.text, 'B', 12.5, CW-20);
+    lines.forEach((l,i)=>{ if(i) room(17); P.text(l, M+20, y+11, {font:'B', size:12.5, color:a.done?MUTED:NAVY}); y+=17; });
+    y+=3;
+    const top=notesAll.filter(n=>n.agendaId===a.id && !n.parentId);
+    top.forEach(n=>{
+      note(n, M+20);
+      notesAll.filter(r=>r.parentId===n.id).forEach(r=>{
+        const y0=y; note(r, M+44);
+        P.line(M+34, y0+2, M+34, y-6, {w:1.5, color:'#f3c9a3'});
+      });
+    });
+    y+=4;
+  };
+  if(!ag.length && !topics.length) para('No agenda items.', M, CW, 'I', 10.5, MUTED);
+  blocks.forEach(b=>{
+    if(b.loose){ loose.forEach(item); return; }
+    room(44); y+=8;
+    para(b.t.text, M, CW, 'B', 16, NAVY, 20);
+    P.line(M, y+1, M+CW, y+1, {w:.8, color:'#f3c9a3'}); y+=10;
+    const its=ag.filter(a=>tOf(a)===b.t.id);
+    if(!its.length) para('No agenda items.', M+20, CW-20, 'I', 10, MUTED);
+    its.forEach(item);
+  });
+
+  // action items
+  section('Action Items', GREEN);
+  const open=d.actions.filter(a=>!a.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0));
+  const done=d.actions.filter(a=>a.done).sort((a,b)=>(a.doneAt||0)-(b.doneAt||0));
+  if(!d.actions.length) para('No action items.', M, CW, 'I', 10.5, MUTED);
+  [['Open', open], ['Done', done]].forEach(([lbl, list])=>{
+    if(!list.length) return;
+    room(30); P.text(lbl+' ('+list.length+')', M, y+10, {font:'B', size:10, color:GREEN}); y+=18;
+    list.forEach(a=>{
+      room(30);
+      const bx=M+2, by=y+1.5;
+      P.box(bx, by, 9, 9, a.done?GREEN:'#9aa7bb', 1.1);
+      if(a.done){ P.line(bx+1.8, by+4.7, bx+3.9, by+6.9, {w:1.5, color:GREEN}); P.line(bx+3.9, by+6.9, bx+7.4, by+2.3, {w:1.5, color:GREEN}); }
+      P.wrap(a.text, 'R', 11, CW-20).forEach((l,i)=>{ if(i) room(15); P.text(l, M+18, y+9.5, {size:11, color:a.done?MUTED:'#141f33'}); y+=15; });
+      const meta=[a.assignee?'Assigned to '+a.assignee:'', a.due?'Due '+fmtShortDate(a.due):'', a.done&&a.doneBy?'Done by '+a.doneBy:''].filter(Boolean).join(', ');
+      if(meta) para(meta, M+18, CW-18, 'R', 9, MUTED);
+      y+=5;
+    });
+    y+=4;
+  });
+
+  // whiteboard
+  const img=boardJpeg(d);
+  if(img){
+    const maxH=BOTTOM-M-40;
+    let w=CW, h=img.h*w/img.w;
+    if(h>maxH){ h=maxH; w=img.w*h/img.h; }
+    if(y+40+h>BOTTOM){ P.page(); y=M-14; }
+    section('Whiteboard', '#2f6fd6');
+    P.box(M+(CW-w)/2-.5, y-.5, w+1, h+1, LINE, 1);
+    P.image(img.jpeg, img.w, img.h, M+(CW-w)/2, y, w, h);
+    y+=h+10;
+  }
+
+  // page numbers
+  const n=P.pages.length;
+  P.pages.forEach((ops,i)=>{
+    P.cur=ops;
+    const t=(m.title||'Meeting')+'   |   Page '+(i+1)+' of '+n;
+    P.text(t, P.W-M-P.width(t,'R',8.5), P.H-28, {size:8.5, color:MUTED});
+  });
+  return P.blob();
+}
+async function downloadSummary(id, btn){
+  if(btn){ if(btn.disabled) return; btn.disabled=true; }
+  try{
+    const {m, d}=await loadMeetingAll(id);
+    const blob=summaryPdf(m, d);
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=((m.title||'Meeting').replace(/[^\w ,.&'-]+/g,'').trim()||'Meeting')+' summary.pdf';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 8000);
+  }catch(e){ fail(e); }
+  finally{ if(btn) btn.disabled=false; }
+}
+
 /* =========================================================================
    WHITEBOARD
    An endless board: drag with two fingers (or the hand tool, the space bar,
