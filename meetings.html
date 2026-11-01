@@ -519,6 +519,119 @@ body.wbFull .board{flex:1 1 auto;height:auto !important;}
 body.wbFull .wbBar{margin-bottom:8px;}
 body.wbTab:not(.wbFull){overscroll-behavior:none;}
 
+
+/* ---- practice tasks ---- */
+.tkPop{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));z-index:85;transform:translateX(-50%);display:flex;align-items:flex-start;gap:14px;
+  width:min(440px,calc(100vw - 24px));padding:16px 18px;border-radius:20px;border:0;cursor:pointer;text-align:left;color:var(--navy);
+  background:linear-gradient(120deg,color-mix(in srgb, var(--c-practice) 24%, var(--paper)),var(--paper) 70%);
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--c-practice) 35%, transparent),0 18px 44px rgba(15,38,71,.3);
+  animation:tkPopIn .5s cubic-bezier(.16,1,.3,1);}
+.tkPop.out{animation:tkPopOut .26s ease forwards;}
+@keyframes tkPopIn{from{opacity:0;transform:translate(-50%,-30px) scale(.95)}}
+@keyframes tkPopOut{to{opacity:0;transform:translate(-50%,-20px) scale(.97)}}
+.tkPop:hover{box-shadow:0 0 0 2px var(--c-practice),0 20px 48px rgba(15,38,71,.34);}
+.tkPopIc{flex:0 0 auto;width:2.6em;height:2.6em;border-radius:50%;display:flex;align-items:center;justify-content:center;background:var(--c-practice);color:#fff;
+  box-shadow:0 0 0 0 color-mix(in srgb, var(--c-practice) 50%, transparent);animation:tkRing 1.8s ease-out infinite;}
+.tkPopIc .ic{width:1.4em;height:1.4em;}
+@keyframes tkRing{70%{box-shadow:0 0 0 12px transparent}100%{box-shadow:0 0 0 0 transparent}}
+.tkPopBody{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tkPopBody b{font-size:1.1em;}
+.tkPopFrom{font-size:.82em;color:var(--muted);font-weight:600;}
+.tkPopList{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px;}
+.tkPopList span{font-size:.78em;font-weight:700;padding:3px 9px;border-radius:999px;background:color-mix(in srgb, var(--c-practice) 14%, var(--paper));color:var(--c-practice);}
+.tkPanel{position:fixed;right:16px;bottom:16px;z-index:70;width:min(380px,calc(100vw - 24px));max-height:min(70vh,560px);display:flex;flex-direction:column;
+  border-radius:20px;background:var(--paper);border:1px solid color-mix(in srgb, var(--c-practice) 30%, var(--line));overflow:hidden;
+  box-shadow:0 22px 50px rgba(15,38,71,.28);animation:tkPopIn2 .4s cubic-bezier(.16,1,.3,1);}
+@keyframes tkPopIn2{from{opacity:0;transform:translateY(20px) scale(.97)}}
+.tkHead{display:flex;align-items:center;gap:10px;width:100%;padding:12px 14px;border:0;cursor:pointer;color:#fff;text-align:left;font-weight:700;
+  background:linear-gradient(110deg,var(--c-practice),color-mix(in srgb, var(--c-practice) 65%, #f2b200));}
+html.dark .tkHead{color:#0e1522;}
+.tkHeadIc .ic{width:1.3em;height:1.3em;display:block;}
+.tkHeadT{font-size:1.05em;flex:1 1 auto;}
+.tkCount{font-size:.82em;background:rgba(255,255,255,.22);padding:2px 10px;border-radius:999px;}
+.tkChev .ic{width:1.1em;height:1.1em;display:block;transition:transform .25s var(--ease);transform:rotate(180deg);}
+.tkPanel.collapsed .tkChev .ic{transform:none;}
+.tkPanel.collapsed .tkBody{display:none;}
+.tkBody{overflow:auto;padding:12px 14px 14px;}
+.tkList{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px;}
+.tkItem{display:flex;gap:10px;align-items:flex-start;padding:10px;border-radius:14px;background:color-mix(in srgb, var(--c-practice) 6%, var(--paper));border:1px solid var(--line-soft);transition:background .3s,opacity .3s;}
+.tkItem.ok{background:color-mix(in srgb, var(--c-actions) 10%, var(--paper));}
+.tkNum{flex:0 0 auto;width:1.75em;height:1.75em;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.85em;
+  background:color-mix(in srgb, var(--c-practice) 16%, var(--paper));color:var(--c-practice);}
+.tkItem.ok .tkNum{background:var(--c-actions);color:#fff;animation:pop .35s var(--ease-out);}
+.tkNum .ic{width:1.1em;height:1.1em;}
+.tkTxt{display:flex;flex-direction:column;gap:3px;min-width:0;}
+.tkTxt b{color:var(--navy);}
+.tkTxt > span{font-size:.88em;color:var(--ink);line-height:1.4;}
+.tkItem.ok .tkTxt > span{display:none;}
+.tkItem.ok .tkTxt b{color:var(--muted);}
+.tkHint{display:flex;gap:8px;align-items:flex-start;margin-top:6px;padding:8px 10px;border-radius:12px;font-size:.86em;font-weight:600;line-height:1.35;
+  background:color-mix(in srgb, #f2b200 18%, var(--paper));color:color-mix(in srgb, #8a6400 80%, var(--ink));animation:tkPopIn2 .35s var(--ease-out);}
+html.dark .tkHint{color:#ffd76a;}
+.tkBulb .ic{width:1.2em;height:1.2em;display:block;color:#e0a100;}
+.tkAns{margin:8px 0 0;padding:8px 10px 8px 28px;border-radius:12px;background:color-mix(in srgb, var(--blue) 10%, var(--paper));font-size:.86em;line-height:1.45;}
+.tkAns li{margin:2px 0;}
+.tkMsg{margin-top:10px;font-size:.86em;font-weight:700;color:var(--red);}
+.tkFoot{display:flex;align-items:center;gap:8px;margin-top:12px;}
+.tkBtn{background:var(--c-practice);border-color:var(--c-practice);color:var(--on-c);}
+.tkTries{margin-left:auto;font-size:.8em;color:var(--muted);font-weight:700;}
+.tkDone{display:flex;align-items:center;gap:12px;padding:14px;border-radius:14px;background:color-mix(in srgb, var(--c-actions) 14%, var(--paper));margin-bottom:12px;}
+.tkDone b{display:block;font-size:1.15em;color:var(--navy);}
+.tkDone span{font-size:.85em;color:var(--muted);font-weight:600;}
+.tkDoneIc{width:2.4em;height:2.4em;border-radius:50%;background:var(--c-actions);color:#fff;display:flex;align-items:center;justify-content:center;flex:0 0 auto;}
+.tkDoneIc .ic{width:1.3em;height:1.3em;}
+@media (max-width:900px){ .tkPanel{right:8px;left:8px;width:auto;bottom:max(8px,env(safe-area-inset-bottom));max-height:55vh;} }
+body.tkSide .ppStage{display:grid;grid-template-columns:minmax(0,1fr) 360px;grid-template-rows:auto minmax(0,1fr);column-gap:14px;}
+body.tkSide .ppStage > .ppBar{grid-column:1 / -1;}
+body.tkSide .ppStage > #ppWrap{grid-column:1;grid-row:2;}
+body.tkSide .ppStage > .tkPanel{position:relative;right:auto;bottom:auto;left:auto;grid-column:2;grid-row:2;width:auto;max-height:none;align-self:stretch;z-index:1;
+  box-shadow:0 1px 2px rgba(15,38,71,.06),0 10px 26px rgba(15,38,71,.12);}
+body.tkSide.ppFull .ppStage > .tkPanel{border-radius:var(--radius) var(--radius) 0 0;}
+body.tkSide .ppStage > .tkPanel.collapsed{align-self:start;}
+.tkSheet{position:fixed;inset:0;z-index:90;background:rgba(10,24,45,.5);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s ease;}
+.tkSheet.out{opacity:0;transition:opacity .2s;}
+@keyframes fadeIn{from{opacity:0}}
+.tkCard{width:min(720px,100%);max-height:min(88vh,900px);overflow:auto;background:var(--paper);border-radius:20px;box-shadow:var(--sh-2);padding:0 0 0;}
+.tkCard.enter{animation:modalIn .25s var(--ease-out);}
+.tkCardHead{position:sticky;top:0;z-index:2;display:flex;align-items:center;gap:10px;padding:16px 18px;background:linear-gradient(110deg,color-mix(in srgb, var(--c-practice) 22%, var(--paper)),var(--paper) 70%);border-bottom:1px solid var(--line);}
+.tkCardHead h2{margin:0;flex:1;font-family:var(--f-display);font-weight:400;font-size:1.6em;color:var(--navy);}
+.tkSec{padding:14px 18px 4px;}
+.tkSecT{font-weight:800;color:var(--c-practice);font-size:.85em;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.tkSecT .count{--tc:var(--c-practice);text-transform:none;letter-spacing:0;}
+.tkPeople{display:flex;flex-wrap:wrap;gap:8px;}
+.tkPerson{display:inline-flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:999px;border:1.5px solid var(--line);background:var(--paper);cursor:pointer;font-weight:700;color:var(--navy);position:relative;transition:all .18s;}
+.tkPerson .av,.tkProgTop .av{width:1.8em;height:1.8em;border-radius:50%;background:var(--pc);color:#fff;display:inline-flex;align-items:center;justify-content:center;text-transform:uppercase;font-size:.85em;}
+.tkPerson.on{border-color:var(--pc);background:color-mix(in srgb, var(--pc) 14%, var(--paper));box-shadow:0 0 0 3px color-mix(in srgb, var(--pc) 18%, transparent);}
+.tkPerson .here{width:.55em;height:.55em;border-radius:50%;background:#3bd16f;margin-left:2px;}
+.tkGroup{margin-bottom:14px;}
+.tkGroupT{font-weight:700;color:var(--navy);margin:0 0 6px 2px;}
+.tkPick{display:flex;gap:10px;align-items:flex-start;width:100%;text-align:left;padding:9px 10px;margin-bottom:6px;border-radius:12px;border:1.5px solid var(--line-soft);background:var(--paper);cursor:pointer;color:var(--ink);transition:all .15s;}
+.tkPick:hover{border-color:color-mix(in srgb, var(--c-practice) 40%, var(--line));}
+.tkPick.on{border-color:var(--c-practice);background:color-mix(in srgb, var(--c-practice) 8%, var(--paper));}
+.tkPick[disabled]{opacity:.4;cursor:not-allowed;}
+.tkPick b{display:block;color:var(--navy);}
+.tkPick span span{font-size:.85em;color:var(--muted);line-height:1.35;}
+.tkBox{flex:0 0 auto;width:1.35em;height:1.35em;border-radius:6px;border:2px solid color-mix(in srgb, var(--c-practice) 55%, var(--line));display:flex;align-items:center;justify-content:center;margin-top:1px;}
+.tkPick.on .tkBox{background:var(--c-practice);border-color:var(--c-practice);color:#fff;}
+.tkBox .ic{width:1em;height:1em;}
+.tkCardFoot{position:sticky;bottom:0;display:flex;justify-content:flex-end;gap:10px;padding:12px 18px;background:var(--paper);border-top:1px solid var(--line);}
+.tkCardFoot .btn.tc{background:var(--c-practice);border-color:var(--c-practice);color:var(--on-c);}
+.tkProg{padding:10px 12px;border-radius:14px;border:1px solid var(--line);margin-bottom:8px;background:color-mix(in srgb, var(--c-practice) 4%, var(--paper));}
+.tkProg.done{background:color-mix(in srgb, var(--c-actions) 8%, var(--paper));}
+.tkProgTop{display:flex;align-items:center;gap:8px;}
+.tkPill{font-size:.72em;font-weight:800;padding:2px 9px;border-radius:999px;background:var(--line-soft);color:var(--muted);}
+.tkProg.active .tkPill{background:color-mix(in srgb, var(--orange) 16%, var(--paper));color:var(--orange);}
+.tkProg.done .tkPill{background:color-mix(in srgb, var(--c-actions) 16%, var(--paper));color:var(--c-actions);}
+.tkBar{height:6px;border-radius:6px;background:var(--line-soft);margin:8px 0;overflow:hidden;}
+.tkBar span{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--c-practice),var(--c-actions));transition:width .5s var(--ease);}
+.tkProgList{display:flex;flex-wrap:wrap;gap:5px;}
+.tkProgList span{display:inline-flex;align-items:center;gap:4px;font-size:.78em;font-weight:600;padding:2px 9px;border-radius:999px;background:var(--line-soft);color:var(--muted);}
+.tkProgList span.ok{background:color-mix(in srgb, var(--c-actions) 14%, var(--paper));color:var(--c-actions);}
+.tkProgList span.ans{box-shadow:inset 0 0 0 1.5px var(--orange);}
+.tkProgList .ic{width:1em;height:1em;}
+.tkStats{display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:.78em;font-weight:700;color:var(--muted);}
+.tkStats .warn{color:var(--orange);}
+
 /* ---- practice portal ---- */
 .ppBar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px;padding:6px 8px;border-radius:14px;
   background:linear-gradient(90deg,color-mix(in srgb, var(--tc) 14%, var(--paper)),transparent 70%);}
@@ -580,7 +693,7 @@ body.ppTab:not(.ppFull){overscroll-behavior:none;}
 .hlBox.draft{background:rgba(255,212,0,.16);box-shadow:0 0 0 2px rgba(242,178,0,.7);}
 
 /* ---- modal + toast ---- */
-.overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:80;display:flex;align-items:center;justify-content:center;padding:16px;
+.overlay{position:fixed;inset:0;background:rgba(10,18,32,.5);z-index:100;display:flex;align-items:center;justify-content:center;padding:16px;
   animation:fadeIn .18s ease-out;backdrop-filter:blur(2px);-webkit-backdrop-filter:blur(2px);}
 .modal{background:linear-gradient(160deg,color-mix(in srgb, var(--tc) 10%, var(--paper)),var(--paper) 50%);border-radius:var(--radius);box-shadow:var(--sh-2);width:100%;max-width:440px;padding:20px;border-top:5px solid var(--tc);
   animation:modalIn .28s var(--ease-out);}
@@ -637,6 +750,7 @@ html.dark .toast{color:var(--paper);}
   <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
+  <symbol id="i-bulb" viewBox="0 0 24 24"><path d="M9 18h6M10 21h4M12 3a6 6 0 00-3.6 10.8c.7.6 1.1 1.3 1.1 2.2h5c0-.9.4-1.6 1.1-2.2A6 6 0 0012 3z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="9" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M21 16l-5-5-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
  <symbol id="i-thumb" viewBox="0 0 24 24"><path d="M7 11v9H4v-9h3zm0 0l4-8c1.4 0 2.3 1.1 2 2.4L12.4 9H19a2 2 0 012 2.3l-1.2 7A2 2 0 0117.8 20H7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
   <symbol id="i-thumbf" viewBox="0 0 24 24"><path d="M3.5 10.5h4v10h-4zM8.5 20.5V10.6l3.6-7.4c1.6 0 2.7 1.3 2.3 2.8l-.9 3.5H19a2.2 2.2 0 012.2 2.6l-1.3 7.2a2.2 2.2 0 01-2.2 1.8z" fill="currentColor"/></symbol>
@@ -685,7 +799,7 @@ html.dark .toast{color:var(--paper);}
 const PORTAL_URL='../goodandhandyportal/';
 const CFG_KEY='gh_portal_sync_cfg';
 const PORTAL_DB_KEY='gh_portal_db_v1';
-const SUBS=['topics','agenda','notes','likes','actions','strokes','shapes','texts','stickies','presence'];
+const SUBS=['topics','agenda','notes','likes','actions','tasks','strokes','shapes','texts','stickies','presence'];
 const ALL_SUBS=SUBS.concat(['stream']);
 const COLORS=['#0f2647','#e8791a','#c0392b','#1f8a55','#2f6fd6','#7b4bc4'];
 const PEOPLE=['#e8791a','#2f6fd6','#1f8a55','#c0392b','#7b4bc4','#0e8f9a','#b8860b'];
@@ -698,7 +812,7 @@ let db=null, ME=null, USERS={};
 let MEETINGS=[], LIST_UNSUB=null;
 let MTG=null, MTG_ID=null, MTG_UNSUBS=[];
 let DATA={};
-const emptyData=()=>({topics:[], agenda:[], notes:[], likes:[], actions:[], strokes:[], shapes:[], texts:[], stickies:[], presence:[]});
+const emptyData=()=>({topics:[], agenda:[], notes:[], likes:[], actions:[], tasks:[], strokes:[], shapes:[], texts:[], stickies:[], presence:[]});
 let TAB='agenda';
 let presenceTimer=null;
 
@@ -930,6 +1044,9 @@ function openMeeting(id){
   startPresence();
 }
 function leaveMeeting(){
+  if(TK.active){ TK.active=false; clearInterval(TK.timer); TK.timer=0; }
+  TK.doc=null; TK.popFor=null; const tp=$('tkPanel'); if(tp) tp.remove(); const pop=$('tkPop'); if(pop) pop.remove();
+  if(TKS.open) closeTaskSheet();
   if(MTG && MTG.boardPresenter && MTG.boardPresenter.uid===ME.uid){ try{ MREF().update({boardPresenter:null}).catch(()=>{}); }catch(e){} }
   MTG_UNSUBS.forEach(u=>{ try{ u(); }catch(e){} }); MTG_UNSUBS=[];
   stopPresence();
@@ -1023,6 +1140,7 @@ function showTab(k, initial){
     window.scrollTo(0,0); requestAnimationFrame(()=>{ wbFit(); });
   }
   document.body.classList.toggle('ppTab', k==='practice');
+  setTimeout(()=>renderTaskPanel(), 0);
   if(k==='practice'){
     ppEnsure();
     if(phoneMQ.matches) ppSetFull(true);
@@ -1051,6 +1169,7 @@ function onMeetingChange(prev){
 function onDataChange(n){
   if(n==='agenda' || n==='notes' || n==='topics' || n==='likes'){ renderAgenda(); wbRenderPins(); if(WB.pinMenu) wbRenderPinMenu(); }
   else if(n==='actions') renderActions();
+  else if(n==='tasks') taskOnData();
   else if(n==='strokes' || n==='shapes' || n==='texts') wbOnItems(n);
   else if(n==='stickies'){ wbOnItems(); renderStickies(); }
   else if(n==='presence'){ renderPeople(); wbOnPresence(); ppRenderBar(); renderTabs(); ppUpdateMode(); }
@@ -2978,7 +3097,7 @@ function presenterLive(){
 }
 const iPresent=()=>{ const p=presenterLive(); return !!(p && p.uid===ME.uid); };
 const followLocked=()=>!!(MTG && MTG.followLock);
-function iFollow(){ const p=presenterLive(); return !!(p && p.uid!==ME.uid && (PP.follow || followLocked())); }
+function iFollow(){ const p=presenterLive(); return !!(p && p.uid!==ME.uid && !(TK.active && TK.doc && TK.doc.status==='active') && (PP.follow || followLocked())); }
 function renderPracticePane(){
   $('pane-practice').innerHTML=`<div class="ppStage" id="ppStage"><div class="ppBar" id="ppBar"></div>
     <div class="ppFrameWrap" id="ppWrap">
@@ -3005,7 +3124,8 @@ function ppRenderBar(){
       +(followLocked()?'':`<label class="switch"><input type="checkbox" class="chk" ${PP.follow?'checked':''} onchange="setFollow(this.checked)">Follow</label>`)
       +((ro||followLocked())?'':`<button class="btn secondary sm" onclick="startPresenting()">Present</button>`);
   } else left=ro?'':`<button class="btn tc sm" onclick="startPresenting()">${icon('cast')}Present</button>`;
-  bar.innerHTML=`<button class="btn secondary sm ppExitBtn" onclick="ppExitFull()">${icon('x')}Exit</button>`+left+'<span class="grow"></span>'
+  const tasksBtn=(ME.isAdmin && !ro) ? `<button class="btn secondary sm" onclick="openTaskSheet()">${icon('check')}<span class="ppLbl">Tasks</span></button>` : '';
+  bar.innerHTML=`<button class="btn secondary sm ppExitBtn" onclick="ppExitFull()">${icon('x')}Exit</button>`+left+'<span class="grow"></span>'+tasksBtn
     +(ME.isAdmin && !(p && !mine && followLocked())?`<button class="btn secondary sm" onclick="resetPractice()" aria-label="Reset Practice Jobs">${icon('reset')}<span class="ppLbl">Reset Practice Jobs</span></button>`:'')
     +`<button class="btn secondary sm ppFullBtn" onclick="ppSetFull(true)">${icon('expand')}Full Screen</button>`;
 }
@@ -3027,14 +3147,24 @@ function ppEnsure(){
   if(PP.frame){ if($('ppWrap') && !PP.frame.parentNode) $('ppWrap').prepend(PP.frame); return; }
   const f=document.createElement('iframe');
   f.title='Practice Portal'; f.className='ppOwn';
-  f.src=PORTAL_URL+'?training=1&meeting='+encodeURIComponent(MTG_ID);
+  f.src=PORTAL_URL+'?training=1&meeting='+encodeURIComponent(MTG_ID)+(PP.priv?'&private=1'+(PP.fresh?'&fresh='+Date.now():''):'');
+  PP.fresh=false;
   PP.frame=f; PP.ready=false; PP.role='none';
   $('ppWrap').prepend(f);
+}
+/* Switches the frame between the shared practice jobs and this person's own
+   copy for their tasks; fresh starts the own copy over from the beginning. */
+function ppSetPrivate(on, fresh){
+  if(!!PP.priv===!!on && !fresh) return;
+  PP.priv=!!on; PP.fresh=!!fresh;
+  if(PP.frame){ mirStopSending(); if(PP.frame.parentNode) PP.frame.parentNode.removeChild(PP.frame); PP.frame=null; PP.ready=false; PP.role='none'; }
+  TK.hooked=null;
+  if($('ppWrap') && TAB==='practice') ppEnsure();
 }
 function ppTeardown(){
   mirStopSending(); repStop();
   if(PP.frame && PP.frame.parentNode) PP.frame.parentNode.removeChild(PP.frame);
-  PP.frame=null; PP.ready=false; PP.role='none';
+  PP.frame=null; PP.ready=false; PP.role='none'; PP.priv=false; TK.hooked=null;
   HL.mode=false;
 }
 function ppPost(m){ if(PP.frame && PP.frame.contentWindow) PP.frame.contentWindow.postMessage(Object.assign({source:'gh_meeting'}, m), location.origin); }
@@ -3072,7 +3202,7 @@ window.addEventListener('message', e=>{
   if(e.origin!==location.origin || !PP.frame || e.source!==PP.frame.contentWindow) return;
   const d=e.data||{};
   if(d.source!=='gh_training') return;
-  if(d.type==='ready'){ PP.ready=true; PP.role='none'; ppUpdateMode(); }
+  if(d.type==='ready'){ PP.ready=true; PP.role='none'; ppUpdateMode(); tkHook(); }
   else if(d.type==='mirror' && iPresent()){ if(d.snap) mirSnap(d.snap); if(d.ops) mirQueue(d.ops); }
   else if(d.type==='ptr' && iPresent()){ mirQueue([{p:d.p}]); }
 });
@@ -3569,6 +3699,539 @@ async function resetPractice(){
     toast('Practice jobs reset.');
   }catch(e){ fail(e); }
 }
+
+/* =========================================================================
+   PRACTICE TASKS
+   An admin picks tasks and people. Each person gets a pop-up; tapping it
+   opens their own fresh copy of the practice jobs and a task card. The card
+   checks their work as they go, gives a nudge when they stall, counts each
+   Check that comes back unfinished, and offers the answer after three.
+   ========================================================================= */
+const TJ={lisa:9000001, tom:9000002, ana:9000003, greg:9000004, maria:9000005, dave:9000006, kim:9000007, rob:9000008, jen:9000009, sam:9000010, pat:9000011, nora:9000012, ray:9000013};
+let TK_STALL_MS=45000;
+const tkDigits=v=>String(v||'').replace(/\D/g,'').replace(/^1(?=\d{10}$)/,'');
+const tkIsoOff=off=>{ const d=new Date(); d.setHours(12,0,0,0); d.setDate(d.getDate()+off); return isoOf(d); };
+/* where to point a nudge, inside the practice copy */
+const tkTab=k=>S=>S.d.querySelector(`nav.tabs button[data-tab="${k}"]`);
+const tkCard=id=>S=>S.d.querySelector(`#mainArea .woRow[data-wo-id="${id}"]`);
+const tkAct=(id, fn)=>S=>S.d.querySelector(`.actBtn[onclick*="${fn}(${id}"]`);
+const tkSel=sel=>S=>S.d.querySelector(sel);
+const TASK_AREAS=[['wo','Work Orders'],['presite','Pre-Site'],['est','Estimates'],['sched','Scheduling'],['inv','Invoices, Surveys and History'],['admin','Admin']];
+const TASKS=[
+  {id:'new_wo', area:'wo', title:'Create a work order',
+    text:'Create a new work order for Carla Diaz, phone (619) 555-0199, at 2101 Market St, San Diego, CA 92102.',
+    check:S=>S.DB.workOrders.some(w=>/carla\s+diaz/i.test(w.customer.name||'') && tkDigits(w.customer.phone)==='6195550199' && /2101\s+market/i.test(w.customer.address||'') && S.W.hasRequiredInfo(w)),
+    steps:[S=>S.called('openNewWorkOrder'), S=>S.DB.workOrders.some(w=>/carla/i.test(w.customer.name||''))],
+    hints:[{t:'New jobs start on the Work Orders tab.', g:tkTab('workorders')},
+      {t:'Look for New Work Order at the top of the list.', g:tkSel('.newWoBtn')},
+      {t:'Fill in Full Name, Primary Phone Number and Address, then tap Save.'}],
+    answer:['Tap the Work Orders tab.','Tap New Work Order.','Enter Carla Diaz, (619) 555-0199, and 2101 Market St, San Diego, CA 92102.','Tap Save.']},
+  {id:'search', area:'wo', title:'Search for a job',
+    text:'Use search to find Dave Patel\'s job and open it.',
+    check:S=>S.called('selectSearchResult', a=>a[0]==TJ.dave) || S.after('runGlobalSearch', 'openWorkOrder', a=>a[0]==TJ.dave),
+    steps:[S=>S.called('toggleSearchBar'), S=>S.called('runGlobalSearch')],
+    hints:[{t:'There is a search in the top bar.', g:tkSel('#searchToggleBtn')},
+      {t:'Tap the magnifying glass and type part of his name.', g:tkSel('#searchToggleBtn')},
+      {t:'Type Patel, press Enter, then tap his job in the results.'}],
+    answer:['Tap the magnifying glass in the top bar.','Type Patel and press Enter.','Tap Dave Patel in the results.']},
+  {id:'edit_customer', area:'wo', title:'Update customer info',
+    text:'Change Tom Becker\'s phone number to (619) 555-0123 and add his email, tom.b@example.com.',
+    check:S=>{ const w=S.wo(TJ.tom); return !!w && tkDigits(w.customer.phone)==='6195550123' && /^tom\.b@example\.com$/i.test(String(w.customer.email||'').trim()); },
+    steps:[S=>S.opened(TJ.tom), S=>S.called('startHeaderCustEdit', a=>a[0]==TJ.tom)],
+    hints:[{t:'Open Tom Becker\'s work order first.', g:tkCard(TJ.tom)},
+      {t:'Tap the customer\'s name at the top of the work order.', g:tkSel('.mhNameBtn')},
+      {t:'Choose Edit Customer Info, change the phone and email, then tap Save.'}],
+    answer:['Open Tom Becker\'s work order.','Tap his name at the top.','Tap Edit Customer Info.','Change Primary Phone Number to (619) 555-0123 and Email to tom.b@example.com.','Tap Save.']},
+  {id:'alt_phone', area:'wo', title:'Add an alternate contact',
+    text:'Add an alternate phone number for Greg Holt: (619) 555-0177, for his wife Sue.',
+    check:S=>{ const w=S.wo(TJ.greg); return !!w && tkDigits(w.customer.altPhone)==='6195550177' && /sue/i.test(String(w.customer.altPhoneName||'')+' '+String(w.customer.altPhoneNote||'')); },
+    steps:[S=>S.opened(TJ.greg), S=>S.called('startHeaderCustEdit', a=>a[0]==TJ.greg)],
+    hints:[{t:'This is part of the customer\'s info on Greg Holt\'s work order.', g:tkCard(TJ.greg)},
+      {t:'Tap his name at the top, then Edit Customer Info.', g:tkSel('.mhNameBtn')},
+      {t:'Fill in Alternate Phone Number and the name for it, then tap Save.'}],
+    answer:['Open Greg Holt\'s work order.','Tap his name at the top, then Edit Customer Info.','Enter (619) 555-0177 as the Alternate Phone Number and Sue as the contact name.','Tap Save.']},
+  {id:'note_followup', area:'wo', title:'Note with a follow-up',
+    text:'On Lisa Moreno\'s job, add a note saying "Customer prefers Saturdays" with a follow-up date of tomorrow.',
+    check:S=>{ const w=S.wo(TJ.lisa); return !!w && (w.notes||[]).some(n=>/saturday/i.test(n.text||'') && n.followUpDate===S.tomorrow); },
+    steps:[S=>S.opened(TJ.lisa), S=>S.called('openNoteSheet')||S.called('openFieldNote'), S=>{ const w=S.wo(TJ.lisa); return !!w && (w.notes||[]).some(n=>/saturday/i.test(n.text||'')); }],
+    hints:[{t:'Start by opening Lisa Moreno\'s work order.', g:tkCard(TJ.lisa)},
+      {t:'Notes are added with Add Note on the work order.'},
+      {t:'Type the note, pick tomorrow in Follow-up date, then tap Add Note.'}],
+    answer:['Open Lisa Moreno\'s work order.','Tap Add Note.','Leave the type as NOTE and type Customer prefers Saturdays.','Set Follow-up date to tomorrow.','Tap Add Note.']},
+  {id:'note_lm', area:'wo', title:'Log a left message',
+    text:'You called Kim Nguyen and left a message. Log it with the right note type.',
+    check:S=>{ const w=S.wo(TJ.kim); return !!w && (w.notes||[]).some(n=>n.type==='L/M'); },
+    steps:[S=>S.opened(TJ.kim), S=>S.called('openNoteSheet')||S.called('openFieldNote')],
+    hints:[{t:'Open Kim Nguyen\'s work order and add a note.', g:tkCard(TJ.kim)},
+      {t:'The Note Type list has a type for a left message.'},
+      {t:'Choose L/M as the Note Type, type a short note, then tap Add Note.'}],
+    answer:['Open Kim Nguyen\'s work order.','Tap Add Note.','Set Note Type to L/M and type Left a message.','Tap Add Note.']},
+  {id:'followup_due', area:'wo', title:'Handle a due follow-up',
+    text:'One job has a follow-up that is due. Find it and add a WCB note saying the customer will call back Friday.',
+    check:S=>{ const w=S.wo(TJ.dave); return !!w && (w.notes||[]).some(n=>n.type==='WCB' && /friday/i.test(n.text||'')); },
+    steps:[S=>S.opened(TJ.dave), S=>S.called('openNoteSheet')||S.called('openFieldNote')],
+    hints:[{t:'Due follow-ups are listed at the top of the Work Orders tab.', g:tkTab('workorders')},
+      {t:'Tap the job under Follow-Up Due, then open its work order.', g:tkCard(TJ.dave)},
+      {t:'Add a note with Note Type WCB that mentions Friday.'}],
+    answer:['Tap the Work Orders tab.','Tap Dave Patel under Follow-Up Due, then tap his card to open it.','Tap Add Note and set Note Type to WCB.','Type Will call back Friday and tap Add Note.']},
+  {id:'labor_item', area:'wo', title:'Add a labor line item',
+    text:'Add a labor line item to Kim Nguyen\'s job: "Replace sink drain" for $150.',
+    check:S=>{ const w=S.wo(TJ.kim); return !!w && (w.jobDetails.labor||[]).some(l=>/sink\s+drain/i.test(l.item||'') && /150/.test(String(l.price||''))); },
+    steps:[S=>S.opened(TJ.kim), S=>S.called('openJobDetailsEdit', a=>a[0]==TJ.kim)],
+    hints:[{t:'Line items are part of the Job Details on Kim Nguyen\'s work order.', g:tkCard(TJ.kim)},
+      {t:'Tap Edit Job Details.', g:tkSel('[onclick*="openJobDetailsEdit"]')},
+      {t:'Under Labor Line Items, add the item with its price, then Save.'}],
+    answer:['Open Kim Nguyen\'s work order.','Tap Edit Job Details.','Under Labor Line Items, tap + Add Item.','Type Replace sink drain and $150.','Tap Save.']},
+  {id:'bulk_exclusions', area:'wo', title:'Add several items at once',
+    text:'Add these exclusions to Greg Holt\'s job in one go: permits, haul away, paint touch-ups.',
+    check:S=>{ const w=S.wo(TJ.greg); if(!w) return false; const ex=(w.jobDetails.exclusions||[]).map(x=>String(x).toLowerCase()); return ['permits','haul away','paint touch-ups'].every(k=>ex.some(x=>x.replace(/\s+/g,' ').trim()===k)); },
+    steps:[S=>S.opened(TJ.greg), S=>S.called('openJobDetailsEdit', a=>a[0]==TJ.greg), S=>S.called('addJDBulk', a=>a[1]==='exclusions')],
+    hints:[{t:'Exclusions are in the Job Details on Greg Holt\'s work order.', g:tkCard(TJ.greg)},
+      {t:'In Edit Job Details, the Exclusions list takes several items at once.'},
+      {t:'Type them in the Exclusions field separated by commas, tap Submit, then Save.'}],
+    answer:['Open Greg Holt\'s work order.','Tap Edit Job Details.','In Exclusions, type permits, haul away, paint touch-ups.','Tap Submit.','Tap Save.']},
+  {id:'upload_doc', area:'wo', title:'Upload a photo',
+    text:'Upload any photo to Jen Walker\'s job documents.',
+    check:S=>{ const w=S.wo(TJ.jen); return !!w && (w.docs||[]).length>0; },
+    steps:[S=>S.opened(TJ.jen), S=>S.called('toggleDocsView', a=>a[0]==TJ.jen)],
+    hints:[{t:'Open Jen Walker\'s work order.', g:tkCard(TJ.jen)},
+      {t:'Photos and files go under Docs at the top of the work order.', g:tkSel('.headerTab[onclick*="toggleDocsView"]')},
+      {t:'In Docs, choose a photo to upload.'}],
+    answer:['Open Jen Walker\'s work order.','Tap Docs at the top.','Tap the upload button and pick any photo.']},
+  {id:'field_view', area:'wo', title:'Switch to Field view',
+    text:'Open Rob Silva\'s work order in Field view.',
+    check:S=>S.state('OPEN_WO_ID')==TJ.rob && !!S.d.querySelector('#woOverlay .fieldNav'),
+    steps:[S=>S.opened(TJ.rob)],
+    hints:[{t:'Open Rob Silva\'s work order.', g:tkCard(TJ.rob)},
+      {t:'The view buttons are at the top of the work order.'},
+      {t:'Tap Field at the top of the work order.', g:tkSel('.headerTab[onclick*="setFieldView"]')}],
+    answer:['Open Rob Silva\'s work order.','Tap Field at the top.']},
+
+  {id:'schd_presite', area:'presite', title:'Schedule a walkthrough', job:TJ.lisa, moves:true,
+    text:'Schedule Lisa Moreno\'s pre-site walkthrough for two days from today, 10:00 to 11:00 AM, then add a SCHD PRESITE note so the job moves to Pre-Site Scheduled.',
+    check:S=>{ const w=S.wo(TJ.lisa); return !!w && w.presiteScheduled && (w.scheduleDates||[]).some(d=>d.type==='presite' && d.startDate===tkIsoOff(2)); },
+    steps:[S=>S.opened(TJ.lisa), S=>S.called('openScheduleWidget'), S=>{ const w=S.wo(TJ.lisa); return !!w && (w.scheduleDates||[]).some(d=>d.type==='presite'); }],
+    hints:[{t:'Lisa Moreno is on the Pre-Site Inspections tab.', g:tkTab('presite')},
+      {t:'On her work order, use + Add next to Schedule Date(s).', g:tkSel('[onclick*="openScheduleWidget"]')},
+      {t:'Pick Pre-Site Inspection, two days from today, 10:00 AM to 11:00 AM, tap Add This Date and Add to Calendar. Then add a SCHD PRESITE note.'}],
+    answer:['Open Lisa Moreno\'s work order.','Tap + Add next to Schedule Date(s).','Choose Pre-Site Inspection, set Start Date to two days from today, Start Time to 10:00 AM and End Time to 11:00 AM.','Tap Add This Date, then Add to Calendar.','Tap Add Note, set Note Type to SCHD PRESITE, type a short note and tap Add Note.']},
+  {id:'presite_checkout', area:'presite', title:'Check in to a walkthrough', job:TJ.tom, moves:true,
+    text:'Tom Becker\'s walkthrough is today. Check in, check out, and mark the inspection complete.',
+    check:S=>{ const w=S.wo(TJ.tom); if(!w || !w.presiteComplete) return false; const f=S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in && s.out); },
+    steps:[S=>S.opened(TJ.tom), S=>{ const w=S.wo(TJ.tom), f=w && S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in); }],
+    hints:[{t:'Find Tom Becker under Pre-Site Scheduled.', g:tkTab('presite')},
+      {t:'On his work order, look under Check In/Out for today.', g:tkSel('.ciBtn.in')},
+      {t:'Tap Check In, then Check Out, and answer Yes when it asks if the inspection is complete.'}],
+    answer:['Open Tom Becker\'s work order.','Under Check In/Out, tap Check In and confirm.','Tap Check Out and confirm.','When it asks if the inspection is complete, tap Yes.']},
+  {id:'presite_tool', area:'presite', title:'Write up a walkthrough', job:TJ.ana, moves:true,
+    text:'Ana Ruiz\'s walkthrough is done. Write it up in the pre-site tool and save it to the work order.',
+    check:S=>{ const w=S.wo(TJ.ana); return !!w && !!w.presiteDone; },
+    steps:[S=>S.opened(TJ.ana), S=>S.called('openPresiteTool', a=>a[0]==TJ.ana)],
+    hints:[{t:'Ana Ruiz is under Pre-Site Complete.', g:tkTab('presite')},
+      {t:'The pre-site tool opens from a note with Note Type PRESITE.'},
+      {t:'Set Note Type to PRESITE and tap Start Pre-Site. Pick the age of the house, tap through what the job needs, Build the list, then Save to work order.'}],
+    answer:['Open Ana Ruiz\'s work order.','Tap Add Note and set Note Type to PRESITE.','Tap Start Pre-Site.','Pick the age of the house, then tap Tap through it.','Pick a category and at least one item, then tap Continue.','Tap Build the list.','Tap Save to work order.']},
+
+  {id:'build_est', area:'est', title:'Build an estimate', job:TJ.greg, moves:true,
+    text:'Build Greg Holt\'s estimate and mark it as built.',
+    check:S=>{ const w=S.wo(TJ.greg); return !!w && !!w.estimateDone; },
+    steps:[S=>S.called('openEstimateSplit', a=>a[0]==TJ.greg), S=>S.called('doneSplit')],
+    hints:[{t:'Greg Holt is on the Estimates tab under Build Estimate.', g:tkTab('estimates')},
+      {t:'Use the Build button on his card.', g:tkAct(TJ.greg,'openEstimateSplit')},
+      {t:'When the estimate is done, tap Done and answer Yes.'}],
+    answer:['Tap the Estimates tab.','Tap Build on Greg Holt\'s card.','Build the estimate, then tap Done.','Tap Yes when it asks if the estimate has been built.']},
+  {id:'send_est', area:'est', title:'Send an estimate', job:TJ.maria, moves:true,
+    text:'Send Maria Chen\'s estimate: copy her email address for the e-sign tool, then mark the estimate as sent.',
+    check:S=>{ const w=S.wo(TJ.maria); return !!w && !!w.estimateSent && (S.called('copyToClipboard', a=>/maria\.chen/i.test(a[0]||'')) || S.called('copyText', a=>/maria\.chen/i.test(a[0]||''))); },
+    steps:[S=>S.called('openEsignSplit', a=>a[0]==TJ.maria), S=>S.called('copyToClipboard')||S.called('copyText')],
+    hints:[{t:'Maria Chen is on the Estimates tab under Send Estimate.', g:tkTab('estimates')},
+      {t:'Tap Send on her card. Her email is under Job Info.', g:tkAct(TJ.maria,'openEsignSplit')},
+      {t:'Tap the copy button next to her email, then tap Done and answer Yes.'}],
+    answer:['Tap the Estimates tab.','Tap Send on Maria Chen\'s card.','Tap the copy button next to her email.','Tap Done, then Yes when it asks if the estimate has been sent.']},
+  {id:'approve_est', area:'est', title:'Record an approval', job:TJ.dave, moves:true,
+    text:'Dave Patel approved his estimate. Record it.',
+    check:S=>{ const w=S.wo(TJ.dave); return !!w && !!w.estimateApproved; },
+    steps:[S=>S.called('approveEstimate')],
+    hints:[{t:'Dave Patel is on the Estimates tab under Pending Approval.', g:tkTab('estimates')},
+      {t:'His card has three buttons for the customer\'s answer.', g:tkAct(TJ.dave,'approveEstimate')},
+      {t:'Tap Approved on his card and confirm.'}],
+    answer:['Tap the Estimates tab.','Tap Approved on Dave Patel\'s card.','Tap Yes to confirm.']},
+  {id:'decline_est', area:'est', title:'Record a declined estimate', job:TJ.dave, moves:true,
+    text:'Dave Patel decided not to go ahead. Record it.',
+    check:S=>{ const w=S.wo(TJ.dave); return !!w && !!w.estimateDeclined; },
+    steps:[S=>S.called('declineEstimate')],
+    hints:[{t:'Dave Patel is on the Estimates tab under Pending Approval.', g:tkTab('estimates')},
+      {t:'His card has three buttons for the customer\'s answer.', g:tkAct(TJ.dave,'declineEstimate')},
+      {t:'Tap Declined on his card and confirm.'}],
+    answer:['Tap the Estimates tab.','Tap Declined on Dave Patel\'s card.','Tap Yes to confirm.']},
+
+  {id:'schedule_job', area:'sched', title:'Schedule a job', job:TJ.kim, moves:true,
+    text:'Kim Nguyen approved. Add a Whole Job date a week from today, then add a SCHD note so the job moves to Scheduled.',
+    check:S=>{ const w=S.wo(TJ.kim); return !!w && !!w.jobScheduled && (w.scheduleDates||[]).some(d=>d.type==='full'); },
+    steps:[S=>S.opened(TJ.kim), S=>S.called('openScheduleWidget'), S=>{ const w=S.wo(TJ.kim); return !!w && (w.scheduleDates||[]).some(d=>d.type==='full'); }],
+    hints:[{t:'Kim Nguyen is on the Scheduling tab under Schedule Job.', g:tkTab('inprogress')},
+      {t:'On her work order, use + Add next to Schedule Date(s).', g:tkSel('[onclick*="openScheduleWidget"]')},
+      {t:'Pick Whole Job, a week from today, a start and end time, tap Add This Date and Add to Calendar. Then add a SCHD note.'}],
+    answer:['Open Kim Nguyen\'s work order.','Tap + Add next to Schedule Date(s).','Choose Whole Job, set Start Date to a week from today and fill in Start Time and End Time.','Tap Add This Date, then Add to Calendar.','Tap Add Note, set Note Type to SCHD, type a short note and tap Add Note.']},
+  {id:'reschedule', area:'sched', title:'Reschedule a job',
+    text:'Rob Silva needs his job to start one day later. Move his scheduled dates back one day and add a RESCHD note.',
+    check:S=>{ const w=S.wo(TJ.rob); return !!w && (w.scheduleDates||[]).some(d=>d.type==='full' && d.startDate===tkIsoOff(4)) && (w.notes||[]).some(n=>n.type==='RESCHD'); },
+    steps:[S=>S.opened(TJ.rob), S=>S.called('openScheduleEdit'), S=>{ const w=S.wo(TJ.rob); return !!w && (w.scheduleDates||[]).some(d=>d.startDate===tkIsoOff(4)); }],
+    hints:[{t:'Rob Silva is on the Scheduling tab under Scheduled.', g:tkTab('inprogress')},
+      {t:'Tap his scheduled date on the work order to edit it.', g:tkSel('[onclick*="openScheduleEdit"]')},
+      {t:'Move the start and end dates one day later, tap Save Changes, then add a RESCHD note.'}],
+    answer:['Open Rob Silva\'s work order.','Tap his Whole Job date under Schedule Date(s).','Move Start Date and End Date one day later.','Tap Save Changes, then choose whether to send the updated appointment email.','Tap Add Note, set Note Type to RESCHD, type a short note and tap Add Note.']},
+  {id:'checkin_job', area:'sched', title:'Check in and out',
+    text:'Check in to Jen Walker\'s job for today, then check out.',
+    check:S=>{ const w=S.wo(TJ.jen), f=w && S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in && s.out); },
+    steps:[S=>{ const w=S.wo(TJ.jen), f=w && S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in); }],
+    hints:[{t:'Jen Walker is on the Scheduling tab under In Progress.', g:tkTab('inprogress')},
+      {t:'Her card and her work order both have a Check In button for today.', g:S=>S.d.querySelector(`.ciBtn[onclick*="(${TJ.jen},"]`)},
+      {t:'Tap Check In and confirm, then Check Out and confirm.'}],
+    answer:['Tap the Scheduling tab.','On Jen Walker\'s card, tap Check In and confirm.','Tap Check Out and confirm.']},
+  {id:'complete_job', area:'sched', title:'Complete a job', job:TJ.jen, moves:true,
+    text:'Jen Walker\'s job is finished. Mark it complete.',
+    check:S=>{ const w=S.wo(TJ.jen); return !!w && !!w.jobComplete; },
+    steps:[S=>S.called('confirmJobComplete')],
+    hints:[{t:'Jen Walker is on the Scheduling tab under In Progress.', g:tkTab('inprogress')},
+      {t:'Her card has a button for finishing the job.', g:tkAct(TJ.jen,'confirmJobComplete')},
+      {t:'Tap Complete Job and answer Yes.'}],
+    answer:['Tap the Scheduling tab.','Tap Complete Job on Jen Walker\'s card.','Tap Yes to confirm.']},
+
+  {id:'build_inv', area:'inv', title:'Build an invoice', job:TJ.sam, moves:true,
+    text:'Build Sam Ortiz\'s invoice and mark it as built.',
+    check:S=>{ const w=S.wo(TJ.sam); return !!w && !!w.invoiceDone; },
+    steps:[S=>S.called('openInvoiceSplit', a=>a[0]==TJ.sam), S=>S.called('doneSplit')],
+    hints:[{t:'Sam Ortiz is on the Invoices tab under Build Invoice.', g:tkTab('invoices')},
+      {t:'Use the Build button on his card.', g:tkAct(TJ.sam,'openInvoiceSplit')},
+      {t:'When the invoice is done, tap Done and answer Yes.'}],
+    answer:['Tap the Invoices tab.','Tap Build on Sam Ortiz\'s card.','Build the invoice, then tap Done.','Tap Yes when it asks if the invoice has been built.']},
+  {id:'send_inv', area:'inv', title:'Send an invoice', job:TJ.pat, moves:true,
+    text:'Send Pat Lee\'s invoice yourself, by hand.',
+    check:S=>{ const w=S.wo(TJ.pat); return !!w && !!w.invoiceSent; },
+    steps:[S=>S.called('openSendInvoice', a=>a[0]==TJ.pat)],
+    hints:[{t:'Pat Lee is on the Invoices tab under Send Invoice.', g:tkTab('invoices')},
+      {t:'Use the Send button on her card.', g:tkAct(TJ.pat,'openSendInvoice')},
+      {t:'Choose Send It Yourself.'}],
+    answer:['Tap the Invoices tab.','Tap Send on Pat Lee\'s card.','Tap Send It Yourself.']},
+  {id:'survey', area:'inv', title:'Close out with a survey', job:TJ.nora, moves:true,
+    text:'Do Nora Quinn\'s survey and close out her job.',
+    check:S=>{ const w=S.wo(TJ.nora); return !!w && !!w.movedToHistoryAt; },
+    steps:[S=>S.opened(TJ.nora), S=>S.called('openNoteSheet')||S.called('openFieldNote')],
+    hints:[{t:'Nora Quinn is on the Surveys tab.', g:tkTab('surveys')},
+      {t:'Surveys are logged as a note on her work order.'},
+      {t:'Add a note with Note Type SURVEY and the customer\'s answers.'}],
+    answer:['Tap the Surveys tab and open Nora Quinn\'s work order.','Tap Add Note and set Note Type to SURVEY.','Type the customer\'s answers and tap Add Note.']},
+  {id:'find_history', area:'inv', title:'Look up an old job',
+    text:'Find Ray Fox\'s finished job in Job History and open it.',
+    check:S=>S.after('switchTab', 'openWorkOrder', a=>a[0]==TJ.ray, a=>a[0]==='jobhistory'),
+    steps:[S=>S.called('switchTab', a=>a[0]==='jobhistory')],
+    hints:[{t:'Finished jobs are kept on their own tab.', g:tkTab('jobhistory')},
+      {t:'Tap Job History.', g:tkTab('jobhistory')},
+      {t:'Tap Ray Fox\'s card to open it.', g:tkCard(TJ.ray)}],
+    answer:['Tap the Job History tab.','Tap Ray Fox\'s card.']},
+
+  {id:'admin_stage', area:'admin', admin:true, title:'Move a job with Admin', job:TJ.greg, moves:true,
+    text:'Use Admin to move Greg Holt\'s job back to Pre-Site Complete.',
+    check:S=>{ const w=S.wo(TJ.greg); return !!w && S.W.stageNameOf(w)==='Pre-Site Complete'; },
+    steps:[S=>S.opened(TJ.greg), S=>S.called('toggleAdminView', a=>a[0]==TJ.greg)],
+    hints:[{t:'Open Greg Holt\'s work order.', g:tkCard(TJ.greg)},
+      {t:'Tap Admin at the top of the work order.', g:tkSel('.headerTab[onclick*="toggleAdminView"]')},
+      {t:'Under the stage buttons, tap Pre-Site Complete.'}],
+    answer:['Open Greg Holt\'s work order.','Tap Admin at the top.','Tap Pre-Site Complete.']},
+  {id:'admin_clone', area:'admin', admin:true, title:'Clone a work order',
+    text:'Make a clone of Kim Nguyen\'s work order.',
+    check:S=>S.DB.workOrders.filter(w=>/kim\s+nguyen/i.test(w.customer.name||'')).length>=2,
+    steps:[S=>S.opened(TJ.kim), S=>S.called('toggleAdminView', a=>a[0]==TJ.kim)],
+    hints:[{t:'Open Kim Nguyen\'s work order.', g:tkCard(TJ.kim)},
+      {t:'Cloning is under Admin at the top of the work order.', g:tkSel('.headerTab[onclick*="toggleAdminView"]')},
+      {t:'In Admin Controls, tap Clone.'}],
+    answer:['Open Kim Nguyen\'s work order.','Tap Admin at the top.','Tap Clone.']}
+];
+const taskById=id=>TASKS.find(t=>t.id===id);
+
+/* ----- the person doing the tasks ----- */
+const TK={active:false, doc:null, log:[], seen:{}, level:{}, hint:null, lastHead:0, timer:0, msg:'', answer:false, collapsed:false, hooked:null, popFor:null};
+const myTasks=()=>DATA.tasks.find(t=>t.id===(ME && ME.uid));
+function tkDismissKey(){ return 'gh_mtg_tasks_closed_'+MTG_ID; }
+function tkDismissed(d){ try{ return sessionStorage.getItem(tkDismissKey())===String(d.at); }catch(e){ return false; } }
+function taskOnData(){
+  const d=myTasks();
+  TK.doc=d||null;
+  if(!d || d.status==='cancelled'){ tkHidePop(); if(TK.active) tkExit(); renderTaskProgress(); return; }
+  if(d.status==='new') tkShowPop(d); else tkHidePop();
+  if((d.status==='active' || d.status==='done') && !TK.active && !tkDismissed(d)) tkEnter(false);
+  renderTaskPanel(); renderTaskProgress();
+}
+function tkShowPop(d){
+  if(TK.popFor===d.at && $('tkPop')) return;
+  TK.popFor=d.at; tkHidePop(true);
+  const el=document.createElement('button'); el.type='button'; el.id='tkPop'; el.className='tkPop';
+  el.innerHTML=`<span class="tkPopIc">${icon('check')}</span><span class="tkPopBody"><b>New Practice Task${d.tasks.length>1?'s':''}</b>
+    <span class="tkPopFrom">From ${esc(d.byName||'')}</span>
+    <span class="tkPopList">${d.tasks.map(id=>taskById(id)).filter(Boolean).map(t=>`<span>${esc(t.title)}</span>`).join('')}</span></span>`;
+  el.onclick=tkStart;
+  document.body.appendChild(el);
+}
+function tkHidePop(instant){
+  const el=$('tkPop'); if(!el) return;
+  if(instant || RM.matches){ el.remove(); return; }
+  el.classList.add('out'); setTimeout(()=>el.remove(), 260);
+}
+function tkStart(){
+  const d=myTasks(); if(!d) return;
+  tkHidePop();
+  try{ sessionStorage.removeItem(tkDismissKey()); }catch(e){}
+  SUB('tasks').doc(ME.uid).update({status:'active', startedAt:Date.now(), done:{}, attempts:0, hints:0, answers:[]}).catch(fail);
+  d.status='active'; d.done={}; d.attempts=0; d.hints=0; d.answers=[];
+  tkEnter(true);
+}
+function tkEnter(fresh){
+  TK.active=true; TK.log=[]; TK.seen={}; TK.level={}; TK.hint=null; TK.msg=''; TK.answer=!!(TK.doc && (TK.doc.answers||[]).length); TK.lastHead=Date.now(); TK.collapsed=!tkWideMQ.matches;
+  if(TAB!=='practice') showTab('practice');
+  ppSetPrivate(true, fresh);
+  clearInterval(TK.timer); TK.timer=setInterval(tkTick, 1000);
+  renderTaskPanel(); ppRenderBar();
+}
+function tkExit(){
+  TK.active=false; clearInterval(TK.timer); TK.timer=0; TK.hint=null;
+  ppSetPrivate(false, false);
+  renderTaskPanel(); ppRenderBar();
+}
+function tkBackToShared(){
+  const d=myTasks(); if(d){ try{ sessionStorage.setItem(tkDismissKey(), String(d.at)); }catch(e){} }
+  tkExit();
+}
+/* Every function the practice copy runs is noted, so a task can tell what
+   was tapped (opening a job, a search, copying an email) as well as what changed. */
+const TK_WATCH=['openWorkOrder','goToWorkOrderInWorkflow','selectSearchResult','runGlobalSearch','toggleSearchBar','switchTab','openNewWorkOrder',
+  'startHeaderCustEdit','openNoteSheet','openFieldNote','openJobDetailsEdit','addJDBulk','toggleDocsView','setFieldView','toggleAdminView','openScheduleWidget',
+  'openScheduleEdit','openPresiteTool','openEstimateSplit','openEsignSplit','openInvoiceSplit','doneSplit','approveEstimate','declineEstimate','modifyEstimate',
+  'confirmJobComplete','openSendInvoice','copyToClipboard','copyText','checkInDay','checkOutDay'];
+function tkHook(){
+  const W=PP.frame && PP.frame.contentWindow;
+  if(!W || !W.GH_PRIVATE || TK.hooked===W) return;
+  TK.hooked=W;
+  TK_WATCH.forEach(n=>{
+    const f=W[n]; if(typeof f!=='function' || f._tk) return;
+    const w=function(...a){ try{ TK.log.push({f:n, a:a.map(x=>(x && typeof x==='object')?null:x), t:Date.now()}); if(TK.log.length>600) TK.log.shift(); }catch(e){} return f.apply(this, a); };
+    w._tk=true; W[n]=w;
+  });
+}
+function tkState(){
+  const W=PP.frame && PP.frame.contentWindow;
+  if(!W || !W.GH_PRIVATE || typeof W.getWO!=='function') return null;
+  let DB=null; try{ DB=W.eval('DB'); }catch(e){}
+  if(!DB || !DB.workOrders || !DB.workOrders.length) return null;
+  const L=TK.log;
+  const S={W, DB, d:W.document, L, today:tkIsoOff(0), tomorrow:tkIsoOff(1),
+    wo:id=>W.getWO(id),
+    state:n=>{ try{ return W.eval(n); }catch(e){ return undefined; } },
+    called:(f, test)=>L.some(e=>e.f===f && (!test || test(e.a))),
+    opened:id=>L.some(e=>['openWorkOrder','goToWorkOrderInWorkflow','selectSearchResult'].includes(e.f) && e.a[0]==id),
+    after:(f1, f2, test2, test1)=>{ const i=L.findIndex(e=>e.f===f1 && (!test1 || test1(e.a))); return i>=0 && L.slice(i+1).some(e=>e.f===f2 && (!test2 || test2(e.a))); }
+  };
+  return S;
+}
+function tkRun(){
+  const d=TK.doc, S=tkState();
+  if(!d || !S) return null;
+  const done=Object.assign({}, d.done||{});
+  let changed=false;
+  d.tasks.forEach(id=>{
+    const t=taskById(id); if(!t || done[id]) return;
+    let ok=false; try{ ok=!!t.check(S); }catch(e){}
+    if(ok){ done[id]=Date.now(); changed=true; TK.lastHead=Date.now(); if(TK.hint && TK.hint.id===id) TK.hint=null; return; }
+    let n=0; (t.steps||[]).forEach(f=>{ try{ if(f(S)) n++; }catch(e){} });
+    if(n>(TK.seen[id]||0)){ TK.seen[id]=n; TK.lastHead=Date.now(); }
+  });
+  if(changed){
+    d.done=done;
+    const all=d.tasks.every(id=>done[id]);
+    const upd={done};
+    if(all){ upd.status='done'; upd.doneAt=Date.now(); d.status='done'; TK.hint=null; TK.msg=''; }
+    SUB('tasks').doc(ME.uid).update(upd).catch(()=>{});
+    renderTaskPanel(true);
+  }
+  return S;
+}
+function tkTick(){
+  const d=TK.doc;
+  if(!TK.active || !d || d.status!=='active') return;
+  tkHook();
+  const S=tkRun(); if(!S) return;
+  if(d.status!=='active') return;
+  // a nudge when no headway has been made for a while
+  if(Date.now()-TK.lastHead>TK_STALL_MS){
+    const id=d.tasks.find(x=>!(d.done||{})[x]), t=taskById(id);
+    if(t){
+      const lv=Math.min((TK.level[id]||0)+1, t.hints.length);
+      if(lv>(TK.level[id]||0)){
+        TK.level[id]=lv; TK.hint={id, lv, text:t.hints[lv-1].t}; TK.collapsed=false;
+        d.hints=(d.hints||0)+1;
+        SUB('tasks').doc(ME.uid).update({hints:d.hints}).catch(()=>{});
+        // from the second nudge on, the place to look is lit up in the portal
+        if(lv>=2){ let g=null; for(let i=lv-1;i>=0 && !g;i--) g=t.hints[i].g; if(g){ try{ tkGlow(S, g(S)); }catch(e){} } }
+        renderTaskPanel();
+      }
+    }
+    TK.lastHead=Date.now();
+  }
+}
+function tkGlow(S, el){
+  if(!el) return;
+  const doc=S.d;
+  // a card tucked behind others in a stacked list is brought to the front first
+  try{ if(el.__rolo && el.dataset.woId) el.__rolo.goToId(+el.dataset.woId); }catch(e){}
+  if(!doc.getElementById('tkGlowCss')){
+    const st=doc.createElement('style'); st.id='tkGlowCss';
+    st.textContent='.tkGlow{outline:3px solid #f2b200 !important;outline-offset:3px !important;animation:tkGlow 1.1s ease-in-out 5 !important;}@keyframes tkGlow{50%{outline-color:rgba(242,178,0,.15)}}';
+    doc.head.appendChild(st);
+  }
+  el.classList.add('tkGlow');
+  setTimeout(()=>el.classList.remove('tkGlow'), 6000);
+}
+function tkCheck(){
+  const d=TK.doc; if(!d || d.status!=='active') return;
+  tkHook();
+  const S=tkRun();
+  if(d.status==='done'){ renderTaskPanel(); return; }
+  if(!S){ TK.msg='The practice portal is still loading.'; renderTaskPanel(); return; }
+  d.attempts=(d.attempts||0)+1;
+  SUB('tasks').doc(ME.uid).update({attempts:d.attempts}).catch(()=>{});
+  const left=d.tasks.filter(id=>!(d.done||{})[id]).length;
+  TK.msg=left===1 ? 'Not done yet. One task is still open.' : `Not done yet. ${left} tasks are still open.`;
+  renderTaskPanel();
+  const p=$('tkPanel'); if(p && !RM.matches) p.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(-3px)'},{transform:'translateX(0)'}], {duration:320});
+}
+function tkShowAnswer(){
+  const d=TK.doc; if(!d || (d.attempts||0)<3) return;
+  TK.answer=true;
+  const open=d.tasks.filter(id=>!(d.done||{})[id]);
+  d.answers=[...new Set((d.answers||[]).concat(open))];
+  SUB('tasks').doc(ME.uid).update({answers:d.answers}).catch(()=>{});
+  renderTaskPanel();
+}
+const tkWideMQ=window.matchMedia('(min-width:1100px)');
+function renderTaskPanel(celebrate){
+  let p=$('tkPanel');
+  const d=TK.doc, show=!!(TK.active && d && (d.status==='active' || d.status==='done') && TAB==='practice' && MTG);
+  /* On a wide screen the card sits beside the practice portal instead of over it. */
+  const side=show && tkWideMQ.matches && !!$('ppStage');
+  if(document.body.classList.contains('tkSide')!==side){ document.body.classList.toggle('tkSide', side); requestAnimationFrame(()=>{ ppFit(); mirFit(); }); }
+  if(!show){ if(p) p.remove(); return; }
+  if(!p){ p=document.createElement('div'); p.id='tkPanel'; p.className='tkPanel'; }
+  const parent=side ? $('ppStage') : document.body;
+  if(p.parentNode!==parent) parent.appendChild(p);
+  p.classList.toggle('collapsed', TK.collapsed);
+  const done=d.done||{}, n=d.tasks.filter(id=>done[id]).length, all=d.status==='done';
+  const ans=new Set(d.answers||[]);
+  const head=`<button type="button" class="tkHead" onclick="TK.collapsed=!TK.collapsed;renderTaskPanel()" aria-expanded="${!TK.collapsed}">
+      <span class="tkHeadIc">${icon('check')}</span><span class="tkHeadT">Tasks</span><span class="tkCount">${n} of ${d.tasks.length}</span>
+      <span class="tkChev">${icon('up')}</span></button>`;
+  if(all){
+    const mins=Math.max(1, Math.round(((d.doneAt||Date.now())-(d.startedAt||Date.now()))/60000));
+    p.innerHTML=head+`<div class="tkBody"><div class="tkDone"><span class="tkDoneIc">${icon('check')}</span><div><b>All done</b><span>${mins} min</span></div></div>
+      <button class="btn tkBtn" onclick="tkBackToShared()">Back to Shared Practice</button></div>`;
+    if(celebrate && !RM.matches) p.querySelector('.tkDone').animate([{transform:'scale(.8)', opacity:0},{transform:'scale(1.05)', opacity:1},{transform:'scale(1)'}], {duration:420, easing:'cubic-bezier(.16,1,.3,1)'});
+    return;
+  }
+  const items=d.tasks.map((id,i)=>{
+    const t=taskById(id); if(!t) return '';
+    const ok=!!done[id], hint=TK.hint && TK.hint.id===id && !ok ? TK.hint : null;
+    return `<li class="tkItem ${ok?'ok':''}">
+      <span class="tkNum">${ok?icon('check'):i+1}</span>
+      <div class="tkTxt"><b>${esc(t.title)}</b><span>${esc(t.text)}</span>
+        ${hint?`<div class="tkHint"><span class="tkBulb">${icon('bulb')}</span>${esc(hint.text)}</div>`:''}
+        ${(!ok && TK.answer && ans.has(id))?`<ol class="tkAns">${t.answer.map(s=>`<li>${esc(s)}</li>`).join('')}</ol>`:''}
+      </div></li>`;
+  }).join('');
+  const tries=d.attempts||0;
+  p.innerHTML=head+`<div class="tkBody"><ol class="tkList">${items}</ol>
+    ${TK.msg?`<div class="tkMsg">${esc(TK.msg)}</div>`:''}
+    <div class="tkFoot"><button class="btn tkBtn" onclick="tkCheck()">${icon('check')}Check</button>
+      ${tries>=3 && !TK.answer?`<button class="btn secondary sm" onclick="tkShowAnswer()">Show Answer</button>`:''}
+      <span class="tkTries">${tries?`Tries: ${tries}`:''}</span></div></div>`;
+}
+
+/* ----- assigning (admins) ----- */
+const TKS={open:false, people:new Set(), tasks:new Set()};
+function openTaskSheet(){ TKS.open=true; renderTaskSheet(true); }
+function closeTaskSheet(){ TKS.open=false; const s=$('tkSheet'); if(s){ if(RM.matches) s.remove(); else { s.classList.add('out'); setTimeout(()=>s.remove(), 220); } } }
+function tkPeople(){
+  const live=new Set(livePeople().map(p=>p.id));
+  return Object.values(USERS||{}).filter(u=>u.uid && u.username).map(u=>({uid:u.uid, name:u.username, admin:!!u.isAdmin, here:live.has(u.uid)}))
+    .sort((a,b)=>(b.here-a.here) || a.name.localeCompare(b.name));
+}
+function tkToggle(set, key){ if(TKS[set].has(key)) TKS[set].delete(key); else TKS[set].add(key); renderTaskSheet(); }
+function tkTaskBlocked(t){
+  const people=tkPeople().filter(p=>TKS.people.has(p.uid));
+  if(t.admin && people.some(p=>!p.admin)) return true;
+  if(t.moves && t.job) for(const id of TKS.tasks){ const o=taskById(id); if(o && o.id!==t.id && o.moves && o.job===t.job) return true; }
+  return false;
+}
+function tkFmtDur(ms){ const m=Math.floor(ms/60000), s=Math.floor(ms/1000)%60; return m+':'+String(s).padStart(2,'0'); }
+function renderTaskSheet(first){
+  if(!TKS.open) return;
+  let s=$('tkSheet');
+  if(!s){ s=document.createElement('div'); s.id='tkSheet'; s.className='tkSheet'; s.onclick=e=>{ if(e.target===s) closeTaskSheet(); }; document.body.appendChild(s); }
+  const keepScroll=s.querySelector('.tkCard') ? s.querySelector('.tkCard').scrollTop : 0;
+  // anything ticked that has become blocked is let go
+  TASKS.forEach(t=>{ if(TKS.tasks.has(t.id) && tkTaskBlocked(t)) TKS.tasks.delete(t.id); });
+  const people=tkPeople();
+  const groups=TASK_AREAS.map(([a,label])=>{
+    const list=TASKS.filter(t=>t.area===a); if(!list.length) return '';
+    return `<div class="tkGroup"><div class="tkGroupT">${esc(label)}</div>${list.map(t=>{
+      const blocked=tkTaskBlocked(t), on=TKS.tasks.has(t.id);
+      return `<button type="button" class="tkPick ${on?'on':''}" ${blocked?'disabled':''} onclick="tkToggle('tasks','${t.id}')"><span class="tkBox">${on?icon('check'):''}</span><span><b>${esc(t.title)}</b><span>${esc(t.text)}</span></span></button>`;
+    }).join('')}</div>`;
+  }).join('');
+  s.innerHTML=`<div class="tkCard${first?' enter':''}" role="dialog" aria-label="Practice Tasks">
+    <div class="tkCardHead"><h2>Practice Tasks</h2><button class="iconBtn" aria-label="Close" onclick="closeTaskSheet()">${icon('x')}</button></div>
+    <div id="tkProgBox"></div>
+    <div class="tkSec"><div class="tkSecT">Assign To</div><div class="tkPeople">${people.map(p=>`<button type="button" class="tkPerson ${TKS.people.has(p.uid)?'on':''}" style="--pc:${colorFor(p.name)}" onclick="tkToggle('people','${p.uid}')"><span class="av">${esc(p.name.slice(0,1))}</span>${esc(p.name)}${p.here?'<span class="here"></span>':''}</button>`).join('')}</div></div>
+    <div class="tkSec"><div class="tkSecT">Tasks <span class="count">${TKS.tasks.size}</span></div>${groups}</div>
+    <div class="tkCardFoot"><button class="btn secondary" onclick="closeTaskSheet()">Cancel</button>
+      <button class="btn tc" ${(TKS.people.size && TKS.tasks.size)?'':'disabled'} onclick="tkAssign()">Assign</button></div>
+  </div>`;
+  const c=s.querySelector('.tkCard'); if(c) c.scrollTop=keepScroll;
+  renderTaskProgress();
+}
+/* who has which tasks, and how they are doing, kept up to date while open */
+function renderTaskProgress(){
+  const box=$('tkProgBox'); if(!box) return;
+  const status={new:'Sent', active:'Working', done:'Done', cancelled:'Cancelled'};
+  const prog=DATA.tasks.filter(d=>d.status!=='cancelled').sort((a,b)=>(b.at||0)-(a.at||0)).map(d=>{
+    const done=d.done||{}, n=d.tasks.filter(id=>done[id]).length;
+    const dur=d.startedAt ? tkFmtDur((d.doneAt||Date.now())-d.startedAt) : '';
+    return `<div class="tkProg ${d.status}">
+      <div class="tkProgTop"><span class="av" style="--pc:${colorFor(d.name)}">${esc(String(d.name||'?').slice(0,1))}</span><b>${esc(d.name||'')}</b>
+        <span class="tkPill">${status[d.status]||''}</span><span class="grow"></span>
+        <button class="iconBtn" aria-label="Remove" onclick="tkCancel('${d.id}')">${icon('x')}</button></div>
+      <div class="tkBar"><span style="width:${d.tasks.length?Math.round(n/d.tasks.length*100):0}%"></span></div>
+      <div class="tkProgList">${d.tasks.map(id=>{ const t=taskById(id); return t?`<span class="${done[id]?'ok':''} ${(d.answers||[]).includes(id)?'ans':''}">${done[id]?icon('check'):''}${esc(t.title)}</span>`:''; }).join('')}</div>
+      <div class="tkStats">${dur?`<span>${dur}</span>`:''}<span>Tries ${d.attempts||0}</span><span>Hints ${d.hints||0}</span>${(d.answers||[]).length?`<span class="warn">Answer shown</span>`:''}</div>
+    </div>`;
+  }).join('');
+  box.innerHTML=prog?`<div class="tkSec"><div class="tkSecT">Progress</div>${prog}</div>`:'';
+}
+function tkAssign(){
+  if(!TKS.people.size || !TKS.tasks.size) return;
+  const order=TASKS.map(t=>t.id).filter(id=>TKS.tasks.has(id));
+  const people=tkPeople().filter(p=>TKS.people.has(p.uid));
+  const b=db.batch();
+  people.forEach(p=>b.set(SUB('tasks').doc(p.uid), {uid:p.uid, name:p.name, tasks:order, by:ME.uid, byName:ME.name, at:Date.now(), status:'new', done:{}, attempts:0, hints:0, answers:[]}));
+  b.commit().then(()=>toast(people.length===1 ? 'Sent to '+people[0].name+'.' : 'Sent to '+people.length+' people.')).catch(fail);
+  TKS.people.clear(); TKS.tasks.clear();
+  renderTaskSheet();
+}
+async function tkCancel(uid){
+  const d=DATA.tasks.find(x=>x.id===uid); if(!d) return;
+  if(!await askYesNo('Remove these tasks?', d.name||'', 'Remove', true)) return;
+  SUB('tasks').doc(uid).delete().catch(fail);
+}
+setInterval(()=>{ if(TKS.open && DATA.tasks.some(d=>d.status==='active')) renderTaskProgress(); }, 1000);
+tkWideMQ.addEventListener('change', ()=>renderTaskPanel());
 
 boot();
 </script>
