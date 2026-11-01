@@ -126,7 +126,7 @@ html.dark .btn.orange{color:#1a0d00;}
 .iconBtn:hover{background:color-mix(in srgb, var(--tc) 12%, transparent);color:var(--tc);}
 .iconBtn:active{transform:scale(.9);}
 .iconBtn[disabled]{opacity:.3;pointer-events:none;}
-input[type=text],select,textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
+input[type=text],input[type=date],select,textarea{width:100%;border:1.5px solid var(--line);background:var(--paper);border-radius:var(--radius-sm);
   padding:9px 11px;min-height:42px;outline:none;transition:border-color .15s,box-shadow .15s;}
 input:focus,select:focus,textarea:focus{border-color:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb, var(--tc) 20%, transparent);}
 textarea{resize:vertical;min-height:70px;line-height:1.45;}
@@ -199,25 +199,79 @@ html.dark .liveTag{color:#1a0d00;}
   .tabs button .ic{flex:0 0 auto;}
 }
 .pane{animation:paneIn .26s var(--ease-out);}
-/* action items */
+/* action items: cards in the tool's green, turning orange when due soon and
+   red when late; the round check fills and draws its tick when tapped */
 .panelTitle{font-size:1.02em;font-weight:700;color:var(--tc);margin:0 0 12px;display:flex;align-items:center;gap:8px;}
-.aiForm{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr) minmax(0,.9fr) auto;gap:8px;align-items:center;}
-@media (max-width:900px){ .aiForm{grid-template-columns:minmax(0,1fr);} }
-.aiList{display:flex;flex-direction:column;}
-.ai{display:flex;align-items:flex-start;gap:12px;padding:11px 6px;border-bottom:1px solid var(--line-soft);transition:background-color .2s;border-radius:var(--radius-sm);}
-.ai:hover{background:color-mix(in srgb, var(--tc) 5%, transparent);}
-.ai:last-child{border-bottom:0;}
-.ai .txt{overflow-wrap:anywhere;cursor:text;font-weight:600;}
-.ai.done .txt{color:var(--muted);text-decoration:line-through;font-weight:500;}
-.ai .sub{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:5px;font-size:.78em;color:var(--muted);align-items:center;}
+.aiPane{max-width:1000px;}
+.aiCompose{position:relative;border-radius:18px;padding:16px 18px 18px;margin-bottom:22px;
+  background:linear-gradient(105deg,color-mix(in srgb, var(--c-actions) 20%, var(--paper)),var(--paper) 62%);
+  border:1px solid color-mix(in srgb, var(--c-actions) 32%, var(--line));
+  box-shadow:inset 0 1px 0 var(--raise-hi),inset 0 -1px 0 var(--raise-lo),var(--raise-sh);}
+.aiCompose .fieldLbl{color:var(--c-actions);}
+.aiForm{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(0,1fr) minmax(9.5em,1fr) auto;gap:10px;align-items:end;}
+.aiForm input,.aiForm select{width:100%;height:46px;min-height:46px;border-radius:12px;padding-top:0;padding-bottom:0;}
+.aiForm input[type=date]{min-width:0;-webkit-appearance:none;appearance:none;display:block;}
+@media (max-width:600px){ .ai{gap:11px;padding:12px 10px 12px 14px;} .aiCheck{width:1.85em;height:1.85em;} }
+.aiForm .aiText{font-size:1.05em;font-weight:600;}
+.aiForm .btn{min-height:44px;border-radius:12px;}
+@media (max-width:900px){ .aiForm{grid-template-columns:minmax(0,1fr) minmax(0,1fr);} .aiForm .aiWhat,.aiForm .btn{grid-column:1/-1;} }
+@media (max-width:600px){ .aiForm{grid-template-columns:minmax(0,1fr);} }
+.aiHead{display:flex;align-items:center;gap:10px;margin:4px 2px 12px;}
+.aiHead h3{margin:0;font-family:var(--f-display);font-weight:400;font-size:1.55em;color:var(--navy);line-height:1.1;}
+.aiHead .count{--tc:var(--c-actions);}
+.aiHead.doneHead{margin-top:28px;}
+.aiHead.doneHead h3{font-size:1.2em;color:var(--muted);}
+.aiList{display:flex;flex-direction:column;gap:10px;}
+.ai{--ac:var(--c-actions);position:relative;display:flex;align-items:center;gap:14px;padding:13px 14px 13px 18px;border-radius:16px;
+  background:linear-gradient(90deg,color-mix(in srgb, var(--ac) 13%, var(--paper)),var(--paper) 62%);
+  border:1px solid color-mix(in srgb, var(--ac) 28%, var(--line));
+  box-shadow:inset 5px 0 0 var(--ac),inset 0 1px 0 var(--raise-hi),var(--raise-sh);
+  transition:box-shadow .25s var(--ease),transform .2s var(--ease),opacity .3s,background .3s;}
+.ai:hover{transform:translateY(-1px);box-shadow:inset 5px 0 0 var(--ac),inset 0 1px 0 var(--raise-hi),0 3px 6px rgba(15,38,71,.08),0 12px 26px color-mix(in srgb, var(--ac) 18%, transparent);}
+.ai.soon{--ac:var(--orange);}
+.ai.late{--ac:var(--red);}
+.ai.done{--ac:color-mix(in srgb, var(--muted) 70%, var(--line));background:color-mix(in srgb, var(--paper) 70%, transparent);box-shadow:inset 5px 0 0 var(--ac);}
+.ai.done:hover{transform:none;}
+.aiCheck{flex:0 0 auto;width:2.05em;height:2.05em;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer;color:var(--ac);position:relative;}
+.aiCheck svg{width:100%;height:100%;display:block;overflow:visible;}
+.aiCheck circle{fill:color-mix(in srgb, var(--ac) 8%, var(--paper));stroke:currentColor;stroke-width:2.3;transition:fill .25s,stroke .25s;}
+.aiCheck path{fill:none;stroke:#fff;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:16;stroke-dashoffset:16;transition:stroke-dashoffset .3s var(--ease-out) .05s;}
+.aiCheck:hover circle{fill:color-mix(in srgb, var(--ac) 22%, var(--paper));}
+.aiCheck:active{transform:scale(.9);}
+.aiCheck:disabled{cursor:default;opacity:.6;}
+.ai.checked .aiCheck,.ai.done .aiCheck{color:var(--c-actions);}
+.ai.checked .aiCheck circle,.ai.done .aiCheck circle{fill:var(--c-actions);stroke:var(--c-actions);}
+.ai.checked .aiCheck path,.ai.done .aiCheck path{stroke-dashoffset:0;}
+.ai.checked .aiCheck{animation:pop .35s var(--ease-out);}
+.ai.checked{background:linear-gradient(90deg,color-mix(in srgb, var(--c-actions) 22%, var(--paper)),var(--paper) 70%);}
+.aiBody{flex:1 1 auto;min-width:0;}
+.ai .txt{overflow-wrap:anywhere;font-weight:700;font-size:1.1em;line-height:1.3;color:var(--navy);}
+.ai .txt.edit{cursor:text;}
+.ai.done .txt{color:var(--muted);text-decoration:line-through;text-decoration-color:color-mix(in srgb, var(--muted) 60%, transparent);font-weight:600;}
+.ai .sub{display:flex;flex-wrap:wrap;gap:6px 8px;margin-top:7px;font-size:.8em;align-items:center;}
 .ai .sub:empty{display:none;}
-.ai .who{font-weight:700;color:var(--pc);background:color-mix(in srgb, var(--pc) 12%, var(--paper));border-radius:999px;padding:1px 9px;}
-.ai .due{border-radius:999px;padding:1px 9px;background:var(--line-soft);}
-.ai .due.soon{background:color-mix(in srgb, var(--orange) 16%, var(--paper));color:var(--orange);font-weight:700;}
-.ai .due.late{background:color-mix(in srgb, var(--red) 14%, var(--paper));color:var(--red);font-weight:700;}
-.ai.done .due{background:var(--line-soft);color:var(--muted);font-weight:400;}
-.ai .iconBtn{opacity:.55;transition:opacity .15s;}
-.ai:hover .iconBtn{opacity:1;}
+.aiChip{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:3px 10px 3px 4px;font-weight:700;line-height:1.3;
+  background:color-mix(in srgb, var(--pc,var(--muted)) 13%, var(--paper));color:color-mix(in srgb, var(--pc,var(--muted)) 75%, var(--navy));
+  border:1px solid color-mix(in srgb, var(--pc,var(--muted)) 22%, transparent);}
+.aiChip .av{width:1.55em;height:1.55em;border-radius:50%;background:var(--pc);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.85em;text-transform:uppercase;}
+.aiChip.due{--pc:var(--muted);padding-left:8px;}
+.aiChip .ic{width:1.15em;height:1.15em;}
+.ai.soon .aiChip.due{--pc:var(--orange);}
+.ai.late .aiChip.due{--pc:var(--red);}
+.ai.done .aiChip{opacity:.75;}
+.aiChip.mtg{--pc:var(--c-agenda);padding-left:8px;cursor:pointer;text-decoration:none;}
+.aiChip.mtg:hover{background:color-mix(in srgb, var(--c-agenda) 22%, var(--paper));}
+.aiChip.by{--pc:var(--c-actions);padding-left:8px;font-weight:600;}
+.ai .del{opacity:.5;transition:opacity .15s;}
+.ai:hover .del{opacity:1;}
+@media (hover:none){ .ai .del{opacity:.8;} }
+.aiEmpty{display:flex;align-items:center;gap:10px;padding:16px 18px;border-radius:16px;color:var(--muted);font-weight:600;
+  background:color-mix(in srgb, var(--c-actions) 6%, var(--paper));border:1.5px dashed color-mix(in srgb, var(--c-actions) 30%, var(--line));}
+.aiEmpty .ic{width:1.5em;height:1.5em;color:var(--c-actions);}
+/* every open action item, on the Meetings page */
+.aiAll{margin:6px 0 4px;}
+.aiAll .sectionLabel .count{--tc:var(--c-actions);}
+.aiAll .sectionLabel .switch{margin-left:auto;font-size:.82em;--tc:var(--c-actions);}
 .mtgRow .dl{flex:0 0 auto;}
 @keyframes paneIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -582,6 +636,7 @@ html.dark .toast{color:var(--paper);}
   <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.8" fill="currentColor"/><circle cx="12" cy="12" r="1.8" fill="currentColor"/><circle cx="19" cy="12" r="1.8" fill="currentColor"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="4" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M8 12l3 3 5-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
   <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7 10.5l5 5 5-5M5 20h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15.5" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M3.5 10h17M8 3v4M16 3v4" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></symbol>
   <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.9"/><circle cx="9" cy="10" r="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M21 16l-5-5-9 9" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/></symbol>
  <symbol id="i-thumb" viewBox="0 0 24 24"><path d="M7 11v9H4v-9h3zm0 0l4-8c1.4 0 2.3 1.1 2 2.4L12.4 9H19a2 2 0 012 2.3l-1.2 7A2 2 0 0117.8 20H7" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round" stroke-linecap="round"/></symbol>
   <symbol id="i-thumbf" viewBox="0 0 24 24"><path d="M3.5 10.5h4v10h-4zM8.5 20.5V10.6l3.6-7.4c1.6 0 2.7 1.3 2.3 2.8l-.9 3.5H19a2.2 2.2 0 012.2 2.6l-1.3 7.2a2.2 2.2 0 01-2.2 1.8z" fill="currentColor"/></symbol>
@@ -792,7 +847,7 @@ function boot(){
   window.addEventListener('hashchange', route);
 }
 function showMe(){ $('whoami').textContent=ME.name; }
-function stopAll(){ leaveMeeting(); if(LIST_UNSUB){ LIST_UNSUB(); LIST_UNSUB=null; } }
+function stopAll(){ leaveMeeting(); if(LIST_UNSUB){ LIST_UNSUB(); LIST_UNSUB=null; } aiStopAll(); }
 function route(){
   if(!ME) return;
   const m=location.hash.match(/^#m=([\w-]+)/);
@@ -806,13 +861,17 @@ function showList(){
   document.body.dataset.tab='agenda';
   document.title='Good & Handy Meetings';
   $('main').innerHTML=`<div class="listHead"><h1>Meetings</h1><button class="btn orange" onclick="newMeeting()">${icon('plus')}New Meeting</button></div>
+    <div class="aiAll hidden" id="aiAllWrap"><div class="sectionLabel">Open Action Items <span class="count" id="aiAllCount">0</span>
+      <label class="switch"><input type="checkbox" class="chk" ${AI_MINE?'checked':''} onchange="setAiMine(this.checked)">Mine</label></div>
+      <div class="aiList" id="aiAllList"></div></div>
     <div id="liveWrap"><div class="sectionLabel">Live <span class="count" id="liveCount">0</span></div><div id="liveList"></div></div>
     <div class="sectionLabel">Past Meetings <span class="count" id="pastCount">0</span></div><div id="pastList"></div>`;
-  renderList();
+  renderList(); renderAllActions();
   if(LIST_UNSUB) return;
   LIST_UNSUB=ROOT().onSnapshot(snap=>{
     MEETINGS=snap.docs.map(d=>Object.assign({id:d.id}, d.data())).sort((a,b)=>(b.createdAt||0)-(a.createdAt||0));
-    if(!MTG_ID) renderList();
+    aiWatchAll();
+    if(!MTG_ID){ renderList(); renderAllActions(); }
   }, e=>{ console.error(e); if(!MTG_ID) gate('Meetings could not connect.', e && (e.code||e.message)); });
 }
 function renderList(){
@@ -1350,51 +1409,90 @@ function userNames(){ return Object.values(USERS||{}).map(u=>u.username).filter(
 function renderActionsPane(){
   const ro=readOnly();
   const opts=['<option value="">Unassigned</option>'].concat(userNames().map(n=>`<option value="${esc(n)}">${esc(n)}</option>`)).join('');
-  $('pane-actions').innerHTML=`<div class="panel">
-    ${ro?'':`<div class="aiForm" style="margin-bottom:16px;">
-      <input type="text" class="aiText" id="aiText" maxlength="300" aria-label="Action item" onkeydown="if(event.key==='Enter'){event.preventDefault();addAction();}">
-      <select id="aiWho" aria-label="Assigned to">${opts}</select>
-      <input type="date" id="aiDue" aria-label="Due date">
-      <button class="btn tc" onclick="addAction()">${icon('plus')}Add</button></div>`}
-    <div class="panelTitle">Open <span class="count" id="aiOpenCount">0</span></div><div class="aiList" id="aiOpen"></div>
-    <div class="panelTitle" style="margin-top:20px;">Done <span class="count" id="aiDoneCount">0</span></div><div class="aiList" id="aiDone"></div>
+  $('pane-actions').innerHTML=`<div class="aiPane">
+    ${ro?'':`<div class="aiCompose"><div class="aiForm">
+      <div class="aiWhat"><label class="fieldLbl" for="aiText">Action item</label><input type="text" class="aiText" id="aiText" maxlength="300" onkeydown="if(event.key==='Enter'){event.preventDefault();addAction();}"></div>
+      <div><label class="fieldLbl" for="aiWho">Assigned to</label><select id="aiWho">${opts}</select></div>
+      <div><label class="fieldLbl" for="aiDue">Due</label><input type="date" id="aiDue"></div>
+      <button class="btn" style="background:var(--c-actions);border-color:var(--c-actions);color:var(--on-c)" onclick="addAction()">${icon('plus')}Add</button></div></div>`}
+    <div class="aiHead"><h3>Open</h3><span class="count" id="aiOpenCount">0</span></div><div class="aiList" id="aiOpen"></div>
+    <div class="aiHead doneHead"><h3>Done</h3><span class="count" id="aiDoneCount">0</span></div><div class="aiList" id="aiDone"></div>
   </div>`;
   renderActions();
 }
+/* how an item reads: when it is due, in words, and whether it is close or late */
+function aiDueInfo(a){
+  if(!a.due) return null;
+  const today=todayISO(), d=new Date(a.due+'T00:00:00'), t=new Date(today+'T00:00:00');
+  const days=Math.round((d-t)/864e5);
+  let text, cls='';
+  if(a.done) text='Due '+fmtShortDate(a.due);
+  else if(days<0){ text=(-days)+(days===-1?' day late':' days late'); cls='late'; }
+  else if(days===0){ text='Due today'; cls='soon'; }
+  else if(days===1){ text='Due tomorrow'; cls='soon'; }
+  else { text='Due '+fmtShortDate(a.due); if(days<=2) cls='soon'; }
+  return {text, cls};
+}
+function aiMake(a, o){
+  return `<div class="ai">
+    <button class="aiCheck" aria-label="Done" onclick="aiTap(this, '${o.mid}', '${a.id}')"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><path d="M7.2 12.4l3.3 3.3 6.4-6.6"/></svg></button>
+    <div class="aiBody"><div class="txt ${o.edit?'edit':''}" ${o.edit?`onclick="editAction('${a.id}')"`:''}></div><div class="sub"></div></div>
+    ${o.edit?`<button class="iconBtn del" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`:''}
+  </div>`;
+}
+function aiPatch(el, a, o){
+  const due=aiDueInfo(a);
+  el.classList.toggle('done', !!a.done);
+  el.classList.toggle('late', !a.done && !!due && due.cls==='late');
+  el.classList.toggle('soon', !a.done && !!due && due.cls==='soon');
+  if(!el._tapping) el.classList.remove('checked');
+  const btn=el.querySelector('.aiCheck');
+  btn.setAttribute('aria-label', a.done?'Not done':'Done'); btn.setAttribute('aria-pressed', !!a.done);
+  btn.disabled=!ME;
+  const t=el.querySelector('.txt'); if(t.textContent!==a.text) t.textContent=a.text;
+  el.querySelector('.sub').innerHTML=
+    (a.assignee?`<span class="aiChip" style="--pc:${colorFor(a.assignee)}"><span class="av">${esc(String(a.assignee).slice(0,1))}</span>${esc(a.assignee)}</span>`:'')
+    +(due?`<span class="aiChip due">${icon('cal')}${esc(due.text)}</span>`:'')
+    +(o.mtg?`<a class="aiChip mtg" href="#m=${o.mid}" onclick="event.stopPropagation()">${icon('list')}${esc(o.mtg)}</a>`:'')
+    +(a.done&&a.doneBy?`<span class="aiChip by">${icon('check')}${esc(a.doneBy)}</span>`:'');
+}
+function aiEmpty(container, show, text){
+  if(!container) return;
+  let e=container.parentNode.querySelector(`[data-empty-for="${container.id}"]`);
+  if(show && !e){ e=document.createElement('div'); e.className='aiEmpty'; e.dataset.emptyFor=container.id; e.innerHTML=icon('check')+'<span></span>'; container.after(e); }
+  if(e) e.querySelector('span').textContent=text;
+  if(!show && e) e.remove();
+}
+const aiSortOpen=(a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0);
 function renderActions(){
   if(!$('aiOpen')) return;
-  const ro=readOnly(), today=todayISO();
-  const soon=(()=>{ const d=new Date(); d.setDate(d.getDate()+2); return isoOf(d); })();
-  const open=DATA.actions.filter(a=>!a.done).sort((a,b)=>(a.due||'9999').localeCompare(b.due||'9999')||(a.at||0)-(b.at||0));
+  const edit=!readOnly(), o={mid:MTG_ID, edit};
+  const open=DATA.actions.filter(a=>!a.done).sort(aiSortOpen);
   const done=DATA.actions.filter(a=>a.done).sort((a,b)=>(b.doneAt||0)-(a.doneAt||0));
-  const make=a=>`<div class="ai">
-      <input type="checkbox" class="chk" ${ro?'disabled':''} aria-label="Done" onchange="toggleAction('${a.id}',this.checked)">
-      <div class="grow"><div class="txt" ${ro?'':`onclick="editAction('${a.id}')"`}></div><div class="sub"></div></div>
-      ${ro?'':`<button class="iconBtn" aria-label="Delete" onclick="deleteAction('${a.id}')">${icon('x')}</button>`}
-    </div>`;
-  const patch=(el,a)=>{
-    el.classList.toggle('done', !!a.done);
-    const c=el.querySelector('input'); if(c.checked!==!!a.done) c.checked=!!a.done;
-    const t=el.querySelector('.txt'); if(t.textContent!==a.text) t.textContent=a.text;
-    const late=!a.done && a.due && a.due<today, near=!a.done && a.due && !late && a.due<=soon;
-    el.querySelector('.sub').innerHTML=(a.assignee?`<span class="who" style="--pc:${colorFor(a.assignee)}">${esc(a.assignee)}</span>`:'')
-      +(a.due?`<span class="due ${late?'late':near?'soon':''}">${fmtShortDate(a.due)}</span>`:'')
-      +(a.done&&a.doneBy?`<span>${esc(a.doneBy)}</span>`:'');
-  };
   $('aiOpenCount').textContent=open.length; $('aiDoneCount').textContent=done.length;
-  keyed($('aiOpen'), open, a=>a.id, make, patch);
-  keyed($('aiDone'), done, a=>a.id, make, patch);
-  emptyState($('aiOpen'), !open.length, 'Nothing open.');
-  emptyState($('aiDone'), !done.length, 'Nothing done yet.');
+  keyed($('aiOpen'), open, a=>a.id, a=>aiMake(a,o), (el,a)=>aiPatch(el,a,o));
+  keyed($('aiDone'), done, a=>a.id, a=>aiMake(a,o), (el,a)=>aiPatch(el,a,o));
+  aiEmpty($('aiOpen'), !open.length, 'All caught up.');
+  aiEmpty($('aiDone'), !done.length, 'Nothing done yet.');
 }
 function addAction(){
   const t=($('aiText').value||'').trim(); if(!t) return;
   SUB('actions').add({text:t, assignee:$('aiWho').value||'', due:$('aiDue').value||'', done:false, by:ME.uid, byName:ME.name, at:Date.now()}).catch(fail);
   $('aiText').value=''; $('aiText').focus();
 }
-/* A checked item stays in place a moment so the check can be seen, then moves. */
-function toggleAction(id, on){
-  setTimeout(()=>SUB('actions').doc(id).update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail), RM.matches?0:380);
+/* Checking an item off works in any meeting, even one that has ended. The tick
+   draws first, then the item moves. */
+function aiFind(mid, id){
+  if(mid===MTG_ID){ const a=DATA.actions.find(x=>x.id===id); if(a) return a; }
+  return (AI_ALL.get(mid)||[]).find(x=>x.id===id);
+}
+function aiTap(btn, mid, id){
+  const el=btn.closest('.ai'), a=aiFind(mid, id); if(!a || !ME) return;
+  const on=!a.done;
+  el._tapping=true; el.classList.toggle('checked', on);
+  if(!on) el.classList.remove('done');
+  const ref=ROOT().doc(mid).collection('actions').doc(id);
+  setTimeout(()=>{ el._tapping=false; ref.update(on?{done:true, doneAt:Date.now(), doneBy:ME.name}:{done:false, doneAt:null, doneBy:''}).catch(fail); }, RM.matches?0:520);
 }
 async function editAction(id){
   const a=DATA.actions.find(x=>x.id===id); if(!a) return;
@@ -1403,6 +1501,37 @@ async function editAction(id){
 }
 async function deleteAction(id){
   if(await askYesNo('Delete this action item?', '', 'Delete', true)) SUB('actions').doc(id).delete().catch(fail);
+}
+
+/* ----- every open action item, at the top of the Meetings page ----- */
+const AI_ALL=new Map(), AI_UNSUBS=new Map();
+let AI_MINE=false;
+try{ AI_MINE=localStorage.getItem('gh_mtg_ai_mine')==='1'; }catch(e){}
+function aiWatchAll(){
+  const ids=new Set(MEETINGS.map(m=>m.id));
+  AI_UNSUBS.forEach((u,id)=>{ if(!ids.has(id)){ try{ u(); }catch(e){} AI_UNSUBS.delete(id); AI_ALL.delete(id); } });
+  ids.forEach(id=>{
+    if(AI_UNSUBS.has(id)) return;
+    AI_UNSUBS.set(id, ROOT().doc(id).collection('actions').onSnapshot(snap=>{
+      AI_ALL.set(id, snap.docs.map(d=>Object.assign({id:d.id}, d.data())));
+      if(!MTG_ID) renderAllActions();
+    }, e=>console.error('actions', e)));
+  });
+}
+function aiStopAll(){ AI_UNSUBS.forEach(u=>{ try{ u(); }catch(e){} }); AI_UNSUBS.clear(); AI_ALL.clear(); }
+function setAiMine(on){ AI_MINE=!!on; try{ localStorage.setItem('gh_mtg_ai_mine', AI_MINE?'1':'0'); }catch(e){} renderAllActions(); }
+function renderAllActions(){
+  const wrap=$('aiAllWrap'), list=$('aiAllList'); if(!wrap || !list) return;
+  const titles=new Map(MEETINGS.map(m=>[m.id, m.title||'Meeting']));
+  let all=[];
+  AI_ALL.forEach((arr, mid)=>{ if(titles.has(mid)) arr.forEach(a=>{ if(!a.done) all.push(Object.assign({_mid:mid}, a)); }); });
+  const total=all.length;
+  if(AI_MINE) all=all.filter(a=>a.assignee===(ME && ME.name));
+  all.sort(aiSortOpen);
+  wrap.classList.toggle('hidden', !total);
+  $('aiAllCount').textContent=all.length;
+  keyed(list, all, a=>a._mid+'/'+a.id, a=>aiMake(a, {mid:a._mid}), (el,a)=>aiPatch(el, a, {mid:a._mid, mtg:titles.get(a._mid)}));
+  aiEmpty(list, !all.length && total>0, 'Nothing assigned to you.');
 }
 
 /* ---------- meeting summary (PDF) ----------
