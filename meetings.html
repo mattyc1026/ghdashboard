@@ -2507,9 +2507,12 @@ function wbDown(e){
   if(tool==='eraser'){ WB.act={kind:'erase', hit:new Set()}; WB.hover=[x,y]; wbEraseAt(x,y); wbKick(); return; }
   if(tool==='shape'){ WB.act={kind:'shape', id:uid(), x0:x, y0:y, s:null}; return; }
   if(tool==='laser'){ WB.act={kind:'laser'}; INK.myLaser.push([x,y,performance.now()]); wbSendLaser(); wbKick(); return; }
+  /* Text opens when the finger lifts, so phones and tablets bring up the
+     keyboard. A tap while a box is open just finishes that box. */
   if(tool==='text'){
+    if(WB.textEdit){ wbCommitText(); return; }
     const h=hitItem(x,y,6/K());
-    if(h && h[0]==='texts') wbOpenText(h[1]); else wbOpenText(null, x, y);
+    WB.act={kind:'text', item:(h && h[0]==='texts') ? h[1] : null, x, y, sx:e.clientX, sy:e.clientY};
     return;
   }
   if(tool==='sticky'){ addSticky(x-75, y-20); return; }
@@ -2590,6 +2593,7 @@ function wbUp(e){
     }
     wbKick();
   } else if(a.kind==='laser'){ wbSendLaser(true); }
+  else if(a.kind==='text'){ if(Math.hypot(e.clientX-a.sx, e.clientY-a.sy)<14){ if(a.item) wbOpenText(a.item); else wbOpenText(null, a.x, a.y); } }
   else if(a.kind==='aerase'){ wbAreaFlush(a, true); wbKick(); }
   else if(a.kind==='move'){
     if(Math.abs(a.dx)>.5 || Math.abs(a.dy)>.5) wbMoveItem(a.col, a.item, a.dx, a.dy);
@@ -2861,7 +2865,8 @@ function wbOpenText(t, x, y){
   ta.addEventListener('input', wbPlaceTextEdit);
   ta.addEventListener('keydown', e=>{ if(e.key==='Escape' || (e.key==='Enter' && (e.metaKey||e.ctrlKey))){ e.preventDefault(); wbCommitText(); } e.stopPropagation(); });
   ta.addEventListener('blur', ()=>setTimeout(()=>{ if(WB.textEdit && WB.textEdit.el===ta) wbCommitText(); }, 0));
-  setTimeout(()=>ta.focus({preventScroll:true}), 20);
+  try{ ta.focus({preventScroll:true}); }catch(e){}
+  setTimeout(()=>{ if(WB.textEdit && WB.textEdit.el===ta && document.activeElement!==ta) ta.focus({preventScroll:true}); }, 20);
 }
 function wbPlaceTextEdit(){
   const te=WB.textEdit; if(!te) return;
