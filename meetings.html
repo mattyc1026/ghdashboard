@@ -4033,6 +4033,16 @@ const TASKS=[
       {t:'Open Schedule Date(s) on his work order and tap Edit next to his date.', g:S=>S.d.querySelector('[onclick*="openScheduleEdit"]')||tkSec('sched')(S)},
       {t:'Move the start and end dates one day later, tap Save Changes, then add a RESCHD note.'}],
     answer:['Open Rob Silva\'s work order.','Tap Schedule Date(s), then Edit next to his Whole Job date.','Move Start Date and End Date one day later.','Tap Save Changes, then choose whether to send the updated appointment email.','Tap Add Note, set Note Type to RESCHD, type a short note and tap Add Note.']},
+  {id:'remove_day', area:'sched', title:'Remove one day',
+    text:'Jen Walker can\'t have anyone there tomorrow. Remove only tomorrow from her booking and keep her other days.',
+    check:S=>{ const w=S.wo(TJ.jen); if(!w) return false; const f=(w.scheduleDates||[]).filter(d=>d.type==='full');
+      const covers=iso=>f.some(d=>S.W.expandRepeatDates(d.startDate, d.endDate||d.startDate, d.repeat).indexOf(iso)!==-1);
+      return !covers(tkIsoOff(1)) && covers(tkIsoOff(0)) && covers(tkIsoOff(-1)); },
+    steps:[S=>S.opened(TJ.jen), S=>S.called('deleteScheduleDate')],
+    hints:[{t:'Jen Walker is on the Scheduling tab under In Progress.', g:tkTab('inprogress')},
+      {t:'On her work order, open Schedule Date(s) and tap the \u00d7 next to her Whole Job dates.', g:S=>S.d.querySelector(`.tinyDel[onclick*="deleteScheduleDate(${TJ.jen},"]`)||tkSec('sched')(S)},
+      {t:'Tap only tomorrow\'s date, then tap Remove 1 Day.'}],
+    answer:['Open Jen Walker\'s work order.','Tap Schedule Date(s), then the \u00d7 next to her Whole Job dates.','Tap tomorrow\'s date so it is crossed out.','Tap Remove 1 Day, then choose whether to download the calendar file and send the updated email.']},
   {id:'checkin_job', area:'sched', title:'Check in and out',
     text:'Check in to Jen Walker\'s job for today, then check out.',
     check:S=>{ const w=S.wo(TJ.jen), f=w && S.W.findDayLog(w, S.today); return !!f && (f.log.sessions||[]).some(s=>s.in && s.out); },
@@ -4161,7 +4171,7 @@ function tkBackToShared(){
 const TK_WATCH=['openWorkOrder','goToWorkOrderInWorkflow','selectSearchResult','runGlobalSearch','toggleSearchBar','switchTab','openNewWorkOrder',
   'startHeaderCustEdit','openNoteSheet','openFieldNote','openJobDetailsEdit','addJDBulk','toggleDocsView','setFieldView','toggleAdminView','openScheduleWidget',
   'openScheduleEdit','openPresiteTool','openEstimateSplit','openEsignSplit','openInvoiceSplit','doneSplit','approveEstimate','declineEstimate','modifyEstimate',
-  'confirmJobComplete','openSendInvoice','copyToClipboard','copyText','checkInDay','checkOutDay'];
+  'confirmJobComplete','openSendInvoice','copyToClipboard','copyText','checkInDay','checkOutDay','deleteScheduleDate'];
 function tkHook(){
   const W=PP.frame && PP.frame.contentWindow;
   if(!W || !W.GH_PRIVATE || TK.hooked===W) return;
