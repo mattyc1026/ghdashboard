@@ -260,6 +260,7 @@
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -555,11 +556,7 @@ function render(){
 /* ------------------------------------------------------------- persist --- */
 function save(){
   try{ localStorage.setItem(LEADS_KEY, JSON.stringify(store)); }catch(e){}
-  if(db){
-    db.collection('gh_portal').doc('leads')
-      .set({leads: JSON.stringify(store), updatedAt: Date.now()})
-      .catch(function(e){ console.error('Lead sync failed', e); });
-  }
+  if(db && cloudReady) pushLeads();
   render();
 }
 
@@ -660,12 +657,79 @@ function closeForm(){
 function getCfg(){ return readJSON(SYNC_CFG_KEY, null); }
 
 function loadLocal(){
-  portalDB = readJSON(PORTAL_DB_KEY, {workOrders:[]}) || {workOrders:[]};
-  if(!portalDB.workOrders) portalDB.workOrders = [];
+  if(!woFromCloud){
+    portalDB = readJSON(PORTAL_DB_KEY, {workOrders:[]}) || {workOrders:[]};
+    if(!portalDB.workOrders) portalDB.workOrders = [];
+  }
 
   var saved = readJSON(LEADS_KEY, null);
   if(saved == null) saved = readJSON(LEGACY_KEY, null);
   store = normalizeStore(saved);
+}
+
+/* The shared copy lives at gh_portal/leads and is only reachable while signed
+   in to the Work Portal in this browser. Until one device has set the shared
+   copy (marked v:2), nothing is pulled down or pushed up, so no device's
+   leads can be overwritten by an older copy. Matthew's device sets it. */
+var cloudReady = false;
+var lastPushAt = 0;
+var seedTried  = false;
+var unsubs     = [];
+var woFromCloud = false;
+
+function pushLeads(){
+  if(!db) return;
+  lastPushAt = Date.now();
+  db.collection('gh_portal').doc('leads')
+    .set({leads: JSON.stringify(store), updatedAt: lastPushAt, v: 2})
+    .catch(function(e){ console.error('Lead sync failed', e); });
+}
+function storeHasLeads(){
+  return !!(store.manual.length || store.hidden.length || Object.keys(store.overrides).length);
+}
+function stopListeners(){
+  for(var i = 0; i < unsubs.length; i++){ try{ unsubs[i](); }catch(e){} }
+  unsubs = [];
+  woFromCloud = false;
+  cloudReady = false;
+  seedTried = false;
+}
+function startListeners(user){
+  /* Finished jobs come from the portal's work orders, one record each. */
+  unsubs.push(db.collection('gh_portal').doc('main').collection('workOrders').onSnapshot(function(snap){
+    var list = [];
+    snap.forEach(function(d){
+      try{ var wo = JSON.parse((d.data() || {}).wo); if(wo) list.push(wo); }catch(e){}
+    });
+    portalDB = {workOrders: list};
+    woFromCloud = true;
+    render();
+  }, function(e){ console.error('Leads sync error', e); }));
+
+  unsubs.push(db.collection('gh_portal').doc('leads').onSnapshot(function(snap){
+    var data = snap.exists ? (snap.data() || {}) : null;
+    if(data && data.v === 2 && data.leads){
+      cloudReady = true;
+      if(snap.metadata && snap.metadata.hasPendingWrites) return;
+      if((data.updatedAt || 0) < lastPushAt) return;   /* an older echo of our own save */
+      try{
+        store = normalizeStore(JSON.parse(data.leads));
+        try{ localStorage.setItem(LEADS_KEY, JSON.stringify(store)); }catch(e2){}
+        render();
+      }catch(e){ console.error('Bad leads payload', e); }
+      return;
+    }
+    if(seedTried) return;
+    seedTried = true;
+    if(!storeHasLeads()) return;
+    db.collection('gh_portal').doc('main').get().then(function(m){
+      var users = {};
+      try{ users = JSON.parse((m.data() || {}).meta || '{}').users || {}; }catch(e){}
+      var me = null;
+      Object.keys(users).forEach(function(k){ if(users[k] && users[k].uid === user.uid) me = users[k]; });
+      if(me && me.username === 'matthewc'){ cloudReady = true; pushLeads(); }
+    }).catch(function(e){ console.error('Leads sync error', e); });
+  }, function(e){ console.error('Leads sync error', e); }));
 }
 
 function initSync(){
@@ -676,31 +740,13 @@ function initSync(){
   try{
     if(!firebase.apps.length) firebase.initializeApp(cfg);
     db = firebase.firestore();
-
-    db.collection('gh_portal').doc('main').onSnapshot(function(snap){
-      if(!snap.exists) return;
-      var raw = snap.data() && snap.data().db;
-      if(!raw) return;
-      try{
-        var parsed = JSON.parse(raw);
-        portalDB = (parsed && parsed.workOrders) ? parsed : {workOrders:[]};
-        render();
-      }catch(e){ console.error('Bad portal payload', e); }
-    }, function(e){
-      console.error('Leads sync error', e);
-      document.getElementById('syncBtn').style.display = '';
-    });
-
-    db.collection('gh_portal').doc('leads').onSnapshot(function(snap){
-      if(!snap.exists) return;
-      var raw = snap.data() && snap.data().leads;
-      if(!raw) return;
-      try{
-        store = normalizeStore(JSON.parse(raw));
-        try{ localStorage.setItem(LEADS_KEY, JSON.stringify(store)); }catch(e2){}
-        render();
-      }catch(e){ console.error('Bad leads payload', e); }
-    }, function(e){ console.error('Leads sync error', e); });
+    if(!initSync.listening){
+      initSync.listening = true;
+      firebase.auth().onAuthStateChanged(function(user){
+        stopListeners();
+        if(user) startListeners(user);
+      });
+    }
   }catch(e){
     console.error(e);
     db = null;
