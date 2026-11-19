@@ -338,11 +338,8 @@ html.dark .tabs button.on{background:rgba(255,255,255,.13);color:var(--on-band);
 .topicBody{display:none;padding:2px 0 14px;}
 .topicSec.open .topicBody{display:block;animation:openIn .26s var(--ease-out);}
 @keyframes openIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.looseHead{display:none;}
 .looseSec{position:relative;margin:0 0 6px;}
 .looseSec.empty{margin:0;}
-.looseSec.movable .looseHead{display:flex;justify-content:flex-end;height:26px;margin-bottom:-4px;padding-right:calc(1.15em + 12px);}
-.looseSec.movable .looseHead .dgrip{height:26px;}
 .acts.endActs{flex-direction:column;align-items:stretch;}
 .acts.endActs .btn{width:100%;margin:0;}
 /* agenda items */
@@ -1508,7 +1505,8 @@ function renderAgenda(){
     const add=ro?'':`<div class="addAg"><span class="anode">${icon('plus')}</span>
       <input type="text" maxlength="200" placeholder="Add an agenda item" aria-label="New agenda item" data-topic="${b.loose?'':b.id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda(this);}">
       <button class="btn tc sm" onclick="addAgenda(this.previousElementSibling)">Add</button></div>`;
-    if(b.loose) return `<div class="looseSec">${ro?'':`<div class="looseHead"><span class="dgrip" aria-label="Drag" ${stop} onpointerdown="dragStart(event,'topic','_loose')">${icon('grip')}</span></div>`}<div class="items" data-topic=""></div>${add}</div>`;
+    // Items with no topic stay together; topics are dragged above or below them.
+    if(b.loose) return `<div class="looseSec"><div class="items" data-topic=""></div>${add}</div>`;
     return `<section class="topicSec">
       <div class="topicHead" role="button" tabindex="0" aria-expanded="false" onclick="tapTopic('${b.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tapTopic('${b.id}');}">
         <span class="tnode" aria-hidden="true">${icon('tick')}</span>
