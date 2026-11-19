@@ -405,7 +405,8 @@ function jobLeads(){
       key:'wo-' + wo.id,
       name:(c.name || '').trim(),
       phone:(c.phone || '').trim(),
-      altPhone:(c.altPhone || '').trim(),
+      /* the customer's own second number (older jobs kept it as an unnamed alternate) */
+      altPhone:(c.phone2 || ((c.altPhoneName || c.altPhoneNote) ? '' : c.altPhone) || '').trim(),
       email:(c.email || '').trim(),
       address:(c.address || '').trim(),
       manual:false
