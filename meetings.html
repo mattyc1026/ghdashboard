@@ -338,8 +338,7 @@ html.dark .tabs button.on{background:rgba(255,255,255,.13);color:var(--on-band);
 .topicBody{display:none;padding:2px 0 14px;}
 .topicSec.open .topicBody{display:block;animation:openIn .26s var(--ease-out);}
 @keyframes openIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
-.looseSec{position:relative;margin:0 0 6px;}
-.looseSec.empty{margin:0;}
+.looseSec{position:relative;}
 .acts.endActs{flex-direction:column;align-items:stretch;}
 .acts.endActs .btn{width:100%;margin:0;}
 /* agenda items */
@@ -1388,7 +1387,7 @@ function onMeetingChange(prev){
   if(prev.status!==MTG.status){ render(); if(MTG.status==='live') noteAttendance(); return; }
   if(prev.title!==MTG.title){ const t=$('mtgTitle'); if(t) t.textContent=MTG.title||'Meeting'; }
   if(prev.scheduledFor!==MTG.scheduledFor){ const w=$('mtgWhen'); if(w) w.innerHTML=whenHTML(); }
-  if(prev.looseOrder!==MTG.looseOrder) renderAgenda();
+  if(prev.looseOrder!==MTG.looseOrder || prev.flatTop!==MTG.flatTop) renderAgenda();
   if(prev.bg!==MTG.bg){ wbApplyBg(); wbRenderMenu(); }
   if(JSON.stringify(prev.boardPins||[])!==JSON.stringify(MTG.boardPins||[])){ wbRenderPins(); wbRenderPinMenu(); }
   if((prev.presenter||{}).uid!==(MTG.presenter||{}).uid) wbOnBoardPresenter(prev);
@@ -1485,11 +1484,41 @@ const tpSorted=()=>DATA.topics.slice().sort((a,b)=>(a.order||0)-(b.order||0)||(a
 const agSorted=()=>DATA.agenda.slice().sort((a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0));
 /* The agenda items not filed under a topic form one block that can be placed
    above, between or below the topics. With none, it stays at the top. */
-function agBlocks(){
-  const loose={id:'_loose', loose:true, order:(MTG && MTG.looseOrder!=null) ? MTG.looseOrder : 0};
-  const list=tpSorted().map(t=>({id:t.id, t, order:t.order||0}));
-  if(!agIn('').length) return [loose].concat(list);
-  return list.concat([loose]).sort((a,b)=>a.order-b.order || (a.loose?-1:b.loose?1:0));
+/* The agenda's top level: topics and agenda items that are not under a
+   topic, each placed on its own, so a topic can sit between two items.
+   Meetings arranged before this kept their unfiled items together at
+   looseOrder; they read that way until something at the top level is
+   moved, which numbers every entry in one shared order (flatTop). */
+function topSeqOf(topics, agenda, m){
+  const bySort=(a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0);
+  const ts=topics.slice().sort(bySort);
+  const loose=agenda.filter(a=>!(a.topicId && ts.some(t=>t.id===a.topicId))).sort(bySort);
+  const T=t=>({k:'t', id:t.id, t}), A=a=>({k:'a', id:a.id, a});
+  if(m && m.flatTop){
+    return ts.map(T).concat(loose.map(A)).sort((x,y)=>{
+      const ox=(x.t||x.a).order||0, oy=(y.t||y.a).order||0;
+      return ox-oy || (x.k===y.k ? ((x.t||x.a).at||0)-((y.t||y.a).at||0) : (x.k==='a'?-1:1));
+    });
+  }
+  const lo=(m && m.looseOrder!=null) ? m.looseOrder : 0, out=[];
+  let placed=!loose.length;
+  ts.forEach(t=>{ if(!placed && lo<=(t.order||0)){ loose.forEach(a=>out.push(A(a))); placed=true; } out.push(T(t)); });
+  if(!placed) loose.forEach(a=>out.push(A(a)));
+  return out;
+}
+const topSeq=()=>topSeqOf(DATA.topics, DATA.agenda, MTG);
+/* Numbers the top level 1..n in the order given, filing any items in it at
+   the top level, and switches the meeting to the shared order. */
+function writeTopSeq(seq, b){
+  seq.forEach((e,i)=>{
+    if(e.k==='t'){ const t=DATA.topics.find(x=>x.id===e.id); if(t && (t.order||0)!==i+1){ t.order=i+1; b.update(SUB('topics').doc(t.id), {order:i+1}); } }
+    else {
+      const a=DATA.agenda.find(x=>x.id===e.id); if(!a) return;
+      const upd={}; if((a.order||0)!==i+1) upd.order=i+1; if(a.topicId) upd.topicId='';
+      if(Object.keys(upd).length){ Object.assign(a, upd); b.update(SUB('agenda').doc(a.id), upd); }
+    }
+  });
+  if(MTG && !MTG.flatTop){ MTG.flatTop=true; MREF().update({flatTop:true}).catch(fail); }
 }
 const topicOf=a=>(a.topicId && DATA.topics.some(t=>t.id===a.topicId)) ? a.topicId : '';
 function agIn(tid){ return agSorted().filter(a=>topicOf(a)===tid); }
@@ -1501,12 +1530,15 @@ const stop=`onclick="event.stopPropagation()"`;
 function renderAgenda(){
   const el=$('agList'); if(!el) return;
   const ro=readOnly();
-  keyed(el, agBlocks(), b=>b.id, b=>{
+  // with no topics yet, the agenda is built at the top level; once there are topics, items are added under them
+  const blocks=topSeq().map(e=>e.k==='t' ? {id:e.id, t:e.t} : {id:e.id, item:e.a});
+  if(!DATA.topics.length && !ro) blocks.push({id:'_addTop', addTop:true});
+  keyed(el, blocks, b=>b.id, b=>{
     const add=ro?'':`<div class="addAg"><span class="anode">${icon('plus')}</span>
-      <input type="text" maxlength="200" placeholder="Add an agenda item" aria-label="New agenda item" data-topic="${b.loose?'':b.id}" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda(this);}">
+      <input type="text" maxlength="200" placeholder="Add an agenda item" aria-label="New agenda item" data-topic="${b.t?b.id:''}" onkeydown="if(event.key==='Enter'){event.preventDefault();addAgenda(this);}">
       <button class="btn tc sm" onclick="addAgenda(this.previousElementSibling)">Add</button></div>`;
-    // Items with no topic stay together; topics are dragged above or below them.
-    if(b.loose) return `<div class="looseSec"><div class="items" data-topic=""></div>${add}</div>`;
+    if(b.addTop) return `<div class="looseAdd">${add}</div>`;
+    if(b.item) return `<div class="looseSec"><div class="items" data-topic=""></div></div>`;
     return `<section class="topicSec">
       <div class="topicHead" role="button" tabindex="0" aria-expanded="false" onclick="tapTopic('${b.id}')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();tapTopic('${b.id}');}">
         <span class="tnode" aria-hidden="true">${icon('tick')}</span>
@@ -1517,19 +1549,16 @@ function renderAgenda(){
       </div>
       <div class="topicBody"><div class="items" data-topic="${b.id}"></div>${add}</div></section>`;
   }, (blk,b)=>{
-    const tid=b.loose?'':b.id, list=agIn(tid);
-    if(!b.loose){
+    if(b.addTop) return;
+    if(b.item){ renderItemsInto(blk.querySelector('.items'), [b.item], ro); return; }
+    const list=agIn(b.id);
+    {
       const open=AG.topic===b.id;
       blk.classList.toggle('open', open);
       blk.classList.toggle('allDone', list.length>0 && list.every(a=>a.done));
       blk.querySelector('.topicHead').setAttribute('aria-expanded', open);
       blk.querySelector('.ttx').textContent=b.t.text;
       blk.querySelector('.nc').textContent=list.length ? list.length+(list.length===1?' item':' items') : '';
-    } else {
-      // with no topics yet, the agenda can still be built here; once there are topics, items are added under them
-      const ad=blk.querySelector('.addAg'); if(ad) ad.classList.toggle('hidden', DATA.topics.length>0);
-      blk.classList.toggle('movable', DATA.topics.length>0 && list.length>0);
-      blk.classList.toggle('empty', !list.length);
     }
     renderItemsInto(blk.querySelector('.items'), list, ro);
   });
@@ -1663,7 +1692,8 @@ async function deleteNote(id){
 }
 function addTopic(){
   const inp=$('topicNew'); const text=(inp.value||'').trim(); if(!text) return;
-  const max=DATA.topics.reduce((m,t)=>Math.max(m,t.order||0), (MTG && MTG.looseOrder) || 0);
+  const seq=topSeq(), last=seq.length ? ((seq[seq.length-1].t||seq[seq.length-1].a).order||0) : 0;
+  const max=Math.max(last, DATA.topics.reduce((m,t)=>Math.max(m,t.order||0), (MTG && !MTG.flatTop && MTG.looseOrder) || 0));
   SUB('topics').add({text, order:max+1, by:ME.uid, at:Date.now()}).catch(fail);
   inp.value=''; inp.focus();
 }
@@ -1675,17 +1705,22 @@ async function editTopic(id){
 async function deleteTopic(id){
   const t=DATA.topics.find(x=>x.id===id); if(!t) return;
   const n=agIn(id).length;
-  if(!await askYesNo('Delete this topic?', n ? t.text+'\nIts agenda items move to the top.' : t.text, 'Delete', true)) return;
+  if(!await askYesNo('Delete this topic?', n ? t.text+'\nIts agenda items stay where it was.' : t.text, 'Delete', true)) return;
   const b=db.batch();
   b.delete(SUB('topics').doc(id));
-  agIn(id).forEach(a=>b.update(SUB('agenda').doc(a.id), {topicId:''}));
+  if(n){
+    const seq=[];
+    topSeq().forEach(e=>{ if(e.k==='t' && e.id===id) agIn(id).forEach(a=>seq.push({k:'a', id:a.id})); else seq.push(e); });
+    writeTopSeq(seq, b);
+  }
   b.commit().catch(fail);
   if(MTG.currentTopic===id) MREF().update({currentTopic:null}).catch(()=>{});
 }
 function addAgenda(inp){
   const text=(inp.value||'').trim(); if(!text) return;
   const tid=inp.dataset.topic||'';
-  const max=agIn(tid).reduce((m,a)=>Math.max(m,a.order||0),0);
+  let max=agIn(tid).reduce((m,a)=>Math.max(m,a.order||0),0);
+  if(!tid && MTG && MTG.flatTop) max=topSeq().reduce((m,e)=>Math.max(m,(e.t||e.a).order||0),0);
   const ref=SUB('agenda').doc();
   ref.set({text, order:max+1, done:false, topicId:tid, by:ME.uid, at:Date.now()}).catch(fail);
   inp.value=''; inp.focus();
@@ -1715,7 +1750,7 @@ function dragStart(e, kind, id){
   if(readOnly() || e.button>0) return;
   e.preventDefault(); e.stopPropagation();
   if(DRAG) dragEnd();
-  const src=document.querySelector(kind==='agenda' ? `.items > .agSec[data-k="${id}"]` : `#agList > [data-k="${id}"]`);
+  const src=document.querySelector(kind==='agenda' ? `.items > .agSec[data-k="${id}"]` : `#agList > .topicSec[data-k="${id}"]`);
   if(!src) return;
   DRAG={kind, id, src, sx:e.clientX, sy:e.clientY, started:false, pid:e.pointerId};
   window.addEventListener('pointermove', dragMove, true);
@@ -1724,7 +1759,8 @@ function dragStart(e, kind, id){
   window.addEventListener('blur', dragEnd);
 }
 function dragBegin(){
-  const d=DRAG, head=d.src.querySelector(d.kind==='agenda'?'.agItem':(d.id==='_loose'?'.items':'.topicHead')), r=head.getBoundingClientRect();
+  const d=DRAG, head=d.src.querySelector(d.kind==='agenda'?'.agItem':'.topicHead'), r=head.getBoundingClientRect();
+  d.wrap=d.kind==='agenda' ? d.src.closest('.looseSec') : d.src;
   d.ox=d.sx-r.left; d.oy=d.sy-r.top;
   const g=head.cloneNode(true); g.classList.add('dragGhost'); g.style.width=r.width+'px';
   // the ghost needs the tool's colour, which comes from the page
@@ -1749,30 +1785,34 @@ function dragMove(e){
 }
 function dragTarget(){
   const d=DRAG; if(!d || !d.started) return;
-  let list, cont, idx=0, lineAt;
+  const top=$('agList');
+  // the top level: topics and unfiled items, each on its own
+  const secs=[...top.children].filter(x=>(x.classList.contains('topicSec') || x.classList.contains('looseSec')) && x!==d.wrap && !x._leaving);
+  let cont=top, list=secs, idx=secs.length, lineAt, shut=false;
   if(d.kind==='agenda'){
-    const conts=[...document.querySelectorAll('#agList .items')];
-    // the container whose section the pointer is over, else the nearest one
-    let best=null, bd=Infinity;
-    conts.forEach(c=>{
-      const sec=c.closest('.topicSec')||c.closest('.looseSec'), r=sec.getBoundingClientRect();
-      const dist = d.y<r.top ? r.top-d.y : d.y>r.bottom ? d.y-r.bottom : 0;
-      if(dist<bd){ bd=dist; best=c; }
-    });
-    cont=best;
-    list=[...cont.children].filter(x=>x.dataset.k && x!==d.src && !x._leaving);
-  } else {
-    cont=$('agList');
-    list=[...cont.children].filter(x=>(x.classList.contains('topicSec') || x.classList.contains('movable')) && x!==d.src && !x._leaving);
+    // the section the pointer is over, else the nearest one
+    let sec=null, bd=Infinity;
+    secs.forEach(x=>{ const r=x.getBoundingClientRect(); const dist=d.y<r.top ? r.top-d.y : d.y>r.bottom ? d.y-r.bottom : 0; if(dist<bd){ bd=dist; sec=x; } });
+    if(sec && sec.classList.contains('topicSec') && bd===0){
+      const h=sec.querySelector('.topicHead').getBoundingClientRect(), band=h.height*0.3;
+      const open=sec.classList.contains('open');
+      // over the middle of a topic's title, or anywhere in an open topic below it, the item goes into the topic
+      if((d.y>h.top+band && d.y<h.bottom-band) || (open && d.y>=h.bottom-band)){
+        cont=sec.querySelector('.items');
+        list=[...cont.children].filter(x=>x.dataset.k && x!==d.src && !x._leaving);
+        shut=!open;
+      }
+    }
   }
   idx=list.length;
-  // a closed topic takes the item at its end, the line showing under its title
-  const shut=d.kind==='agenda' && !cont.offsetParent;
-  if(!shut) for(let i=0;i<list.length;i++){ const r=list[i].getBoundingClientRect(); if(d.y < r.top+r.height/2){ idx=i; break; } }
+  if(!shut) for(let i=0;i<list.length;i++){
+    const el=list[i], r=(el.classList.contains('topicSec') ? el.querySelector('.topicHead') : el).getBoundingClientRect();
+    if(d.y < r.top+r.height/2){ idx=i; break; }
+  }
   const cr=shut ? cont.closest('.topicSec').querySelector('.topicHead').getBoundingClientRect() : cont.getBoundingClientRect();
   if(shut) lineAt=cr.bottom+2;
   else if(list.length===0) lineAt=cr.top+2;
-  else if(idx<list.length) lineAt=list[idx].getBoundingClientRect().top-7;
+  else if(idx<list.length) lineAt=list[idx].getBoundingClientRect().top-4;
   else lineAt=list[list.length-1].getBoundingClientRect().bottom+3;
   d.cont=cont; d.idx=idx; d.list=list;
   d.line.style.top=lineAt+'px'; d.line.style.left=cr.left+'px'; d.line.style.width=Math.max(60, cr.width)+'px';
@@ -1797,10 +1837,15 @@ function dragEnd(e){
   if(d.line) d.line.remove();
   const g=d.ghost;
   if(g){ if(RM.matches) g.remove(); else g.animate([{opacity:.96},{opacity:0}], {duration:150}).onfinish=()=>g.remove(); }
-  const ids=d.list.map(x=>x.dataset.k);
-  ids.splice(d.idx, 0, d.id);
   const b=db.batch();
-  if(d.kind==='agenda'){
+  if(d.cont.id==='agList'){
+    // placed at the top level, between topics and unfiled items
+    const seq=d.list.map(x=>({k:x.classList.contains('topicSec')?'t':'a', id:x.dataset.k}));
+    seq.splice(d.idx, 0, {k:d.kind==='agenda'?'a':'t', id:d.id});
+    writeTopSeq(seq, b);
+  } else {
+    const ids=d.list.map(x=>x.dataset.k);
+    ids.splice(d.idx, 0, d.id);
     const tid=d.cont.dataset.topic||'';
     ids.forEach((id,i)=>{
       const a=DATA.agenda.find(x=>x.id===id); if(!a) return;
@@ -1811,13 +1856,6 @@ function dragEnd(e){
     });
     // the topic it went into opens, so it stays in sight
     if(tid && AG.topic!==tid){ AG.topic=tid; presSendSoon(true); }
-  } else {
-    ids.forEach((id,i)=>{
-      if(id==='_loose'){ if(MTG.looseOrder!==i+1){ MTG.looseOrder=i+1; MREF().update({looseOrder:i+1}).catch(fail); } return; }
-      const t=DATA.topics.find(x=>x.id===id); if(t && (t.order||0)!==i+1){ t.order=i+1; b.update(SUB('topics').doc(id), {order:i+1}); }
-    });
-    // the unfiled block, when it is empty, keeps its place at the top
-    if(!ids.includes('_loose') && MTG.looseOrder!=null && MTG.looseOrder!==0){ MTG.looseOrder=0; MREF().update({looseOrder:0}).catch(fail); }
   }
   renderAgenda();
   b.commit().catch(fail);
@@ -2127,10 +2165,7 @@ function summaryPdf(m, d){
   const bySort=(a,b)=>(a.order||0)-(b.order||0)||(a.at||0)-(b.at||0);
   const topics=d.topics.slice().sort(bySort), ag=d.agenda.slice().sort(bySort);
   const tOf=a=>(a.topicId && topics.some(t=>t.id===a.topicId)) ? a.topicId : '';
-  const loose=ag.filter(a=>!tOf(a));
-  let blocks=topics.map(t=>({t, order:t.order||0}));
-  if(loose.length) blocks.push({loose:true, order:m.looseOrder!=null?m.looseOrder:0});
-  blocks.sort((a,b)=>a.order-b.order || (a.loose?-1:b.loose?1:0));
+  const blocks=topSeqOf(topics, ag, m).map(e=>e.k==='t' ? {t:e.t} : {a:e.a});
   const notesAll=d.notes.slice().sort((a,b)=>(a.at||0)-(b.at||0));
   const likeLine=id=>{ const L=d.likes.filter(l=>l.noteId===id); return L.length ? 'Liked by '+L.map(l=>l.name).join(', ') : ''; };
   const note=(n, x)=>{
@@ -2163,7 +2198,7 @@ function summaryPdf(m, d){
   };
   if(!ag.length && !topics.length) para('No agenda items.', M, CW, 'I', 10.5, MUTED);
   blocks.forEach(b=>{
-    if(b.loose){ loose.forEach(item); return; }
+    if(b.a){ item(b.a); return; }
     room(44); y+=8;
     para(b.t.text, M, CW, 'B', 16, NAVY, 20);
     P.line(M, y+1, M+CW, y+1, {w:.8, color:'#f3c9a3'}); y+=10;
@@ -2478,8 +2513,8 @@ function wbRenderPinMenu(){
   const row=(k,id,cls,inner,pc)=>`<button class="pr ${cls} ${isPinned(k,id)?'on':''}" ${pc?`style="--pc:${pc}"`:''} ${ro?'disabled':''} onclick="togglePin('${k}','${id}')">${icon('pin')}<span class="ptx">${inner}</span></button>`;
   const notesOf=aid=>DATA.notes.filter(n=>n.agendaId===aid && !n.parentId).sort((a,b)=>(a.at||0)-(b.at||0));
   const block=a=>row('agenda',a.id,'agenda',esc(a.text))+notesOf(a.id).map(n=>row('note',n.id,'note',`<b>${esc(n.byName||'')}</b>${esc(n.text)}`, colorFor(n.byName))).join('');
-  let h=agIn('').map(block).join('');
-  tpSorted().forEach(t=>{ h+=row('topic',t.id,'topic',esc(t.text))+agIn(t.id).map(block).join(''); });
+  let h='';
+  topSeq().forEach(e=>{ h+= e.k==='a' ? block(e.a) : row('topic',e.id,'topic',esc(e.t.text))+agIn(e.id).map(block).join(''); });
   const st=m.firstChild ? m.firstChild.scrollTop : 0, fresh=!m.firstChild;
   m.innerHTML=`<div class="menuPop pinPop" ${fresh?'':'style="animation:none"'}>${h||'<div class="none">No agenda yet.</div>'}</div>`;
   m.firstChild.scrollTop=st;
