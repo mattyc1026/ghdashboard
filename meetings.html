@@ -339,8 +339,8 @@ html.dark .tabs button.on{background:rgba(255,255,255,.13);color:var(--on-band);
 .topicSec.open .topicBody{display:block;animation:openIn .26s var(--ease-out);}
 @keyframes openIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 .looseSec{position:relative;}
-.acts.endActs{flex-direction:column;align-items:stretch;}
-.acts.endActs .btn{width:100%;margin:0;}
+.acts.stackActs{flex-direction:column;align-items:stretch;}
+.acts.stackActs .btn{width:100%;margin:0;}
 /* agenda items */
 .items{display:flex;flex-direction:column;min-height:4px;}
 .agSec{position:relative;}
@@ -1414,7 +1414,7 @@ const canMoveBack=m=>!!m && m.status==='live' && !m.movedBack && (m.createdAt||0
 function askEnd(){
   return new Promise(res=>{
     $('modalRoot').innerHTML=`<div class="overlay"><div class="modal"><h2>End this meeting?</h2>
-      <div class="acts endActs"><button class="btn tc" id="mYes">End Meeting</button><button class="btn secondary" id="mBack">Move to Upcoming</button><button class="btn secondary" id="mNo">Cancel</button></div></div></div>`;
+      <div class="acts stackActs"><button class="btn tc" id="mYes">End Meeting</button><button class="btn secondary" id="mBack">Move to Upcoming</button><button class="btn secondary" id="mNo">Cancel</button></div></div></div>`;
     let settled=false;
     const done=v=>{ if(settled) return; settled=true; res(v); closeModalAnimated(); };
     $('mNo').onclick=()=>done(null); $('mYes').onclick=()=>done('end'); $('mBack').onclick=()=>done('back');
@@ -1702,13 +1702,33 @@ async function editTopic(id){
   const v=await askText('Edit Topic', t.text, 'Save');
   if(v) SUB('topics').doc(id).update({text:v}).catch(fail);
 }
+function askDeleteTopic(text){
+  return new Promise(res=>{
+    $('modalRoot').innerHTML=`<div class="overlay"><div class="modal"><h2>Delete this topic?</h2><p class="msg">${esc(text)}</p>
+      <p class="msg">Delete its agenda items and notes too?</p>
+      <div class="acts stackActs"><button class="btn danger" id="mAll">Yes, Delete All</button><button class="btn secondary" id="mKeep">No, Keep Items</button><button class="btn secondary" id="mNo">Cancel</button></div></div></div>`;
+    let settled=false;
+    const done=v=>{ if(settled) return; settled=true; res(v); closeModalAnimated(); };
+    $('mAll').onclick=()=>done('all'); $('mKeep').onclick=()=>done('keep'); $('mNo').onclick=()=>done(null);
+    $('mNo').focus();
+    document.querySelector('#modalRoot .overlay').onclick=e=>{ if(e.target.classList.contains('overlay')) done(null); };
+  });
+}
 async function deleteTopic(id){
   const t=DATA.topics.find(x=>x.id===id); if(!t) return;
-  const n=agIn(id).length;
-  if(!await askYesNo('Delete this topic?', n ? t.text+'\nIts agenda items stay where it was.' : t.text, 'Delete', true)) return;
+  const items=agIn(id), n=items.length;
+  let all=false;
+  if(n){
+    const r=await askDeleteTopic(t.text);
+    if(!r) return;
+    all=r==='all';
+  } else if(!await askYesNo('Delete this topic?', t.text, 'Delete', true)) return;
   const b=db.batch();
   b.delete(SUB('topics').doc(id));
-  if(n){
+  if(all){
+    items.forEach(a=>delAgendaInto(b, a.id));
+    if(items.some(a=>a.id===MTG.currentAgenda)) MREF().update({currentAgenda:null}).catch(()=>{});
+  } else if(n){
     const seq=[];
     topSeq().forEach(e=>{ if(e.k==='t' && e.id===id) agIn(id).forEach(a=>seq.push({k:'a', id:a.id})); else seq.push(e); });
     writeTopSeq(seq, b);
@@ -1735,10 +1755,18 @@ async function deleteAgenda(id){
   const n=DATA.notes.filter(x=>x.agendaId===id).length;
   if(!await askYesNo('Delete this agenda item?', n ? a.text+'\nIts notes are deleted too.' : a.text, 'Delete', true)) return;
   const b=db.batch();
-  b.delete(SUB('agenda').doc(id));
-  DATA.notes.filter(x=>x.agendaId===id).forEach(x=>b.delete(SUB('notes').doc(x.id)));
+  delAgendaInto(b, id);
   b.commit().catch(fail);
   if(MTG.currentAgenda===id) MREF().update({currentAgenda:null}).catch(()=>{});
+}
+/* An agenda item always goes with its notes, their replies and likes. */
+function delAgendaInto(b, id){
+  b.delete(SUB('agenda').doc(id));
+  const notes=DATA.notes.filter(x=>x.agendaId===id);
+  const ids=new Set(notes.map(x=>x.id));
+  DATA.notes.filter(x=>x.parentId && ids.has(x.parentId)).forEach(x=>ids.add(x.id));
+  ids.forEach(nid=>b.delete(SUB('notes').doc(nid)));
+  DATA.likes.filter(l=>ids.has(l.noteId)).forEach(l=>b.delete(SUB('likes').doc(l.id)));
 }
 
 /* ----- dragging agenda items and topics -----
