@@ -399,7 +399,9 @@ html.dark .tabs button.on{background:rgba(255,255,255,.13);color:var(--on-band);
   border:1.5px solid var(--line);transition:border-color .15s,box-shadow .15s;}
 .compose:focus-within{border-color:var(--tc);box-shadow:0 0 0 3px color-mix(in srgb, var(--tc) 18%, transparent);}
 .compose textarea{flex:1 1 auto;border:0;box-shadow:none !important;background:transparent;min-height:0;height:auto;padding:8px 0;line-height:1.35;resize:none;overflow:hidden;border-radius:0;}
-.compose textarea:focus{box-shadow:none;}
+/* the rounded box shows the focus, so the field inside it shows none */
+.compose textarea:focus,.compose textarea:focus-visible{box-shadow:none;outline:none;}
+.addAg input:focus-visible,.addTopic input:focus-visible{outline:none;}
 .send{flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:0;background:var(--tc);color:var(--on-c);display:grid;place-items:center;cursor:pointer;
   transition:transform .12s var(--ease),filter .15s;}
 .send:hover{filter:brightness(1.08);}
