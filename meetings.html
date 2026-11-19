@@ -318,6 +318,16 @@ html.dark .tabs button.on{background:rgba(255,255,255,.13);color:var(--on-band);
 .open > .topicHead .chev,.agSec.open > .agItem .chev{transform:rotate(180deg);}
 .tools{display:none;}
 .open > .topicHead .tools,.agSec.open > .agItem .tools{display:flex;}
+/* phones and tablets swipe a topic or agenda item left to delete it; the x is for desktop */
+@media (hover:none) and (pointer:coarse){
+  .tools .iconBtn[aria-label="Delete topic"],.agItem .tools .iconBtn[aria-label="Delete"]{display:none;}
+  .topicHead,.agItem{touch-action:pan-y;}
+}
+#agList.swiping{overflow-x:clip;}
+.swRow{z-index:1;}
+.swDel{position:absolute;right:0;z-index:0;border:0;border-radius:12px;background:#d93a2b;color:#fff;font-family:inherit;font-weight:800;font-size:15px;
+  display:flex;align-items:center;justify-content:flex-end;padding:0 22px;overflow:hidden;white-space:nowrap;cursor:pointer;-webkit-tap-highlight-color:transparent;}
+.swDel.full{justify-content:flex-start;}
 /* topics */
 .topicSec{position:relative;margin:0 0 6px;}
 .topicHead{position:relative;display:flex;align-items:center;gap:8px;min-height:52px;padding:8px 4px 8px var(--gut);border-radius:14px;cursor:pointer;
@@ -1530,6 +1540,7 @@ function agIn(tid){ return agSorted().filter(a=>topicOf(a)===tid); }
 const AG={topic:null, items:new Set()};
 const stop=`onclick="event.stopPropagation()"`;
 function renderAgenda(){
+  swInit();
   const el=$('agList'); if(!el) return;
   const ro=readOnly();
   // with no topics yet, the agenda is built at the top level; once there are topics, items are added under them
@@ -1716,6 +1727,108 @@ function askDeleteTopic(text){
     document.querySelector('#modalRoot .overlay').onclick=e=>{ if(e.target.classList.contains('overlay')) done(null); };
   });
 }
+/* ----- swipe to delete (phones and tablets) -----
+   A quick swipe left shows a red Delete button on the right; a long sweep
+   across the row goes straight to deleting. Both ask first. */
+const SW_OPEN=88;
+const touchUI=()=>!!(window.matchMedia && matchMedia('(hover:none) and (pointer:coarse)').matches);
+let SW=null, SW_OPENED=null, SW_NOCLICK=0;
+function swRowOf(t){
+  const row=t && t.closest && t.closest('#agList .topicHead, #agList .agItem');
+  if(!row || !row.querySelector('.tools')) return null;
+  const sec=row.closest(row.classList.contains('topicHead') ? '.topicSec' : '.agSec');
+  return sec && sec.dataset.k ? {row, sec, kind:row.classList.contains('topicHead')?'topic':'agenda', id:sec.dataset.k} : null;
+}
+function swSet(st, x, anim){
+  const w=st.row.offsetWidth;
+  st.x=x;
+  st.row.style.transition=anim ? 'transform .22s cubic-bezier(.2,.8,.2,1)' : 'none';
+  st.row.style.transform=x ? `translateX(${x}px)` : '';
+  const b=st.btn;
+  if(b){
+    b.style.transition=anim ? 'width .22s cubic-bezier(.2,.8,.2,1)' : 'none';
+    b.style.top=st.row.offsetTop+'px'; b.style.height=st.row.offsetHeight+'px';
+    b.style.width=Math.max(0,-x)+'px';
+    b.classList.toggle('full', -x > w*0.6);
+  }
+}
+function swEnsureBtn(st){
+  if(st.btn && st.btn.isConnected) return;
+  const b=document.createElement('button');
+  b.type='button'; b.className='swDel'; b.textContent='Delete'; b.setAttribute('aria-label','Delete');
+  b.onclick=e=>{ e.stopPropagation(); swDelete(st); };
+  st.sec.insertBefore(b, st.row);
+  st.btn=b; st.row.classList.add('swRow');
+  $('agList').classList.add('swiping');
+}
+function swClose(st, now){
+  if(!st) return;
+  if(SW_OPENED===st) SW_OPENED=null;
+  swSet(st, 0, !now);
+  const done=()=>{ if(st.x) return; if(st.btn) st.btn.remove(); st.btn=null; st.row.classList.remove('swRow'); st.row.style.transition='';
+    if(!SW_OPENED && !SW) { const l=$('agList'); if(l) l.classList.remove('swiping'); } };
+  if(now) done(); else setTimeout(done, 240);
+}
+async function swDelete(st){
+  if(SW_OPENED===st) SW_OPENED=null;
+  swSet(st, -st.row.offsetWidth, true);
+  const ok=await (st.kind==='topic' ? deleteTopic(st.id) : deleteAgenda(st.id));
+  if(!ok || st.row.isConnected) setTimeout(()=>{ if(st.row.isConnected) swClose(st); }, ok ? 600 : 0);
+}
+function swDown(e){
+  if(e.pointerType==='mouse' || !touchUI() || DRAG) return;
+  const t=e.target;
+  // tapping anywhere while a row is open just closes it
+  if(SW_OPENED && !(t.closest && t.closest('.swDel'))){
+    swClose(SW_OPENED);
+    SW_NOCLICK=Date.now();
+    return;
+  }
+  if(t.closest('.dgrip, textarea, input[type=text], .swDel')) return;
+  const hit=swRowOf(t); if(!hit) return;
+  SW={...hit, x0:e.clientX, y0:e.clientY, t0:performance.now(), pid:e.pointerId, mode:null, base:0, x:0, btn:null};
+}
+function swMove(e){
+  const st=SW; if(!st || e.pointerId!==st.pid) return;
+  const dx=e.clientX-st.x0, dy=e.clientY-st.y0;
+  if(!st.mode){
+    if(Math.abs(dy)>10 && Math.abs(dy)>Math.abs(dx)){ SW=null; return; }
+    if(dx<-10 && Math.abs(dx)>Math.abs(dy)*1.2){
+      st.mode='h';
+      try{ st.row.setPointerCapture(e.pointerId); }catch(_){}
+      swEnsureBtn(st);
+    } else return;
+  }
+  e.preventDefault();
+  const w=st.row.offsetWidth;
+  let x=Math.min(0, st.base+dx);
+  if(x<-w) x=-w-( (-w-x)*0.2 );
+  swSet(st, x, false);
+  st.lastX=e.clientX; st.lastT=performance.now();
+}
+function swUp(e){
+  const st=SW; if(!st || e.pointerId!==st.pid) return;
+  SW=null;
+  if(st.mode!=='h') return;
+  SW_NOCLICK=Date.now();
+  const w=st.row.offsetWidth, dx=e.clientX-st.x0, dt=Math.max(1, performance.now()-st.t0);
+  if(e.type==='pointercancel'){ swClose(st); return; }
+  if(-st.x > w*0.6){ swDelete(st); return; }        // a full sweep throws it away (after asking)
+  if(-st.x > 40 || (dx<-25 && dx/dt < -0.5)){        // a quick swipe shows Delete
+    SW_OPENED=st; swSet(st, -SW_OPEN, true); return;
+  }
+  swClose(st);
+}
+function swInit(){
+  const el=$('agList'); if(!el || el._sw) return;
+  el._sw=true;
+  document.addEventListener('pointerdown', swDown, true);
+  document.addEventListener('pointermove', swMove, {passive:false});
+  document.addEventListener('pointerup', swUp, true);
+  document.addEventListener('pointercancel', swUp, true);
+  // the tap that ends a swipe does not also open or close the row
+  el.addEventListener('click', e=>{ if(Date.now()-SW_NOCLICK<400 && !(e.target.closest && e.target.closest('.swDel'))){ e.stopPropagation(); e.preventDefault(); } }, true);
+}
 async function deleteTopic(id){
   const t=DATA.topics.find(x=>x.id===id); if(!t) return;
   const items=agIn(id), n=items.length;
@@ -1737,6 +1850,7 @@ async function deleteTopic(id){
   }
   b.commit().catch(fail);
   if(MTG.currentTopic===id) MREF().update({currentTopic:null}).catch(()=>{});
+  return true;
 }
 function addAgenda(inp){
   const text=(inp.value||'').trim(); if(!text) return;
@@ -1760,6 +1874,7 @@ async function deleteAgenda(id){
   delAgendaInto(b, id);
   b.commit().catch(fail);
   if(MTG.currentAgenda===id) MREF().update({currentAgenda:null}).catch(()=>{});
+  return true;
 }
 /* An agenda item always goes with its notes, their replies and likes. */
 function delAgendaInto(b, id){
